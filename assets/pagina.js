@@ -6,6 +6,59 @@
 
   var body = document.body;
 
+  /* ---------- Le statistiche (Vercel Web Analytics) ----------
+     Lo script /_vercel/insights/script.js è servito dal sito stesso e legge la coda window.vaq
+     preparata nella testa della pagina. Qui si fanno due cose, e nessuna può far fallire la pagina:
+     1. Prima dell'invio ogni indirizzo si ripulisce (beforeSend, il modo documentato da Vercel
+        per l'HTML semplice): via il frammento dopo il cancelletto e tutti i parametri, tranne
+        i cinque delle campagne; anche questi si scartano se contengono una chiocciola o sono
+        più lunghi di 100 caratteri. Se l'indirizzo non si legge, l'invio non parte.
+     2. Gli eventi: nomi stabili e minuscoli, una sola proprietà, «posizione». Mai dati della
+        persona: né la mail né testi scritti dal visitatore. I pulsanti si riconoscono dagli
+        attributi data-evento e data-posizione, mai dall'indirizzo a cui portano.
+     Se lo script è bloccato, window.va resta la coda della testa (o non c'è): non succede niente. */
+  var CAMPAGNA = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+
+  function indirizzoPulito(indirizzo) {
+    var u = new URL(indirizzo);
+    var tenuti = new URLSearchParams();
+    CAMPAGNA.forEach(function (chiave) {
+      var valore = u.searchParams.get(chiave);
+      if (valore !== null && valore.indexOf('@') === -1 && valore.length <= 100) tenuti.append(chiave, valore);
+    });
+    var ricerca = tenuti.toString();
+    return u.origin + u.pathname + (ricerca ? '?' + ricerca : '');
+  }
+
+  function statistica() {
+    try {
+      if (typeof window.va === 'function') window.va.apply(window, arguments);
+    } catch (e) { /* le statistiche non fermano mai la pagina */ }
+  }
+
+  function evento(nome, posizione) {
+    statistica('event', { name: nome, data: { posizione: posizione || '' } });
+  }
+
+  statistica('beforeSend', function (e) {
+    try {
+      var copia = {};
+      for (var k in e) if (Object.prototype.hasOwnProperty.call(e, k)) copia[k] = e[k];
+      copia.url = indirizzoPulito(e.url);
+      return copia;
+    } catch (x) {
+      return null;
+    }
+  });
+
+  // Un clic, un evento: un ascoltatore solo, sull'elemento con data-evento più vicino.
+  document.addEventListener('click', function (e) {
+    try {
+      var el = e.target && e.target.closest ? e.target.closest('[data-evento]') : null;
+      if (el) evento(el.getAttribute('data-evento'), el.getAttribute('data-posizione'));
+    } catch (x) { /* niente */ }
+  });
+
   /* ---------- Il menu del telefono ----------
      È un <details>: si apre e si chiude anche senza script e da tastiera (Invio, Spazio).
      Qui si aggiunge solo che si chiude scegliendo una voce, con Esc o toccando fuori. */
@@ -108,6 +161,8 @@
             if (r.status === 201 || r.status === 409) {
               mostra(TESTI.fatto, true);
               f.reset();
+              // Solo per le statistiche le due risposte restano distinte; a schermo sono identiche.
+              evento(r.status === 201 ? 'lista_iscritto' : 'lista_gia_iscritto', f.getAttribute('data-posizione'));
             } else {
               mostra(TESTI.errore, false);
             }

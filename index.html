@@ -19,6 +19,12 @@
 <meta name="twitter:image" content="https://dimorapp.com/dimora-og.png">
 <link rel="preload" href="assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/stile.css">
+<!-- Vercel Web Analytics: i due tag della documentazione per l'HTML semplice. Lo script è servito dal sito stesso.
+     Gli indirizzi si ripuliscono prima dell'invio (beforeSend) e gli eventi partono da assets/pagina.js. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <!--
   LO STATO DELLA PAGINA E LA DATA DEL LANCIO STANNO QUI, E SOLO QUI.
@@ -44,9 +50,9 @@
     </nav>
     <div class="testata-azioni">
       <span class="beta">BETA</span>
-      <a class="btn btn-chiaro btn-testata" href="https://app.dimorapp.com/login">Accedi</a>
+      <a class="btn btn-chiaro btn-testata" href="https://app.dimorapp.com/login" data-evento="clic_accedi" data-posizione="intestazione">Accedi</a>
       <a class="btn btn-verde btn-testata v-arrivo solo-largo" href="#lancio">Avvisami</a>
-      <a class="btn btn-verde btn-testata v-aperta solo-largo" href="https://app.dimorapp.com/login">Inizia</a>
+      <a class="btn btn-verde btn-testata v-aperta solo-largo" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="intestazione">Inizia</a>
       <details class="menu" data-menu>
         <summary class="menu-bottone" aria-label="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
@@ -58,7 +64,7 @@
           <a href="#prezzi">Prezzi</a>
           <a href="#domande">Domande</a>
           <a class="btn btn-verde menu-cta v-arrivo" href="#lancio">Avvisami</a>
-          <a class="btn btn-verde menu-cta v-aperta" href="https://app.dimorapp.com/login">Inizia</a>
+          <a class="btn btn-verde menu-cta v-aperta" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="menu_telefono">Inizia</a>
         </nav>
       </details>
     </div>
@@ -74,7 +80,7 @@
       <h1>Fotografi il&nbsp;documento. <span class="h1-verde">Dimora si ricorda il&nbsp;resto.</span></h1>
       <p class="eroe-lead">Per chi ha una casa o più di una, e per chi affitta da sé. Dimora legge bollette, contratti e rate del condominio, prepara le scadenze e ti avvisa per tempo. Tu controlli e confermi.</p>
       <div class="v-arrivo blocco-modulo">
-        <form class="modulo modulo-riga" data-wl novalidate>
+        <form class="modulo modulo-riga" data-wl data-posizione="apertura" novalidate>
           <label class="nascosto" for="mail-apertura">La tua mail</label>
           <input class="campo" id="mail-apertura" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
           <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -84,8 +90,8 @@
         <p class="esito" data-wl-esito role="status" aria-live="polite"></p>
         <p class="eroe-nota"><span class="v-prima">Le iscrizioni aprono <span data-quando></span>. </span>Al lancio: 30 giorni gratis, 20 letture con l'AI, senza carta.</p>
       </div>
-      <div class="v-aperta blocco-modulo"><a class="btn btn-verde btn-modulo btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></div>
-      <a class="eroe-link" href="#come">Guarda come funziona</a>
+      <div class="v-aperta blocco-modulo"><a class="btn btn-verde btn-modulo btn-inizia" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="apertura">Inizia la prova gratuita</a></div>
+      <a class="eroe-link" href="#come" data-evento="clic_guarda_come_funziona" data-posizione="apertura">Guarda come funziona</a>
       <ul class="eroe-elenco">
         <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg>Riconosce più di 60 tipi di documenti della casa</li>
         <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg>Promemoria via mail a 30, 7 e 1 giorno</li>
@@ -178,7 +184,7 @@
     <p class="lancio-testo v-dopo" data-rv>Stiamo aprendo le iscrizioni. Lascia la mail e ti avvisiamo appena puoi entrare.</p>
     <div class="lancio-modulo" data-rv>
       <div class="v-arrivo blocco-modulo">
-        <form class="modulo modulo-riga" data-wl novalidate>
+        <form class="modulo modulo-riga" data-wl data-posizione="lancio" novalidate>
           <label class="nascosto" for="mail-lancio">La tua mail</label>
           <input class="campo campo-grande" id="mail-lancio" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
           <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -189,7 +195,7 @@
         <p class="lancio-nota v-nondopo">Lascia la mail e ti avvisiamo all'apertura. Al lancio: 30 giorni gratis, 20 letture con l'AI, senza carta.</p>
       </div>
       <div class="v-aperta blocco-modulo">
-        <a class="btn btn-menta btn-modulo btn-grande btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a>
+        <a class="btn btn-menta btn-modulo btn-grande btn-inizia" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="lancio">Inizia la prova gratuita</a>
         <p class="lancio-nota">Entra e prova Dimora: 30 giorni gratis, 20 letture con l'AI, senza carta.</p>
       </div>
     </div>
@@ -423,7 +429,7 @@
       </div>
       <div class="prova-azione">
         <div class="v-arrivo blocco-modulo">
-          <form class="modulo modulo-riga modulo-prova" data-wl novalidate>
+          <form class="modulo modulo-riga modulo-prova" data-wl data-posizione="prezzi" novalidate>
             <label class="nascosto" for="mail-prezzi">La tua mail</label>
             <input class="campo" id="mail-prezzi" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
             <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -432,7 +438,7 @@
           </form>
           <p class="esito" data-wl-esito role="status" aria-live="polite"></p>
         </div>
-        <div class="v-aperta blocco-modulo"><a class="btn btn-verde btn-modulo btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></div>
+        <div class="v-aperta blocco-modulo"><a class="btn btn-verde btn-modulo btn-inizia" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="prezzi">Inizia la prova gratuita</a></div>
       </div>
     </div>
     <div class="piani-testa" data-rv>
@@ -568,7 +574,7 @@
       </div>
       <div class="finale-azione">
         <div class="v-arrivo blocco-modulo">
-          <form class="modulo modulo-colonna" data-wl novalidate>
+          <form class="modulo modulo-colonna" data-wl data-posizione="chiusura" novalidate>
             <label class="nascosto" for="mail-chiusura">La tua mail</label>
             <input class="campo" id="mail-chiusura" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
             <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -577,7 +583,7 @@
           </form>
           <p class="esito" data-wl-esito role="status" aria-live="polite"></p>
         </div>
-        <div class="v-aperta blocco-modulo"><a class="btn btn-menta btn-modulo btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></div>
+        <div class="v-aperta blocco-modulo"><a class="btn btn-menta btn-modulo btn-inizia" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="chiusura">Inizia la prova gratuita</a></div>
       </div>
     </div>
   </div>
@@ -595,7 +601,7 @@
       <div class="piede-colonne">
         <nav class="piede-colonna" aria-label="Prodotto"><span class="piede-tit">PRODOTTO</span><a href="#perchi">Per chi è</a><a href="#come">Come funziona</a><a href="#affitti">Per chi affitta</a><a href="#prezzi">Prezzi</a><a href="#domande">Domande</a></nav>
         <nav class="piede-colonna" aria-label="Legale"><span class="piede-tit">LEGALE</span><a href="https://app.dimorapp.com/termini">Termini del servizio</a><a href="https://app.dimorapp.com/privacy">Informativa sulla privacy</a><a href="#sicurezza">Sicurezza e dati</a></nav>
-        <nav class="piede-colonna" aria-label="Accesso"><span class="piede-tit">ACCESSO</span><a href="https://app.dimorapp.com/login">Accedi</a><a class="v-arrivo" href="#lancio">Avvisami al lancio</a><a class="v-aperta" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></nav>
+        <nav class="piede-colonna" aria-label="Accesso"><span class="piede-tit">ACCESSO</span><a href="https://app.dimorapp.com/login" data-evento="clic_accedi" data-posizione="pie_di_pagina">Accedi</a><a class="v-arrivo" href="#lancio">Avvisami al lancio</a><a class="v-aperta" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="pie_di_pagina">Inizia la prova gratuita</a></nav>
       </div>
     </div>
     <div class="piede-basso">
