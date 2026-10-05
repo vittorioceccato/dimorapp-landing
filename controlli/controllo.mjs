@@ -7,13 +7,16 @@
 //   2. i moduli della lista d'attesa sono quattro;
 //   3. la data del lancio e lo stato sono scritti in un punto solo, e nessuna data è scritta a mano;
 //   4. prezzi, letture, spazio e pacchetti coincidono con la tabella qui sotto;
-//   5. le risorse caricate vengono solo dal sito stesso e, per il modulo, da Supabase;
+//   5. le risorse caricate vengono solo dal sito stesso e, per il modulo, da Supabase; l'unica che non è
+//      un file del repository è lo script delle statistiche, servito da Vercel dallo stesso sito;
 //   6. i collegamenti vanno solo all'app, all'indirizzo canonico e ai mailto: del piè di pagina,
 //      e quelli interni portano a sezioni che esistono;
 //   7. i testi approvati del piano Dimora, di Dimorino e della domanda sui documenti, parola per parola;
 //   8. l'interruttore annuale / mensile: bottoni veri, l'annuale scelto, il «fino al» ricavato dai prezzi,
 //      e senza script i due prezzi insieme;
-//   9. le domande frequenti: una per riga, chiuse, nell'ordine di sempre.
+//   9. le domande frequenti: una per riga, chiuse, nell'ordine di sempre;
+//  10. le statistiche di Vercel: i due tag una volta sola, la coda prima dello script, lo script da
+//      quel percorso esatto, nessun altro /_vercel/ e solo i cinque eventi previsti.
 // Esce con 1 al primo controllo fallito, dopo averli stampati tutti.
 
 import fs from 'node:fs';
@@ -45,6 +48,11 @@ const COLLEGAMENTI_AMMESSI = [
 ];
 const CANONICO = 'https://dimorapp.com/';
 const MAILTO_AMMESSI = ['mailto:assistenza@dimorapp.com'];
+// Vercel Web Analytics: lo script lo serve la piattaforma, dallo stesso sito, a questo percorso esatto.
+// È l'unica risorsa caricata che non è un file del repository. Nessun altro percorso, nessun prefisso.
+const DALLA_PIATTAFORMA = '/_vercel/insights/script.js';
+const CODA_VA = 'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };';
+const EVENTI = ['lista_iscritto', 'lista_gia_iscritto', 'clic_accedi', 'clic_guarda_come_funziona', 'clic_inizia_prova'];
 
 /* ---------- I testi approvati da Vitto parola per parola (regia, 5/10) ---------- */
 const TESTI = {
@@ -220,11 +228,11 @@ console.log('\n5. Risorse caricate');
   caricate.push(...[...CSS.matchAll(/@import\s+(?:url\()?['"]?([^'")\s;]+)/g)].map(m => m[1]));
   const esterne = caricate.filter(u => /^(https?:)?\/\//i.test(u));
   verifica(esterne.length === 0, `script, stili, font e immagini vengono dal sito (${caricate.length} risorse)`, esterne);
-  const mancanti = caricate.filter(u => !/^(https?:)?\/\//i.test(u)).map(u => u.split(/[?#]/)[0]).filter(u => !fs.existsSync(path.join(RADICE, u)));
-  verifica(mancanti.length === 0, 'ogni risorsa esiste nel repository', mancanti);
+  const mancanti = caricate.filter(u => !/^(https?:)?\/\//i.test(u) && u !== DALLA_PIATTAFORMA).map(u => u.split(/[?#]/)[0]).filter(u => !fs.existsSync(path.join(RADICE, u)));
+  verifica(mancanti.length === 0, `ogni risorsa esiste nel repository (tranne ${DALLA_PIATTAFORMA}, servito dalla piattaforma dallo stesso sito)`, mancanti);
   const indirizziScript = [...JS_CODICE.matchAll(/https?:\/\/[^\s'"`)]+/g)].map(m => m[0]);
   verifica(indirizziScript.length > 0 && indirizziScript.every(u => new URL(u).origin === SUPABASE), 'lo script chiama solo Supabase (per il modulo)', indirizziScript);
-  verifica(!/fonts\.googleapis|fonts\.gstatic|googletagmanager|google-analytics|plausible|<iframe/i.test(HTML + CSS + JS), 'niente carattere da altri siti, niente statistiche');
+  verifica(!/fonts\.googleapis|fonts\.gstatic|googletagmanager|google-analytics|plausible|<iframe/i.test(HTML + CSS + JS), 'niente carattere da altri siti, niente statistiche di altri siti');
   verifica(!/document\.cookie|localStorage|sessionStorage/.test(JS), 'nessun cookie, nessuna memoria nel browser');
 }
 
@@ -320,6 +328,32 @@ console.log('\n9. Le domande frequenti');
   verifica(risposte.every(r => r.length === 1 && r[0]), 'ogni domanda ha la sua risposta');
   const sicura = risposte[DOMANDE.indexOf(TESTI.sicuroDomanda)];
   verifica(sicura?.[0] === TESTI.sicuroRisposta, `«${TESTI.sicuroDomanda}»: la risposta di sempre`, sicura);
+}
+
+console.log('\n10. Le statistiche di Vercel');
+{
+  const html = HTML.replace(/<!--[\s\S]*?-->/g, '');
+  const testa = html.slice(0, html.indexOf('</head>'));
+  const script = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].map(m => ({ attr: attributi(m[1]), corpo: m[2].trim(), pos: m.index }));
+  const coda = script.filter(s => !s.attr.src && spazi(s.corpo) === CODA_VA);
+  const dalla = script.filter(s => s.attr.src === DALLA_PIATTAFORMA);
+  verifica(coda.length === 1 && dalla.length === 1, 'i due tag ci sono, una volta sola ciascuno', { coda: coda.length, script: dalla.length });
+  verifica(coda.length === 1 && dalla.length === 1 && coda[0].pos < dalla[0].pos && dalla[0].pos < testa.length, 'la coda `va` viene prima dello script, tutti e due nella testata');
+  verifica(dalla.length === 1 && 'defer' in dalla[0].attr, `lo script carica proprio ${DALLA_PIATTAFORMA}, con defer`);
+  const inLinea = script.filter(s => !s.attr.src);
+  verifica(inLinea.length === 1, 'nessun altro script scritto nella pagina oltre alla coda', inLinea.map(s => s.corpo.slice(0, 60)));
+  const vercel = (HTML.match(/_vercel/g) || []).length;
+  verifica(vercel === 1 && HTML.includes(`"${DALLA_PIATTAFORMA}"`), `nell'HTML nessun altro riferimento a /_vercel/ (${vercel})`);
+  verifica(!/_vercel/.test(CSS) && !/_vercel/.test(JS_CODICE), 'nessun /_vercel/ nel foglio di stile e nello script');
+  // Gli eventi: solo i cinque nomi, ognuno usato, i clic letti da un ascoltatore solo.
+  const conEvento = tag.filter(t => 'data-evento' in t.attr);
+  const nomiHtml = [...new Set(conEvento.map(t => t.attr['data-evento']))];
+  const nomiJs = [...new Set([...JS_CODICE.matchAll(/'((?:lista|clic)_[a-z_]+)'/g)].map(m => m[1]))];
+  const usati = [...new Set([...nomiHtml, ...nomiJs])].sort();
+  verifica(usati.every(x => EVENTI.includes(x)) && EVENTI.every(x => usati.includes(x)), `gli eventi sono solo i cinque previsti (${usati.join(', ')})`, usati);
+  verifica(conEvento.every(t => t.attr['data-posizione']), `ogni elemento con un evento ha la sua posizione (${conEvento.length})`, conEvento.filter(t => !t.attr['data-posizione']).map(t => t.attr['data-evento']));
+  verifica((JS_CODICE.match(/closest\('\[data-evento\]'\)/g) || []).length === 1 && (JS_CODICE.match(/'event'/g) || []).length === 1, "un ascoltatore solo per i clic, un punto solo che manda gli eventi");
+  verifica(/statistica\('beforeSend'/.test(JS_CODICE), "gli indirizzi si ripuliscono prima dell'invio (beforeSend)");
 }
 
 console.log(`\n${passati} passati, ${falliti} falliti`);
