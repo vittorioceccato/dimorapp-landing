@@ -128,7 +128,7 @@
 
   /* ---------- Il lancio: la data, il conto alla rovescia, lo stato ----------
      Due valori, scritti una volta sola sul <body> di index.html:
-       data-lancio  la data e l'ora del lancio, con il fuso (es. 2026-10-08T10:00:00+02:00);
+       data-lancio  la data e l'ora del lancio, con il fuso (AAAA-MM-GGThh:mm:ss+02:00);
        data-stato   "in arrivo" oppure "aperta" (esattamente così: lo legge anche il CSS).
      Da qui lo script ricava l'aspetto della pagina e lo scrive in data-aspetto:
        prima   in arrivo, prima della data: conto alla rovescia e frasi con la data;
@@ -170,7 +170,7 @@
       if (!p || isNaN(p.a + p.m + p.g + p.h + p.mi)) p = partiScritte(scritto);
       if (!p) return '';
       var settimana = new Date(Date.UTC(p.a, p.m - 1, p.g)).getUTCDay();
-      // Spazi non divisibili dentro «8 ottobre» e «alle 10:00»: non vanno a capo a metà.
+      // Spazi non divisibili fra giorno e mese e fra «alle» e l'ora: non vanno a capo a metà.
       var ora = (p.h === 1 ? 'all\'' : 'alle ') + p.h + ':' + due(p.mi);
       return GIORNI[settimana] + ' ' + p.g + ' ' + MESI[p.m - 1] + ' ' + ora;
     }
