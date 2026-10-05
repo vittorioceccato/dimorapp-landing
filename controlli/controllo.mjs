@@ -32,8 +32,8 @@ const JS_CODICE = JS.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\\])\/\/.*$
 /* ---------- La tabella: prezzi, letture, spazio, pacchetti (note della regia del 5/10) ---------- */
 const PIANI = {
   'Dimora':      { anno: '59 €',  mese: '6,90 €',  risparmio: 29, letture: 15, gb: 5,  benvenuto: 15 },
-  'Dimora Plus': { anno: '119 €', mese: '12,90 €', risparmio: 23, letture: 40, gb: 20, benvenuto: 60 },
-  'Dimora Max':  { anno: '219 €', mese: '22,90 €', risparmio: 20, letture: 80, gb: 40, benvenuto: 100 },
+  'Dimora Plus': { anno: '119 €', mese: '12,90 €', risparmio: 23, letture: 40, gb: 20, benvenuto: 40 },
+  'Dimora Max':  { anno: '219 €', mese: '22,90 €', risparmio: 20, letture: 80, gb: 40, benvenuto: 80 },
 };
 const PROVA = { giorni: 30, letture: 20, gb: 1 };
 const PACCHETTI = [{ letture: 20, prezzo: '6,90 €' }, { letture: 100, prezzo: '29,90 €' }];
@@ -49,7 +49,7 @@ const MAILTO_AMMESSI = ['mailto:assistenza@dimorapp.com'];
 /* ---------- I testi approvati da Vitto parola per parola (regia, 5/10) ---------- */
 const TESTI = {
   dimoraDesc: 'Consigliato per chi gestisce la propria casa ed eventualmente una o due seconde case, anche in affitto. Indicativamente da 1 a 3 immobili.',
-  benvenuto: 'Con il piano annuale ricevi anche letture di benvenuto, una volta sola, da usare entro 12 mesi: 15 con Dimora, 60 con Dimora Plus, 100 con Dimora Max.',
+  benvenuto: 'Con il piano annuale ricevi anche letture di benvenuto, una volta sola, da usare entro 12 mesi: 15 con Dimora, 40 con Dimora Plus, 80 con Dimora Max.',
   guidaOcchiello: 'LA TUA GUIDA',
   guidaTitolo: 'Ti presento Dimorino',
   guidaTesto: "È la tua guida dentro Dimora: ti segue passo passo e ti aiuta con documenti, scadenze e tutto quello che riguarda la casa. Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.",
