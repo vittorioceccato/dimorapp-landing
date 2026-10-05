@@ -1,465 +1,610 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dimora — la tua casa, senza burocrazia</title>
-<meta name="description" content="Carichi un documento, Dimora lo legge con l'AI, compila i campi e ti ricorda ogni scadenza. Documenti, scadenze e affitti di casa, finalmente in ordine." />
-<link rel="icon" type="image/svg+xml" href="favicon.svg" />
-<meta name="theme-color" content="#1F6B45" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://dimorapp.com/" />
-<meta property="og:title" content="Dimora — la tua casa, senza burocrazia" />
-<meta property="og:description" content="Carichi un documento, Dimora lo legge con l'AI, compila i campi e ti ricorda ogni scadenza." />
-<meta property="og:image" content="https://dimorapp.com/dimora-og.png" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Dimora — la tua casa, senza burocrazia" />
-<meta name="twitter:description" content="Documenti, scadenze e affitti di casa, finalmente in ordine." />
-<meta name="twitter:image" content="https://dimorapp.com/dimora-og.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<style>
-  :root{
-    --ink:#14241c; --muted:#5a6b61; --green-900:#1b4332; --green-700:#2d6a4f;
-    --green-500:#40916c; --green-400:#52b788; --mint:#eaf3ec;
-    --cream:#f7f9f5; --card:#ffffff; --line:#e3eae2; --gold:#c98a2e;
-    --shadow:0 1px 2px rgba(20,36,28,.04),0 12px 32px rgba(20,36,28,.07);
-    --radius:18px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--cream);line-height:1.55;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-  a{color:inherit;text-decoration:none}
-  h1,h2,h3{line-height:1.12;letter-spacing:-.02em}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:999px;font-weight:700;font-size:15px;transition:transform .15s ease,box-shadow .15s ease;cursor:pointer;border:none}
-  .btn-primary{background:var(--green-700);color:#fff;box-shadow:0 8px 20px rgba(45,106,79,.25)}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(45,106,79,.32)}
-  .btn-ghost{background:transparent;color:var(--green-900);border:1.5px solid var(--line)}
-  .btn-ghost:hover{background:#fff;border-color:var(--green-400)}
-  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-500)}
-
-  header{position:sticky;top:0;z-index:50;background:rgba(247,249,245,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;height:68px}
-  .logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;color:var(--green-900)}
-  .logo .mark{width:34px;height:34px;border-radius:10px;background:#1F6B45;color:#fff;display:grid;place-items:center;box-shadow:0 4px 10px rgba(27,67,50,.25)}
-  .logo small{display:block;font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.01em;margin-top:-2px}
-  .nav-links{display:flex;align-items:center;gap:28px;font-weight:600;font-size:14.5px;color:var(--ink)}
-  .nav-links a:hover{color:var(--green-700)}
-  .nav-cta{display:flex;align-items:center;gap:14px}
-  @media(max-width:840px){.nav-links{display:none}.nav-cta .btn-ghost{display:none}}
-
-  .hero{padding:74px 0 36px}
-  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center}
-  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px}.hero{padding:48px 0 20px}}
-  .badge{display:inline-flex;align-items:center;gap:8px;background:var(--mint);color:var(--green-700);font-weight:700;font-size:13px;padding:7px 13px;border-radius:999px;margin-bottom:20px}
-  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green-400)}
-  h1.head{font-size:clamp(34px,5vw,52px);font-weight:800;color:var(--green-900)}
-  .head .hl{color:var(--green-500)}
-  .lead{font-size:clamp(16.5px,2vw,19px);color:var(--muted);margin:22px 0 30px;max-width:540px}
-  .hero-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-  .hero-note{font-size:13.5px;color:var(--muted);margin-top:18px;display:flex;gap:8px;align-items:center}
-
-  .preview{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
-  .pv-top{display:flex;align-items:center;gap:7px;padding:14px 18px;border-bottom:1px solid var(--line)}
-  .pv-top .d{width:9px;height:9px;border-radius:50%;background:#e0e6dd}
-  .pv-top span{margin-left:8px;font-size:12.5px;color:var(--muted);font-weight:600}
-  .pv-body{padding:20px}
-  .pv-doc{display:flex;gap:14px;align-items:flex-start;background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:14px}
-  .pv-doc .ic{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center}
-  .pv-doc b{font-size:14.5px}
-  .pv-doc p{font-size:12.5px;color:var(--muted);margin-top:2px}
-  .chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;margin-top:9px;margin-right:6px}
-  .chip.ok{background:var(--mint);color:var(--green-700)}
-  .chip.warn{background:#fbf1dc;color:#9a6a16}
-  .pv-fields{margin-top:16px;display:grid;gap:10px}
-  .pv-f{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:#fff}
-  .pv-f .k{color:var(--muted);font-weight:600}
-  .pv-f .v{font-weight:700}
-  .pv-f .v.green{color:var(--green-700)}
-  .pv-cta{margin-top:16px;width:100%;justify-content:center;padding:12px}
-
-  .trust{display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:center;padding:14px 0 4px;color:var(--muted);font-size:13.5px;font-weight:600}
-  .trust span{display:inline-flex;align-items:center;gap:8px}
-  .trust svg{color:var(--green-500)}
-
-  section{padding:74px 0}
-  .sec-head{max-width:620px;margin:0 auto 46px;text-align:center}
-  .sec-head h2{font-size:clamp(27px,3.6vw,38px);font-weight:800;color:var(--green-900);margin:12px 0 14px}
-  .sec-head p{color:var(--muted);font-size:17px}
-
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-  @media(max-width:820px){.steps{grid-template-columns:1fr}}
-  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
-  .step .n{width:38px;height:38px;border-radius:11px;background:var(--green-900);color:#fff;font-weight:800;display:grid;place-items:center;margin-bottom:16px}
-  .step h3{font-size:19px;color:var(--green-900);margin-bottom:8px}
-  .step p{color:var(--muted);font-size:14.5px}
-
-  .features{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-  @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
-  @media(max-width:620px){.grid{grid-template-columns:1fr}}
-  .card{border:1px solid var(--line);border-radius:var(--radius);padding:26px;background:var(--cream);transition:transform .15s,box-shadow .15s}
-  .card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-  .card .ico{width:46px;height:46px;border-radius:13px;background:var(--mint);color:var(--green-700);display:grid;place-items:center;margin-bottom:16px}
-  .card h3{font-size:18px;color:var(--green-900);margin-bottom:8px}
-  .card p{color:var(--muted);font-size:14.5px}
-
-  .landlord{background:linear-gradient(160deg,var(--green-900),#143528);color:#dfeee5}
-  .landlord .sec-head h2{color:#fff}
-  .landlord .sec-head p{color:#aecbbb}
-  .landlord .eyebrow{color:var(--green-400)}
-  .ll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  @media(max-width:900px){.ll-grid{grid-template-columns:1fr 1fr}}
-  @media(max-width:620px){.ll-grid{grid-template-columns:1fr}}
-  .ll{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px}
-  .ll h3{color:#fff;font-size:16.5px;margin-bottom:7px;display:flex;align-items:center;gap:9px}
-  .ll h3 svg{color:var(--green-400);flex:0 0 auto}
-  .ll p{color:#a9c7b8;font-size:14px}
-
-  /* pricing */
-  .pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
-  @media(max-width:900px){.pricing{grid-template-columns:1fr;max-width:440px;margin:0 auto}}
-  .plan{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px 26px;box-shadow:var(--shadow);position:relative}
-  .plan.featured{border:2px solid var(--green-500);box-shadow:0 18px 44px rgba(45,106,79,.18);transform:translateY(-6px)}
-  @media(max-width:900px){.plan.featured{transform:none}}
-  .ribbon{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--green-700);color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;padding:6px 14px;border-radius:999px;box-shadow:0 6px 14px rgba(45,106,79,.3)}
-  .plan .pname{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green-500)}
-  .plan .ptag{color:var(--muted);font-size:14px;margin:6px 0 18px;min-height:42px}
-  .plan .price{display:flex;align-items:baseline;gap:6px}
-  .plan .price b{font-size:40px;font-weight:800;color:var(--green-900);letter-spacing:-.02em}
-  .plan .price span{color:var(--muted);font-size:14.5px;font-weight:600}
-  .plan .billed{color:var(--muted);font-size:13px;margin-top:4px}
-  .plan .btn{width:100%;justify-content:center;margin:20px 0 6px}
-  .plan .btn-soft{background:var(--mint);color:var(--green-900)}
-  .plan .btn-soft:hover{background:#dbecde}
-  .plist{list-style:none;display:grid;gap:11px;margin-top:14px;border-top:1px solid var(--line);padding-top:18px}
-  .plist li{position:relative;padding-left:28px;font-size:14px;color:var(--ink)}
-  .plist li svg{position:absolute;left:0;top:3px;color:var(--green-500)}
-  .plist li b{font-weight:700}
-  .price-note{text-align:center;color:var(--muted);font-size:13.5px;margin:28px auto 0;max-width:660px}
-
-  .honesty{background:var(--mint)}
-  .honesty .inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  @media(max-width:820px){.honesty .inner{grid-template-columns:1fr;gap:24px}}
-  .honesty h2{font-size:clamp(24px,3vw,32px);color:var(--green-900);font-weight:800;margin-bottom:14px}
-  .honesty p{color:#3d5346;font-size:16px;margin-bottom:12px}
-  .honesty ul{list-style:none;display:grid;gap:12px}
-  .honesty li{position:relative;padding-left:30px;font-size:15px;color:#274135;font-weight:600}
-  .honesty li svg{position:absolute;left:0;top:3px;color:var(--green-500)}
-
-  .final{text-align:center}
-  .final-box{background:linear-gradient(150deg,var(--green-700),var(--green-900));border-radius:28px;padding:60px 28px;color:#fff;box-shadow:0 24px 60px rgba(27,67,50,.28)}
-  .final-box h2{font-size:clamp(27px,3.6vw,40px);font-weight:800;margin-bottom:14px}
-  .final-box p{color:#cfe6da;font-size:17px;max-width:520px;margin:0 auto 28px}
-  .final-box .btn-primary{background:#fff;color:var(--green-900);box-shadow:0 10px 24px rgba(0,0,0,.18)}
-
-  footer{padding:40px 0;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
-  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-  .foot-links{display:flex;gap:22px;flex-wrap:wrap}
-  .foot-links a:hover{color:var(--green-700)}
-  .beta-tag{font-size:11.5px;font-weight:700;color:var(--gold);border:1px solid #ecdcc0;background:#fdf7ec;padding:3px 9px;border-radius:999px}
-</style>
-<style>
-.wl-form{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0}
-.wl-form input[type=email]{flex:1;min-width:220px;padding:13px 16px;border-radius:12px;border:1px solid #d9e2dc;font:inherit;background:#fff;color:#1a1a1a}
-.wl-form input[type=email]:focus{outline:none;border-color:#2E6E4E;box-shadow:0 0 0 3px rgba(46,110,78,.18)}
-.wl-form-center{justify-content:center}
-.wl-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0;pointer-events:none}
-.wl-msg{font-size:14px;margin:6px 0 0;min-height:18px;font-weight:600}
-.hero-cta-sub{font-size:14px;color:#555;margin-top:12px}
-.hero-cta-sub a{color:#2E6E4E;font-weight:600}
-</style>
+<meta name="description" content="Carichi un documento, Dimora lo legge con l'AI, compila i campi e ti ricorda ogni scadenza. Documenti, scadenze e affitti di casa, finalmente in ordine.">
+<link rel="canonical" href="https://dimorapp.com/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#1F6B45">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dimorapp.com/">
+<meta property="og:title" content="Dimora — la tua casa, senza burocrazia">
+<meta property="og:description" content="Carichi un documento, Dimora lo legge con l'AI, compila i campi e ti ricorda ogni scadenza.">
+<meta property="og:image" content="https://dimorapp.com/dimora-og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dimora — la tua casa, senza burocrazia">
+<meta name="twitter:description" content="Documenti, scadenze e affitti di casa, finalmente in ordine.">
+<meta name="twitter:image" content="https://dimorapp.com/dimora-og.png">
+<link rel="preload" href="assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/stile.css">
 </head>
-<body>
+<!--
+  LO STATO DELLA PAGINA E LA DATA DEL LANCIO STANNO QUI, E SOLO QUI.
+  data-stato:  "in arrivo" oppure "aperta". Per aprire la beta basta scrivere "aperta".
+               Qualunque altro valore vale "in arrivo": la pagina non dice mai da sola che la beta è aperta.
+  data-lancio: la data e l'ora del lancio, con il fuso. Le frasi «giovedì 8 ottobre alle 10:00»
+               e il conto alla rovescia si compongono da qui, sempre in italiano e nell'ora italiana.
+-->
+<body data-stato="in arrivo" data-lancio="2026-10-08T10:00:00+02:00">
 
-<header>
-  <div class="wrap nav">
-    <a class="logo" href="#top">
-      <span class="mark"><svg width="24" viewBox="1 24 98 54" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="51" r="10" fill="#F2EEE4"/><rect x="11.5" y="59" width="5" height="16" rx="2" fill="#F2EEE4"/><circle cx="86" cy="51" r="10" fill="#F2EEE4"/><rect x="83.5" y="59" width="5" height="16" rx="2" fill="#F2EEE4"/><polygon points="28,49 50,27 72,49" fill="#F2EEE4"/><rect x="33" y="48" width="34" height="27" rx="2.5" fill="#F2EEE4"/><path d="M45 68 L45 61.5 A5 5 0 0 1 55 61.5 L55 68 Z" fill="#E0954A"/><line x1="50" y1="58" x2="50" y2="68" stroke="#1F6B45" stroke-width="1.5"/></svg></span>
-      <span>Dimora<small>senza burocrazia</small></span>
+<header class="testata" id="top">
+  <div class="contenitore testata-riga">
+    <a class="marchio" href="#top">
+      <span class="marchio-segno"><img src="assets/dimora-mark-cream.svg" alt="" width="31" height="17"></span>
+      <span class="marchio-nomi"><span class="marchio-nome">Dimora</span><span class="marchio-motto">senza burocrazia</span></span>
     </a>
-    <nav class="nav-links">
+    <nav class="nav-larga" aria-label="Sezioni">
+      <a href="#perchi">Per chi è</a>
       <a href="#come">Come funziona</a>
-      <a href="#funzioni">Funzioni</a>
       <a href="#affitti">Per chi affitta</a>
       <a href="#prezzi">Prezzi</a>
-      <a href="#onesta">Trasparenza</a>
+      <a href="#domande">Domande</a>
     </nav>
-    <div class="nav-cta">
-      <span class="beta-tag">BETA</span>
-      <a class="btn btn-ghost" href="https://app.dimorapp.com">Accedi</a>
-      <a class="btn btn-primary" href="#lista">Richiedi l'accesso</a>
+    <div class="testata-azioni">
+      <span class="beta">BETA</span>
+      <a class="btn btn-chiaro btn-testata" href="https://app.dimorapp.com/login">Accedi</a>
+      <a class="btn btn-verde btn-testata v-arrivo solo-largo" href="#lancio">Avvisami</a>
+      <a class="btn btn-verde btn-testata v-aperta solo-largo" href="https://app.dimorapp.com/login">Inizia</a>
+      <details class="menu" data-menu>
+        <summary class="menu-bottone" aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+        </summary>
+        <nav class="menu-pannello" aria-label="Sezioni">
+          <a href="#perchi">Per chi è</a>
+          <a href="#come">Come funziona</a>
+          <a href="#affitti">Per chi affitta</a>
+          <a href="#prezzi">Prezzi</a>
+          <a href="#domande">Domande</a>
+          <a class="btn btn-verde menu-cta v-arrivo" href="#lancio">Avvisami</a>
+          <a class="btn btn-verde menu-cta v-aperta" href="https://app.dimorapp.com/login">Inizia</a>
+        </nav>
+      </details>
     </div>
   </div>
 </header>
 
-<a id="top"></a>
-<section class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <span class="badge"><span class="dot"></span> La tua casa, senza burocrazia</span>
-      <h1 class="head">I documenti e le scadenze di casa, <span class="hl">finalmente in ordine.</span></h1>
-      <p class="lead">Carichi un documento - una bolletta, un contratto, una prenotazione, il bilancio del condominio - e Dimora lo legge con l'AI, compila i campi al posto tuo e ti ricorda ogni scadenza. Tu controlli e correggi, sempre.</p>
-      <form class="wl-form" data-wl>
-        <input type="email" name="email" required placeholder="La tua mail" aria-label="La tua mail" autocomplete="email">
-        <input type="text" name="company" tabindex="-1" autocomplete="off" class="wl-hp" aria-hidden="true">
-        <button class="btn btn-primary" type="submit">Richiedi l'accesso →</button>
-      </form>
-      <p class="wl-msg" data-wl-msg role="status" aria-live="polite"></p>
-      <div class="hero-cta-sub">La beta è su invito. Lascia la mail e ti avvisiamo appena possiamo farti entrare. <a href="#come">Guarda come funziona</a></div>
-      <div class="hero-note">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>
-        Foto, PDF, Word, Excel, CSV — l'AI capisce di che documento si tratta
-      </div>
-    </div>
+<main>
 
-    <div class="preview" aria-hidden="true">
-      <div class="pv-top"><i class="d"></i><i class="d"></i><i class="d"></i><span>Dimora · nuovo documento</span></div>
-      <div class="pv-body">
-        <div class="pv-doc">
-          <div class="ic">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="1.8"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg>
-          </div>
-          <div>
-            <b>Bolletta luce — Enel Energia</b>
-            <p>Sembra una bolletta di fornitura. Ho compilato i campi per te.</p>
-            <span class="chip ok">● importo: sicuro</span>
-            <span class="chip ok">● scadenza: sicuro</span>
-            <span class="chip warn">● fornitore: controlla</span>
-          </div>
-        </div>
-        <div class="pv-fields">
-          <div class="pv-f"><span class="k">Importo</span><span class="v green">€ 84,20</span></div>
-          <div class="pv-f"><span class="k">Scadenza</span><span class="v">15 lug 2026</span></div>
-          <div class="pv-f"><span class="k">Immobile</span><span class="v">Inner City · Padova</span></div>
-        </div>
-        <button class="btn btn-primary pv-cta">Conferma e ricordamelo</button>
+<section class="eroe">
+  <div class="contenitore eroe-griglia">
+    <div class="eroe-testo" data-rv-gruppo>
+      <span class="etichetta-beta"><span class="pallino"></span><span class="v-arrivo">Beta pubblica in arrivo</span><span class="v-aperta">Beta pubblica aperta</span></span>
+      <h1>Fotografi il&nbsp;documento. <span class="h1-verde">Dimora si ricorda il&nbsp;resto.</span></h1>
+      <p class="eroe-lead">Per chi ha una casa o più di una, e per chi affitta da sé. Dimora legge bollette, contratti e rate del condominio, prepara le scadenze e ti avvisa per tempo. Tu controlli e confermi.</p>
+      <div class="v-arrivo blocco-modulo">
+        <form class="modulo modulo-riga" data-wl novalidate>
+          <label class="nascosto" for="mail-apertura">La tua mail</label>
+          <input class="campo" id="mail-apertura" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
+          <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="btn btn-verde btn-modulo v-js-modulo" type="submit">Avvisami al lancio</button>
+          <p class="modulo-senza-js">Per lasciare la mail serve JavaScript: attivalo nel browser e ricarica la pagina.</p>
+        </form>
+        <p class="esito" data-wl-esito role="status" aria-live="polite"></p>
+        <p class="eroe-nota"><span class="v-prima">Le iscrizioni aprono <span data-quando></span>. </span>Al lancio: 30 giorni gratis, 20 letture con l'AI, senza carta.</p>
       </div>
-    </div>
-  </div>
-
-  <div class="wrap trust" style="margin-top:34px">
-    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Promemoria via mail a 30, 7 e 1 giorno</span>
-    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> I tuoi dati restano tuoi · nessun collegamento bancario</span>
-    <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8 8 11 4.5-3 8-6 8-11V5l-8-3Z"/></svg> Tu confermi sempre, niente si salva da solo</span>
-  </div>
-</section>
-
-<section id="come">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Come funziona</span>
-      <h2>Tre passi, zero burocrazia</h2>
-      <p>Dal mucchio di documenti al controllo totale, senza compilare moduli a mano.</p>
-    </div>
-    <div class="steps">
-      <div class="step"><div class="n">1</div><h3>Carichi</h3><p>Trascini una foto, un PDF, un Word, un Excel o un CSV. Anche scansioni storte o foto da telefono.</p></div>
-      <div class="step"><div class="n">2</div><h3>L'AI legge</h3><p>Dimora capisce di che documento si tratta, apre la maschera giusta e compila i campi, indicando cosa è sicuro e cosa controllare. Se un dato le sfugge, le indichi tu cosa estrarre e riprova.</p></div>
-      <div class="step"><div class="n">3</div><h3>Confermi</h3><p>Controlli, correggi quello che vuoi e salvi. Da lì Dimora ti ricorda le scadenze via mail. Tu decidi, sempre.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="funzioni" class="features">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Funzioni</span>
-      <h2>Tutta la casa in un posto solo</h2>
-      <p>Documenti, scadenze, costi, immobili. Dalla prima casa al negozio affittato.</p>
-    </div>
-    <div class="grid">
-      <div class="card">
-        <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 8.5 12 14l10-5.5L12 3Z"/><path d="m2 15.5 10 5.5 10-5.5"/></svg></div>
-        <h3>Motore AI documentale</h3>
-        <p>Riconosce il tipo di documento e compila i campi con un livello di confidenza per ognuno. Da una bolletta a un rogito, da un F24 al bilancio del condominio, di cui estrae il riparto per singola unità.</p>
-      </div>
-      <div class="card">
-        <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-        <h3>Scadenze e promemoria</h3>
-        <p>IMU, condominio, polizze, rinnovi: Dimora le tiene in ordine e ti scrive una mail a 30, 7 e 1 giorno. Per l'IMU ti propone anche una stima indicativa dalla tua aliquota. Niente più scadenze dimenticate.</p>
-      </div>
-      <div class="card">
-        <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg></div>
-        <h3>Tutti i tuoi immobili</h3>
-        <p>Prima casa, seconde case, box, terreni e immobili commerciali. Ogni casa ha il suo fascicolo con documenti, costi e scadenze.</p>
-      </div>
-      <div class="card">
-        <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
-        <h3>Costi e portafoglio</h3>
-        <p>Mutuo, spese, manutenzioni: vedi quanto ti costa ogni casa e, se affitti, la resa netta del tuo portafoglio anno per anno.</p>
-      </div>
-      <div class="card">
-        <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/></svg></div>
-        <h3>Un solo flusso "Aggiungi"</h3>
-        <p>Carichi un file o inserisci a mano: una sola porta. L'AI è un aiuto facoltativo, non un passaggio obbligatorio.</p>
-      </div>
-      <div class="card">
-        <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5v6c0 5 3.5 8 8 11 4.5-3 8-6 8-11V5l-8-3Z"/></svg></div>
-        <h3>Privacy prima di tutto</h3>
-        <p>I tuoi dati restano tuoi, nessun collegamento al conto. I documenti cifrati si sbloccano sul tuo dispositivo, niente si salva senza il tuo ok.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="affitti" class="landlord">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Per chi affitta</span>
-      <h2>L'affitto, dall'incasso alla disdetta</h2>
-      <p>Lunga, breve, commerciale o occasionale: Dimora segue tutto, dall'incasso agli adempimenti.</p>
-    </div>
-    <div class="ll-grid">
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-2 4 2 4-2 2 1V8Z"/><path d="M9 7h6M9 11h6"/></svg> Contratti di ogni tipo</h3><p>Residenziale 4+4, 3+2, transitorio, studenti. Commerciale 6+6 e alberghiero 9+9. E gli affitti occasionali della seconda casa.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Canoni e morosità</h3><p>Ogni mese il canone atteso, chi è in mora e da quanti giorni. Pagamento regolare? Attiva l'incasso automatico e pensa a Dimora.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9.2a3.4 3.4 0 0 0-5.9 2.8 3.4 3.4 0 0 0 5.9 2.8M8.5 12h5"/></svg> Ricevute in PDF</h3><p>Segni l'incasso di un canone e generi la ricevuta in PDF, con la tua firma: pronta da consegnare all'inquilino.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 3v6h6"/></svg> Ciclo di vita del contratto</h3><p>Rinnovo, cambio inquilino con storico delle locazioni, finestra di disdetta con il preavviso giusto per tipo di contratto.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="14" y="6" width="3" height="11"/></svg> Fiscalità sotto controllo</h3><p>Cedolare secca o registro, scadenze fiscali generate in automatico e, sul commerciale, il promemoria dell'indennità di avviamento.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8 2 14h6zM19 8l-3 6h6zM7 21h10"/></svg> Spese e quota inquilino</h3><p>Una spesa può avere una quota a carico dell'inquilino: a te resta il netto, e i costi del portafoglio riflettono quello che paghi davvero.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg> Affitti brevi (Airbnb, Booking)</h3><p>Registri i soggiorni a mano o caricando la conferma di prenotazione, che l'AI legge per te. E se hai tante prenotazioni, le importi in blocco dall'export CSV o Excel di Airbnb e Booking.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg> Cedolare breve e adempimenti</h3><p>Una stima indicativa della cedolare secca breve e i promemoria per gli adempimenti: il CIN (che l'AI legge dall'attestazione), l'imposta di soggiorno e l'Alloggiati Web.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 15h.01M12 15h.01M16 15h.01M8 18h.01M12 18h.01"/></svg> Calendario dell'occupazione</h3><p>Vedi a colpo d'occhio quali notti sono occupate, per ogni immobile e in un'unica vista che mette insieme tutte le case: sai subito dov'è libero il prossimo fine settimana.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18M9 21V9"/><rect x="3" y="4" width="18" height="17" rx="2"/></svg> Anche non residenziale</h3><p>Negozi, uffici, magazzini, laboratori, box e capannoni: categoria catastale, regime di registro e scadenze dedicate.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/></svg> Famiglia e seconde case</h3><p>Case usate dalla famiglia ma affittate ogni tanto: registri periodi d'uso, ospiti e affitti occasionali, senza forzare la classificazione.</p></div>
-      <div class="ll"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/></svg> Condominio e millesimi</h3><p>Carichi il bilancio del condominio e Dimora ne estrae il riparto con le singole unità: selezioni la tua e vedi la tua quota. Legge i millesimi dal documento, non li inventa.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="prezzi" class="features">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Prezzi</span>
-      <h2>Prova 60 giorni, poi scegli il tuo piano</h2>
-      <p>Disdici quando vuoi. Niente piano gratuito permanente: paghi solo se Dimora ti è davvero utile.</p>
-    </div>
-    <div class="pricing">
-
-      <div class="plan">
-        <div class="pname">Casa</div>
-        <div class="ptag">Per tenere in ordine documenti e scadenze della tua casa.</div>
-        <div class="price"><b>€ 2,49</b><span>/ mese</span></div>
-        <div class="billed">fatturato annualmente · oppure € 3,49 al mese</div>
-        <a class="btn btn-soft" href="#lista">Richiedi l'accesso</a>
-        <ul class="plist">
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Fino a <b>3 immobili</b></li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Tutti i documenti di casa in un posto</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Promemoria via mail (30 / 7 / 1 giorni)</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Lettura AI fino a <b>30 documenti/mese</b></li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> 2 GB di spazio</li>
-        </ul>
-      </div>
-
-      <div class="plan featured">
-        <div class="ribbon">PIÙ SCELTO</div>
-        <div class="pname">Locatore</div>
-        <div class="ptag">Per chi affitta: canoni, contratti e fiscalità sotto controllo.</div>
-        <div class="price"><b>€ 5,99</b><span>/ mese</span></div>
-        <div class="billed">fatturato annualmente · oppure € 7,99 al mese</div>
-        <a class="btn btn-primary" href="#lista">Richiedi l'accesso</a>
-        <ul class="plist">
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> <b>Tutto di Casa</b>, più:</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Fino a <b>15 immobili</b></li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Gestione affitti completa (canoni, morosità, ciclo di vita)</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Affitti brevi: soggiorni, cedolare, calendario, import CSV</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Regime fiscale e scadenze fiscali</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Lettura AI fino a <b>100 documenti/mese</b></li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> 20 GB di spazio</li>
-        </ul>
-      </div>
-
-      <div class="plan">
-        <div class="pname">Patrimonio</div>
-        <div class="ptag">Per chi gestisce molti immobili, anche commerciali.</div>
-        <div class="price"><b>€ 11,99</b><span>/ mese</span></div>
-        <div class="billed">fatturato annualmente · oppure € 14,99 al mese</div>
-        <a class="btn btn-soft" href="#lista">Richiedi l'accesso</a>
-        <ul class="plist">
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> <b>Tutto di Locatore</b>, più:</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Fino a <b>50 immobili</b></li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Affitti non residenziali (negozi, uffici, capannoni)</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Portafoglio e resa avanzati</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Lettura AI fino a <b>200 documenti/mese</b> · 100 GB di spazio</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Supporto prioritario</li>
-        </ul>
-      </div>
-
-    </div>
-    <p class="price-note">Prezzi indicativi, in definizione durante la beta. La prova di 60 giorni è completa. L'AI è un aiuto: per i casi fiscali Dimora rimanda sempre al commercialista.</p>
-  </div>
-</section>
-
-<section id="onesta" class="honesty">
-  <div class="wrap inner">
-    <div>
-      <span class="eyebrow">Trasparenza</span>
-      <h2>Ti guida, non ti sostituisce il commercialista</h2>
-      <p>Dimora ti aiuta a tenere tutto in ordine, ma è onesta su cosa fa e cosa no. Per i casi fiscali delicati ti dice sempre di verificare con un professionista.</p>
-    </div>
-    <div>
-      <ul>
-        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> L'AI propone, tu disponi: niente si salva senza la tua conferma.</li>
-        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Mai una scadenza fiscale inventata: dove serve, "verifica col commercialista".</li>
-        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> Ogni documento e ogni scadenza ha sempre un campo nota libero.</li>
-        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg> In fase beta: la miglioriamo ogni settimana con i tuoi feedback, che invii in un tocco dall'app.</li>
+      <div class="v-aperta blocco-modulo"><a class="btn btn-verde btn-modulo btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></div>
+      <a class="eroe-link" href="#come">Guarda come funziona</a>
+      <ul class="eroe-elenco">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg>Riconosce più di 60 tipi di documenti della casa</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg>Promemoria via mail a 30, 7 e 1 giorno</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Ogni casa ha la sua scheda<span class="testo-lungo">: documenti, spese, scadenze</span></span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Confermi tu ogni dato prima che entri<span class="testo-lungo"> nelle schede</span></span></li>
       </ul>
     </div>
-  </div>
-</section>
 
-<section class="final" id="lista">
-  <div class="wrap">
-    <div class="final-box">
-      <h2>Entra nella beta di Dimora</h2>
-      <p>La beta è su invito. Lascia la mail: ti avvisiamo appena possiamo farti entrare.</p>
-      <form class="wl-form wl-form-center" data-wl>
-        <input type="email" name="email" required placeholder="La tua mail" aria-label="La tua mail" autocomplete="email">
-        <input type="text" name="company" tabindex="-1" autocomplete="off" class="wl-hp" aria-hidden="true">
-        <button class="btn btn-primary" type="submit">Richiedi l'accesso →</button>
-      </form>
-      <p class="wl-msg" data-wl-msg role="status" aria-live="polite"></p>
+    <!-- Anteprima dell'app per il computer: solo decorativa. -->
+    <div class="eroe-vis mock-desk" aria-hidden="true" data-finto data-rv>
+      <div class="md-app">
+        <div class="md-barra">
+          <div class="md-logo"><span class="md-logo-segno"><img src="assets/dimora-mark-cream.svg" alt="" width="20" height="11"></span><span>Dimora</span></div>
+          <span class="md-voce md-voce-attiva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>Immobili</span>
+          <span class="md-voce"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>Scadenze</span>
+          <span class="md-voce"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>Documenti</span>
+          <span class="md-voce"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 6.5A6 6 0 1 0 17 17.5"/><path d="M4 10h9"/><path d="M4 14h9"/></svg>Incassi</span>
+          <span class="md-voce"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4"/><path d="M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/></svg>Portafoglio</span>
+          <span class="md-voce"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Commercialista</span>
+          <span class="md-aggiungi"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Aggiungi</span>
+        </div>
+        <div class="md-corpo">
+          <div class="mk-striscia">Prova gratuita: ancora 18 letture con l'AI e 24 giorni.</div>
+          <div class="md-contenuto">
+            <div class="md-saluto"><span class="mk-ciao">Ciao Giulia</span><span class="md-sotto">Questa settimana hai 2 scadenze.</span></div>
+            <div class="mk-kpi">
+              <div><span class="mk-kpi-num">3</span><span class="mk-kpi-tit">Immobili</span></div>
+              <div><span class="mk-kpi-num mk-ambra">4</span><span class="mk-kpi-tit">In scadenza</span></div>
+              <div><span class="mk-kpi-num">27</span><span class="mk-kpi-tit">Documenti</span></div>
+            </div>
+            <span class="md-occhiello">LE TUE CASE</span>
+            <div class="md-casa"><span class="md-casa-lettera" style="background:#2E6E4E">A</span><div class="md-casa-testi"><span class="md-casa-nome">Appartamento in centro</span><span class="md-casa-dove">Bologna · Abitazione principale</span></div><span class="mk-pill mk-pill-ambra">Tra 5 giorni · rata condominio</span></div>
+            <div class="md-casa"><span class="md-casa-lettera" style="background:#3C6E8F">C</span><div class="md-casa-testi"><span class="md-casa-nome">Casa al mare</span><span class="md-casa-dove">Rimini · Seconda casa</span></div><span class="mk-pill mk-pill-neutra">Saldo IMU · 16 dic</span></div>
+            <div class="md-casa"><span class="md-casa-lettera" style="background:#7A5A12">B</span><div class="md-casa-testi"><span class="md-casa-nome">Bilocale in affitto</span><span class="md-casa-dove">Bologna · Affittato</span></div><span class="mk-pill mk-pill-verde">Canone di ottobre incassato</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="md-bolletta mk-bolletta">
+        <div class="mk-boll-testa"><span class="mk-boll-icona"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span><div class="mk-boll-tit"><span>Bolletta luce · settembre</span><span>Ho compilato i campi per te.</span></div></div>
+        <div class="mk-chips"><span class="mk-chip mk-pill-verde">importo: sicuro</span><span class="mk-chip mk-pill-verde">scadenza: sicuro</span><span class="mk-chip mk-pill-ambra">fornitore: controlla</span></div>
+        <div class="mk-riga"><span>Importo</span><span>84,20 €</span></div>
+        <div class="mk-riga"><span>Scadenza</span><span>15 ott 2026</span></div>
+        <div class="mk-riga"><span>Casa</span><span>Appartamento in centro</span></div>
+        <span class="mk-conferma">Conferma e ricordamelo</span>
+      </div>
+      <img class="md-dimorino dimorino" src="assets/img/dimorino-lettura.webp" alt="" width="160" height="141">
+    </div>
+
+    <!-- Anteprima dell'app per il telefono: solo decorativa. -->
+    <div class="mock-mob" aria-hidden="true" data-finto data-rv>
+      <div class="mm-app">
+        <div class="mk-striscia">Prova gratuita: ancora 18 letture con l'AI e 24 giorni.</div>
+        <div class="mm-contenuto">
+          <span class="mk-ciao">Ciao Giulia</span>
+          <div class="mk-kpi">
+            <div><span class="mk-kpi-num">3</span><span class="mk-kpi-tit">Immobili</span></div>
+            <div><span class="mk-kpi-num mk-ambra">4</span><span class="mk-kpi-tit">In scadenza</span></div>
+            <div><span class="mk-kpi-num">27</span><span class="mk-kpi-tit">Documenti</span></div>
+          </div>
+          <div class="mk-bolletta mm-bolletta">
+            <div class="mk-boll-testa"><span class="mk-boll-icona"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span><div class="mk-boll-tit"><span>Bolletta luce · settembre</span><span>Ho compilato i campi per te.</span></div></div>
+            <div class="mk-chips"><span class="mk-chip mk-pill-verde">importo: sicuro</span><span class="mk-chip mk-pill-verde">scadenza: sicuro</span><span class="mk-chip mk-pill-ambra">fornitore: controlla</span></div>
+            <div class="mk-riga"><span>Importo</span><span>84,20 €</span></div>
+            <div class="mk-riga"><span>Scadenza</span><span>15 ott 2026</span></div>
+            <span class="mk-conferma">Conferma e ricordamelo</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<footer>
-  <div class="wrap foot">
-    <a class="logo" href="#top"><span class="mark"><svg width="24" viewBox="1 24 98 54" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="51" r="10" fill="#F2EEE4"/><rect x="11.5" y="59" width="5" height="16" rx="2" fill="#F2EEE4"/><circle cx="86" cy="51" r="10" fill="#F2EEE4"/><rect x="83.5" y="59" width="5" height="16" rx="2" fill="#F2EEE4"/><polygon points="28,49 50,27 72,49" fill="#F2EEE4"/><rect x="33" y="48" width="34" height="27" rx="2.5" fill="#F2EEE4"/><path d="M45 68 L45 61.5 A5 5 0 0 1 55 61.5 L55 68 Z" fill="#E0954A"/><line x1="50" y1="58" x2="50" y2="68" stroke="#1F6B45" stroke-width="1.5"/></svg></span><span>Dimora<small>senza burocrazia</small></span></a>
-    <div class="foot-links">
-      <a href="#come">Come funziona</a>
-      <a href="#funzioni">Funzioni</a>
-      <a href="#affitti">Per chi affitta</a>
-      <a href="#prezzi">Prezzi</a>
-      <a href="https://app.dimorapp.com">Accedi</a>
+<section class="lancio scuro alone" id="lancio">
+  <div class="contenitore lancio-dentro">
+    <div class="lancio-testa" data-rv>
+      <span class="occhiello">IL LANCIO</span>
+      <h2>
+        <span class="v-prima">La beta pubblica apre <span data-quando></span></span>
+        <span class="v-dopo">Ci siamo quasi</span>
+        <span class="v-aperta">La beta pubblica è aperta</span>
+        <span class="v-arrivo v-senza-tempo">Beta pubblica in arrivo</span>
+      </h2>
     </div>
-    <div>© 2026 Dimora · <span class="beta-tag">BETA</span></div>
+    <div class="timer v-prima" role="timer" aria-label="Tempo che manca al lancio" data-timer data-rv-gruppo>
+      <div class="timer-casella"><span class="timer-cifra" data-cd="g">00</span><span class="timer-unita">GIORNI</span></div>
+      <div class="timer-casella"><span class="timer-cifra" data-cd="h">00</span><span class="timer-unita">ORE</span></div>
+      <div class="timer-casella"><span class="timer-cifra" data-cd="m">00</span><span class="timer-unita">MINUTI</span></div>
+      <div class="timer-casella"><span class="timer-cifra" data-cd="s">00</span><span class="timer-unita">SECONDI</span></div>
+    </div>
+    <p class="lancio-testo v-dopo" data-rv>Stiamo aprendo le iscrizioni. Lascia la mail e ti avvisiamo appena puoi entrare.</p>
+    <div class="lancio-modulo" data-rv>
+      <div class="v-arrivo blocco-modulo">
+        <form class="modulo modulo-riga" data-wl novalidate>
+          <label class="nascosto" for="mail-lancio">La tua mail</label>
+          <input class="campo campo-grande" id="mail-lancio" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
+          <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="btn btn-menta btn-modulo btn-grande v-js-modulo" type="submit">Avvisami al lancio</button>
+          <p class="modulo-senza-js">Per lasciare la mail serve JavaScript: attivalo nel browser e ricarica la pagina.</p>
+        </form>
+        <p class="esito" data-wl-esito role="status" aria-live="polite"></p>
+        <p class="lancio-nota v-nondopo">Lascia la mail e ti avvisiamo all'apertura. Al lancio: 30 giorni gratis, 20 letture con l'AI, senza carta.</p>
+      </div>
+      <div class="v-aperta blocco-modulo">
+        <a class="btn btn-menta btn-modulo btn-grande btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a>
+        <p class="lancio-nota">Entra e prova Dimora: 30 giorni gratis, 20 letture con l'AI, senza carta.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="storia" id="storia">
+  <div class="contenitore storia-griglia">
+    <figure class="storia-foto" data-rv>
+      <div class="storia-cornice">
+        <img src="assets/img/quaderno.jpg" alt="Un'agenda aperta con le spese di casa annotate a mano, colonna per colonna: luce, acqua, gas, telefono, condominio e IMU, rifiuti, assicurazioni, auto." width="800" height="600" loading="lazy" decoding="async">
+      </div>
+      <figcaption>Il quaderno dei conti di casa di mia mamma: un'agenda del 2013, riusata per il 2026.</figcaption>
+    </figure>
+    <div class="storia-scheda" data-rv>
+      <p class="storia-domanda">Se ti chiedessi quante spese ha generato la tua casa nel 2025, sapresti rispondere?</p>
+      <p>Per molti la risposta è sparsa ovunque: la bolletta nella mail, la rata del mutuo sull'estratto conto, la fattura dell'idraulico in un cassetto. Con una seconda casa, o una casa in affitto, si aggiungono canoni, contratti e altre scadenze.</p>
+      <p>Mia mamma tiene tutto a mano, nel quaderno della foto, con una cura che rispetto. Io ho voluto togliere la fatica di rimettere insieme i pezzi.</p>
+      <p>Dimora nasce da qui: tutto nello stesso posto, casa per casa. Questi problemi li conosco, perché sono anche i miei.</p>
+      <div class="firma">
+        <span class="firma-iniziale" aria-hidden="true">V</span>
+        <span class="firma-testi"><span class="firma-nome">Vittorio</span><span class="firma-ruolo">ha ideato Dimora e legge ogni segnalazione</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sezione" id="perchi">
+  <div class="contenitore">
+    <div class="sezione-testa" data-rv>
+      <span class="occhiello">PER CHI È</span>
+      <h2>Per chi segue le proprie case, e per chi le affitta</h2>
+      <p>Che tu abbia una casa sola o più immobili in affitto, documenti, spese e scadenze stanno nello stesso posto.</p>
+    </div>
+    <div class="griglia griglia-3" data-rv-gruppo>
+      <article class="scheda scheda-banda">
+        <div class="banda"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>LA TUA CASA</span></div>
+        <div class="banda-corpo">
+          <h3>Segui casa tua</h3>
+          <p>Bollette, rate del condominio, polizze, mutuo e lavori. Carichi il documento, Dimora prepara le scadenze e a fine anno sai quanto ti è costata.</p>
+        </div>
+      </article>
+      <article class="scheda scheda-banda">
+        <div class="banda"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13 8 8l6 5"/><path d="M4 12v8h8v-8"/><path d="M13 8.5 17 5l5 4.5"/><path d="M20 8v12h-8"/></svg><span>PIÙ CASE</span></div>
+        <div class="banda-corpo">
+          <h3>Segui più case</h3>
+          <p>La tua, quella al mare, quella dei tuoi genitori. IMU, rate di due condomini, bollette doppie: ogni casa ha la sua scheda, e Dimora ti ricorda le scadenze di tutte.</p>
+        </div>
+      </article>
+      <article class="scheda scheda-banda">
+        <div class="banda"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="16" r="4"/><path d="M10.8 13.2 20 4"/><path d="m16 8 2.5 2.5"/><path d="m19 5 2 2"/></svg><span>AFFITTO</span></div>
+        <div class="banda-corpo">
+          <h3>Affitti con continuità</h3>
+          <p>Più contratti e più inquilini, anche a stanze. Canoni e ricevute, registrazione, cedolare, rinnovi e disdette: Dimora prepara le scadenze di ogni contratto e ti mostra chi è in ritardo.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sezione bianca" id="come">
+  <div class="contenitore">
+    <div class="sezione-testa" data-rv>
+      <span class="occhiello">COME FUNZIONA</span>
+      <h2>Dal documento alla scadenza, in tre passi</h2>
+      <p>Senza moduli da riempire a mano: i campi li compila Dimora, tu controlli.</p>
+    </div>
+    <div class="griglia griglia-3" data-rv-gruppo>
+      <article class="scheda scheda-passo">
+        <span class="passo-num" aria-hidden="true">1</span>
+        <h3>Carichi</h3>
+        <p>Una foto, più foto dello stesso documento, un PDF, un Word, un Excel o un CSV. Anche scansioni storte o foto fatte col telefono.</p>
+      </article>
+      <article class="scheda scheda-passo">
+        <span class="passo-num" aria-hidden="true">2</span>
+        <h3>Dimora legge</h3>
+        <p>Con l'AI capisce di che documento si tratta, apre la maschera giusta e compila i campi, indicando cosa è sicuro e cosa controllare.</p>
+      </article>
+      <article class="scheda scheda-passo">
+        <span class="passo-num" aria-hidden="true">3</span>
+        <h3>Confermi</h3>
+        <p>Controlli, correggi quello che vuoi e confermi: solo allora i dati entrano nelle tue schede. Da lì Dimora ti ricorda via mail le scadenze registrate.</p>
+      </article>
+    </div>
+    <div class="mascotte" data-rv>
+      <img class="dimorino mascotte-img" src="assets/img/dimorino-lettura.webp" alt="" width="228" height="200" loading="lazy" decoding="async">
+      <div class="mascotte-testi">
+        <span class="occhiello">LA MASCOTTE</span>
+        <h3>Ti presento Dimorino</h3>
+        <p>Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.</p>
+      </div>
+    </div>
+    <div class="telefono scuro" data-rv>
+      <span class="telefono-icona"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg></span>
+      <div class="telefono-testi">
+        <span class="occhiello">DAL TELEFONO</span>
+        <h3>Pensata anche per il telefono</h3>
+        <p>Dimora è ottimizzata per lo schermo del telefono: fotografi il documento e lo carichi dal browser, senza installare nulla. L'app per App Store e Google Play è in arrivo.</p>
+      </div>
+      <div class="negozi">
+        <span>App Store · in arrivo</span>
+        <span>Google Play · in arrivo</span>
+      </div>
+    </div>
+    <p class="a-mano" data-rv><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg><span><b>Preferisci fare a mano?</b> Da «Aggiungi» inserisci tutto senza AI: archiviare senza AI non consuma letture.</span></p>
+  </div>
+</section>
+
+<section class="sezione" id="funzioni">
+  <div class="contenitore">
+    <div class="sezione-testa sezione-testa-stretta" data-rv>
+      <span class="occhiello">CHE COSA FA PER TE</span>
+      <h2>Tre cose in meno a cui pensare</h2>
+      <p>Compilare, ricordare le scadenze, rimettere insieme le carte per il commercialista. E ogni casa resta in ordine.</p>
+    </div>
+    <div class="griglia griglia-6" data-rv-gruppo>
+      <article class="scheda scheda-icona">
+        <span class="icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 12h8"/></svg></span>
+        <div><h3>Niente da compilare</h3><p>Riconosce più di 60 tipi di documenti della casa, dal rogito alla bolletta, e compila i campi indicando cosa controllare. Legge anche scansioni fino a 30 pagine.</p></div>
+      </article>
+      <article class="scheda scheda-icona">
+        <span class="icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M3 10h18"/></svg></span>
+        <div><h3>Le scadenze te le ricorda Dimora</h3><p>IMU, condominio, polizze, rinnovi: le tiene in ordine e ti scrive una mail a 30, 7 e 1 giorno. Per l'IMU ti propone una stima indicativa dalla tua aliquota.</p></div>
+      </article>
+      <article class="scheda scheda-icona">
+        <span class="icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 13h8"/></svg></span>
+        <div><h3>Tutto pronto per il commercialista</h3><p>Spese e documenti dell'anno, pronti da consegnare: riepilogo in CSV e PDF, originali in un file ZIP. Qui sotto vedi come funziona.</p></div>
+      </article>
+      <article class="scheda scheda-icona">
+        <span class="icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg></span>
+        <div><h3>Ogni casa ha la sua scheda</h3><p>Prima casa, seconde case, box e immobili commerciali: ognuno con i suoi documenti, i suoi costi e le sue scadenze.</p></div>
+      </article>
+      <article class="scheda scheda-icona">
+        <span class="icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/></svg></span>
+        <div><h3>Sai quanto ti costa ogni casa</h3><p>Mutuo, spese e manutenzioni, anno per anno. Se affitti, vedi anche la resa netta del tuo portafoglio.</p></div>
+      </article>
+      <article class="scheda scheda-icona">
+        <span class="icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h1"/><path d="M14 7h1"/><path d="M9 11h1"/><path d="M14 11h1"/><path d="M10 21v-4h4v4"/></svg></span>
+        <div><h3>Condominio: la tua quota</h3><p>Dal preventivo del condominio legge le rate della tua unità e le mette fra le scadenze. Il consuntivo lo trovi in archivio.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sezione bianca" id="fascicolo">
+  <div class="contenitore fascicolo-griglia">
+    <div class="fascicolo-testo" data-rv>
+      <span class="occhiello">PER IL COMMERCIALISTA</span>
+      <h2>La spesa, la fattura e il bonifico, già insieme</h2>
+      <p class="fascicolo-intro">Segni la spesa da portare al commercialista e ci colleghi i suoi documenti. A fine anno Dimora prepara la consegna.</p>
+      <ol class="fascicolo-passi">
+        <li><span class="fp-num" aria-hidden="true">1</span><span>Segni la spesa: lavori in casa, lavori condominiali o interessi del mutuo.</span></li>
+        <li><span class="fp-num" aria-hidden="true">2</span><span>Colleghi fattura e bonifico, già archiviati o da caricare.</span></li>
+        <li><span class="fp-num" aria-hidden="true">3</span><span>Consegni tutto: riepilogo in CSV e PDF, originali in un file ZIP.</span></li>
+      </ol>
+    </div>
+    <div class="fascicolo-mock" aria-hidden="true" data-finto data-rv>
+      <div class="fm-testa"><span class="fm-titolo">Per il commercialista</span><span class="fm-anno">Anno 2026</span></div>
+      <div class="fm-corpo">
+        <div class="fm-voce"><span class="fm-voce-nome">Sostituzione caldaia</span><span class="fm-tag">Lavori in casa</span></div>
+        <div class="fm-riga"><span>Immobile</span><span>Appartamento in centro</span></div>
+        <div class="fm-riga"><span>Data di pagamento</span><span>12/03/2026</span></div>
+        <div class="fm-riga"><span>Importo</span><span>€ 2.450,00</span></div>
+        <div class="fm-riga"><span>Beneficiari</span><span>Giulia Rossi</span></div>
+        <span class="fm-occhiello">DOCUMENTI DELLA VOCE</span>
+        <div class="fm-doc"><span class="fm-doc-icona"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span><span class="fm-doc-nome">Fattura n. 34/2026 · Termoidraulica Bianchi</span><span class="fm-tag fm-tag-piccolo">Spesa</span></div>
+        <div class="fm-doc"><span class="fm-doc-icona"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span><span class="fm-doc-nome">Bonifico del 12/03/2026</span><span class="fm-tag fm-tag-piccolo">Pagamento</span></div>
+      </div>
+      <div class="fm-piede">
+        <span class="fm-piede-tit">Consegna al commercialista</span>
+        <div class="fm-bottoni"><span>Riepilogo CSV</span><span>Riepilogo PDF</span><span>Prepara lo ZIP</span></div>
+      </div>
+    </div>
+    <p class="fascicolo-nota" data-rv>Il trattamento fiscale lo valuta il professionista.</p>
+  </div>
+</section>
+
+<section class="sezione scuro" id="affitti">
+  <div class="contenitore">
+    <div class="sezione-testa" data-rv>
+      <span class="occhiello">PER CHI AFFITTA</span>
+      <h2>L'affitto, dal contratto alla disdetta</h2>
+      <p>Per chi gestisce da sé uno o più affitti: canoni, scadenze e adempimenti, contratto per contratto.</p>
+    </div>
+    <div class="griglia griglia-6" data-rv-gruppo>
+      <article class="scheda-scura">
+        <svg class="scura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9FD1B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+        <h3>Carichi il contratto, Dimora prepara il resto</h3>
+        <p>Legge inquilino, canone, date, tipo e deposito, e prepara le rate del canone, la scadenza e la finestra di disdetta. Residenziale 4+4, 3+2, transitorio e studenti; commerciale 6+6 e 9+9.</p>
+      </article>
+      <article class="scheda-scura">
+        <svg class="scura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9FD1B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg>
+        <h3>Canoni, incassi e ricevute</h3>
+        <p>Ogni mese il canone atteso, chi è in ritardo e da quanti giorni. Segni l'incasso e generi la ricevuta in PDF.</p>
+      </article>
+      <article class="scheda-scura">
+        <svg class="scura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9FD1B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17"/><path d="M14 12v1"/></svg>
+        <h3>Anche a stanze</h3>
+        <p>Una casa, più stanze, un contratto per stanza. Ogni inquilino ha il suo canone e le sue scadenze, e la casa resta una sola.</p>
+      </article>
+      <article class="scheda-scura">
+        <svg class="scura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9FD1B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 6.5A6 6 0 1 0 17 17.5"/><path d="M4 10h9"/><path d="M4 14h9"/></svg>
+        <h3>Spese e quota dell'inquilino</h3>
+        <p>Una spesa può avere una parte a carico dell'inquilino, in percentuale o in euro, anche divisa fra più inquilini. Vedi chi ti deve cosa e segni il rimborso.</p>
+      </article>
+      <article class="scheda-scura">
+        <svg class="scura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9FD1B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>
+        <h3>Le scadenze fiscali dell'affitto</h3>
+        <p>Cedolare secca o registro, con le scadenze fiscali generate in automatico. Dove serve, ti dice di verificare col commercialista.</p>
+      </article>
+      <article class="scheda-scura">
+        <svg class="scura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9FD1B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5l-2 2"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14 5l2-2"/><path d="M20 20v-4h-4"/></svg>
+        <h3>Rinnovi e disdette</h3>
+        <p>Rinnovo, cambio inquilino con lo storico, finestra di disdetta con il preavviso giusto per tipo di contratto.</p>
+      </article>
+    </div>
+    <p class="affitti-nota" data-rv>Gestisce anche affitti brevi e occasionali, con i soggiorni e il calendario dell'occupazione.</p>
+  </div>
+</section>
+
+<section class="sezione" id="prezzi">
+  <div class="contenitore">
+    <div class="sezione-testa sezione-testa-stretta" data-rv>
+      <span class="occhiello">PREZZI</span>
+      <h2>Prova gratis 30 giorni, poi scegli il piano</h2>
+    </div>
+    <div class="prova" data-rv>
+      <div class="prova-testi">
+        <span class="prova-titolo">La prova gratuita</span>
+        <span class="prova-desc">30 giorni, 20 letture con l'AI e 1 GB di archivio, senza carta. La prova non prevede addebiti automatici.</span>
+      </div>
+      <div class="prova-azione">
+        <div class="v-arrivo blocco-modulo">
+          <form class="modulo modulo-riga modulo-prova" data-wl novalidate>
+            <label class="nascosto" for="mail-prezzi">La tua mail</label>
+            <input class="campo" id="mail-prezzi" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
+            <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <button class="btn btn-verde btn-modulo v-js-modulo" type="submit">Avvisami al lancio</button>
+            <p class="modulo-senza-js">Per lasciare la mail serve JavaScript: attivalo nel browser e ricarica la pagina.</p>
+          </form>
+          <p class="esito" data-wl-esito role="status" aria-live="polite"></p>
+        </div>
+        <div class="v-aperta blocco-modulo"><a class="btn btn-verde btn-modulo btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></div>
+      </div>
+    </div>
+    <div class="piani-testa" data-rv>
+      <h3>I piani</h3>
+      <span>Tutte le funzioni sono in ogni piano. Cambiano le letture AI e lo spazio.</span>
+    </div>
+    <div class="griglia griglia-3 piani" data-rv-gruppo>
+      <article class="scheda piano" data-piano="Dimora">
+        <div class="piano-nome"><h4>Dimora</h4></div>
+        <div class="piano-prezzo"><span class="piano-cifra">59&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
+        <span class="piano-mese">oppure 6,90&nbsp;€ al mese. Con l'annuale risparmi circa il 29%.</span>
+        <div class="piano-dotazione"><span>20 letture AI al mese</span><span>5 GB di archivio</span></div>
+        <p class="piano-desc">Consigliato per chi gestisce la propria casa e, se ne ha, una o due seconde case, anche in affitto. Indicativamente da 1 a 3 immobili.</p>
+      </article>
+      <article class="scheda piano" data-piano="Dimora Plus">
+        <div class="piano-nome"><h4>Dimora Plus</h4></div>
+        <div class="piano-prezzo"><span class="piano-cifra">119&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
+        <span class="piano-mese">oppure 12,90&nbsp;€ al mese. Con l'annuale risparmi circa il 23%.</span>
+        <div class="piano-dotazione"><span>40 letture AI al mese</span><span>20 GB di archivio</span></div>
+        <p class="piano-desc">Consigliato per chi affitta con continuità e ha più contratti, inquilini e scadenze da seguire. Indicativamente fino a 10 immobili.</p>
+      </article>
+      <article class="scheda piano" data-piano="Dimora Max">
+        <div class="piano-nome"><h4>Dimora Max</h4><span class="piano-richiesta">Attivazione su richiesta</span></div>
+        <div class="piano-prezzo"><span class="piano-cifra">219&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
+        <span class="piano-mese">oppure 22,90&nbsp;€ al mese. Con l'annuale risparmi circa il 20%.</span>
+        <div class="piano-dotazione"><span>80 letture AI al mese</span><span>40 GB di archivio</span></div>
+        <p class="piano-desc">Consigliato per chi gestisce molti immobili, propri o di famiglia, e vuole tutto in un posto solo. Oltre 10 immobili.</p>
+      </article>
+    </div>
+    <ul class="piani-note" data-rv>
+      <li>Sono indicazioni, non limiti: in ogni piano puoi gestire tutti gli immobili che vuoi.</li>
+      <li>Durante la beta ogni documento letto consuma una lettura. Nei futuri piani il consumo dipenderà dal numero di pagine.</li>
+      <li>Archiviare e inserire a mano non consuma letture. Per i documenti lunghi servono più letture: lo vedi sempre prima di confermare.</li>
+      <li>Con il piano annuale ricevi anche letture di benvenuto, una volta sola, da usare entro 12 mesi: 20 con Dimora, 60 con Dimora Plus, 100 con Dimora Max.</li>
+      <li data-pacchetti>Ti servono più letture? 20 a 6,90&nbsp;€, 100 a 29,90&nbsp;€, valide 12 mesi.</li>
+      <li>Finita la prova, se non scegli un piano il tuo account resta in sola consultazione: vedi, scarichi ed esporti tutto.</li>
+      <li class="piani-note-ultima">Piani e prezzi sono previsti e possono ancora cambiare: te li confermiamo prima di attivare i pagamenti.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="sezione bianca" id="trasparenza">
+  <div class="contenitore trasparenza-griglia">
+    <div class="trasparenza-testo" data-rv>
+      <span class="occhiello">UN AIUTO VERO</span>
+      <h2>Fa il lavoro noioso, e sa dove fermarsi</h2>
+      <p>Legge, compila, archivia e ti ricorda le scadenze. Sulle scelte fiscali ti porta dal commercialista con tutto già in ordine.</p>
+    </div>
+    <ul class="trasparenza-elenco" data-rv-gruppo>
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>L'AI propone, tu disponi: i dati entrano nelle tue schede solo con la tua conferma.</span></li>
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Scadenze e stime partono dai dati che confermi tu; dove serve, ti dice di verificare col commercialista.</span></li>
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Ogni documento e ogni scadenza hanno sempre un campo nota libero.</span></li>
+      <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E6E4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>È in beta e cresce ogni settimana: correzioni e funzioni nuove nascono anche dalle tue segnalazioni, che mandi in un tocco dall'app.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="sezione grigia" id="sicurezza">
+  <div class="contenitore">
+    <div class="sezione-testa" data-rv>
+      <span class="occhiello">SICUREZZA E DATI</span>
+      <h2>A chi affidi i tuoi documenti</h2>
+      <p>Rogiti, contratti e bollette sono carte personali. Ecco dove stanno, come vengono lette e come le porti via.</p>
+    </div>
+    <div class="griglia griglia-3" data-rv-gruppo>
+      <article class="scheda scheda-icona scheda-sicura">
+        <span class="icona"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <div><h3>Dove stanno</h3><p>L'archivio dei documenti e il database stanno a Francoforte, in Unione Europea, protetti dal tuo accesso.</p></div>
+      </article>
+      <article class="scheda scheda-icona scheda-sicura">
+        <span class="icona"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <div><h3>Letti solo per te</h3><p>L'AI legge il documento solo per compilare i tuoi campi. I tuoi documenti non vengono usati per addestrare modelli di intelligenza artificiale.</p></div>
+      </article>
+      <article class="scheda scheda-icona scheda-sicura">
+        <span class="icona"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></span>
+        <div><h3>Li porti via quando vuoi</h3><p>Dalle Impostazioni scarichi i tuoi dati in un file ed elimini l'account. Ogni documento si scarica dalla sua pagina.</p></div>
+      </article>
+    </div>
+    <p class="sicurezza-nota" data-rv>I dettagli sono nell'<a href="https://app.dimorapp.com/privacy">informativa sulla privacy</a> e nei <a href="https://app.dimorapp.com/termini">Termini del servizio</a>.</p>
+  </div>
+</section>
+
+<section class="sezione" id="domande">
+  <div class="contenitore">
+    <div class="sezione-testa sezione-testa-stretta" data-rv>
+      <span class="occhiello">DOMANDE FREQUENTI</span>
+      <h2>Prima di iniziare</h2>
+    </div>
+    <div class="griglia griglia-domande" data-rv-gruppo>
+      <article class="scheda domanda">
+        <h3>Per chi è pensata Dimora?</h3>
+        <p>Per chi ha una casa o più di una da seguire, e per chi affitta: un solo appartamento o più immobili, con contratti e inquilini diversi. Per capire se ti è utile c'è la prova gratuita.</p>
+      </article>
+      <article class="scheda domanda">
+        <h3>Che cosa succede alla fine della prova?</h3>
+        <p>Nessun addebito: la carta non te la chiediamo. Se non scegli un piano, il tuo account resta in sola consultazione: vedi, scarichi ed esporti tutto quello che hai caricato. Quando scegli un piano riprendi da dove eri.</p>
+      </article>
+      <article class="scheda domanda">
+        <h3>Quanto costa dopo la prova?</h3>
+        <p>Da 59&nbsp;€ l'anno o 6,90&nbsp;€ al mese. Tutte le funzioni sono in ogni piano: cambiano le letture AI e lo spazio. I tre piani sono nella sezione Prezzi, e senza una tua scelta non c'è nessun addebito.</p>
+      </article>
+      <article class="scheda domanda">
+        <h3>Quali documenti legge?</h3>
+        <p>Più di 60 tipi di documenti della casa: bollette, contratti d'affitto, preventivi e bilanci del condominio, F24, polizze, rogiti, conferme di prenotazione e molti altri, in foto, PDF, Word, Excel o CSV. Se un documento non lo riconosce, lo archivi lo stesso e compili a mano.</p>
+      </article>
+      <article class="scheda domanda">
+        <h3>Quanto può essere lungo un documento?</h3>
+        <p>Nella beta Dimora legge fino a 30 pagine scansionate o fotografate per documento; un PDF con il testo anche di più. Se il documento è più lungo, prima della lettura ti avvisa che alcune pagine potrebbero restare fuori, e alla fine ti dice quante ne ha inviate in lettura.</p>
+      </article>
+      <article class="scheda domanda">
+        <h3>Dove vanno i miei documenti?</h3>
+        <p>Restano nel tuo archivio, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, e non vengono usati per addestrare modelli. I dettagli sono nell'informativa sulla privacy.</p>
+      </article>
+      <article class="scheda domanda">
+        <h3>Serve installare qualcosa?</h3>
+        <p>No. Dimora funziona dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. L'app per App Store e Google Play è in arrivo. Entri con la tua mail, senza password.</p>
+      </article>
+      <article class="scheda domanda">
+        <h3>Posso portare via i miei dati?</h3>
+        <p>Sì. Dalle Impostazioni scarichi i tuoi dati in un file, quando vuoi. Ogni documento lo scarichi dalla sua pagina, e quelli del fascicolo per il commercialista anche tutti insieme, in uno ZIP. Se decidi di andartene, elimini l'account.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="finale" id="inizia">
+  <div class="contenitore">
+    <div class="finale-box scuro" data-rv>
+      <img class="dimorino finale-img" src="assets/img/dimorino-cartelle.webp" alt="" width="460" height="453" loading="lazy" decoding="async">
+      <div class="finale-testi">
+        <h2>Inizia dal primo documento</h2>
+        <p>Una bolletta o una rata del condominio bastano per vedere come funziona. La prova è gratuita: 30 giorni, senza carta. <span class="v-arrivo">Lascia la mail e ti avvisiamo all'apertura.</span><span class="v-aperta">Entra e carica il tuo primo documento.</span></p>
+      </div>
+      <div class="finale-azione">
+        <div class="v-arrivo blocco-modulo">
+          <form class="modulo modulo-colonna" data-wl novalidate>
+            <label class="nascosto" for="mail-chiusura">La tua mail</label>
+            <input class="campo" id="mail-chiusura" type="email" name="email" required placeholder="La tua mail" autocomplete="email" disabled>
+            <input class="wl-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <button class="btn btn-menta btn-modulo v-js-modulo" type="submit">Avvisami al lancio</button>
+            <p class="modulo-senza-js">Per lasciare la mail serve JavaScript: attivalo nel browser e ricarica la pagina.</p>
+          </form>
+          <p class="esito" data-wl-esito role="status" aria-live="polite"></p>
+        </div>
+        <div class="v-aperta blocco-modulo"><a class="btn btn-menta btn-modulo btn-inizia" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="piede">
+  <div class="contenitore">
+    <div class="piede-alto">
+      <a class="marchio" href="#top">
+        <span class="marchio-segno marchio-segno-piccolo"><img src="assets/dimora-mark-cream.svg" alt="" width="28" height="15"></span>
+        <span class="marchio-nomi"><span class="marchio-nome">Dimora</span><span class="marchio-motto marchio-motto-sempre">senza burocrazia</span></span>
+      </a>
+      <div class="piede-colonne">
+        <nav class="piede-colonna" aria-label="Prodotto"><span class="piede-tit">PRODOTTO</span><a href="#perchi">Per chi è</a><a href="#come">Come funziona</a><a href="#affitti">Per chi affitta</a><a href="#prezzi">Prezzi</a><a href="#domande">Domande</a></nav>
+        <nav class="piede-colonna" aria-label="Legale"><span class="piede-tit">LEGALE</span><a href="https://app.dimorapp.com/termini">Termini del servizio</a><a href="https://app.dimorapp.com/privacy">Informativa sulla privacy</a><a href="#sicurezza">Sicurezza e dati</a></nav>
+        <nav class="piede-colonna" aria-label="Accesso"><span class="piede-tit">ACCESSO</span><a href="https://app.dimorapp.com/login">Accedi</a><a class="v-arrivo" href="#lancio">Avvisami al lancio</a><a class="v-aperta" href="https://app.dimorapp.com/login">Inizia la prova gratuita</a></nav>
+      </div>
+    </div>
+    <div class="piede-basso">
+      <span>© 2026 Dimora · BETA</span>
+      <span>Contatti: <a href="mailto:assistenza@dimorapp.com">assistenza@dimorapp.com</a></span>
+    </div>
   </div>
 </footer>
 
-<script>
-(function(){
-  var U='https://lgmqdcozhmaimkqnhpqb.supabase.co';
-  var K='sb_publishable_uXnC9Hvh1PpLGuZ93t-xhg_8iF3-bN7';
-  var re=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-  document.querySelectorAll('form[data-wl]').forEach(function(f){
-    var msg=f.parentNode.querySelector('[data-wl-msg]');
-    function show(t,ok){ if(msg){ msg.textContent=t; msg.style.color=ok?'#2E6E4E':'#b3261e'; } }
-    f.addEventListener('submit',function(e){
-      e.preventDefault();
-      var email=((f.email&&f.email.value)||'').trim();
-      var hp=((f.company&&f.company.value)||'').trim();
-      if(hp){ show('Grazie! Ti abbiamo aggiunto alla lista.',true); f.reset(); return; }
-      if(!re.test(email)){ show('Controlla la mail e riprova.',false); return; }
-      var btn=f.querySelector('button[type=submit]'); var old=btn.textContent; btn.disabled=true; btn.textContent='Invio…';
-      fetch(U+'/rest/v1/waitlist',{method:'POST',headers:{'apikey':K,'Authorization':'Bearer '+K,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({email:email,source:'landing'})})
-      .then(function(r){ if(r.status===201){ show('Grazie! Ti avvisiamo appena possiamo farti entrare.',true); f.reset(); } else if(r.status===409){ show('Sei già in lista, ti avvisiamo noi!',true); f.reset(); } else { show('Qualcosa è andato storto. Riprova tra poco.',false); } })
-      .catch(function(){ show('Qualcosa è andato storto. Riprova tra poco.',false); })
-      .then(function(){ btn.disabled=false; btn.textContent=old; });
-    });
-  });
-})();
-</script>
+<script src="assets/pagina.js"></script>
 </body>
 </html>
