@@ -50,7 +50,7 @@ body {
 img { max-width: 100%; }
 a { color: var(--verde); }
 a:hover { color: var(--inchiostro); }
-h1, h2, h3, h4 { overflow-wrap: break-word; }
+h1, h2, h3, h4 { overflow-wrap: break-word; text-wrap: balance; }
 p { overflow-wrap: break-word; }
 
 a:focus-visible, button:focus-visible, summary:focus-visible {
@@ -632,8 +632,13 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .piano-mese { font-size: 14px; }
   .piano-dotazione { gap: 8px; padding: 14px 0; font-size: 15px; }
   .piano .piano-desc { font-size: 14.5px; line-height: 1.6; }
-  .piani-note { margin-top: 28px; padding: 26px 32px; border-radius: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 48px; font-size: 15px; }
-  .piani-note-ultima { grid-column: 1 / -1; }
+  /* Le note si leggono per colonna: «Durante la beta…» resta subito sopra «Archiviare…». */
+  .piani-note { margin-top: 28px; padding: 26px 32px; border-radius: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column; gap: 12px 48px; font-size: 15px; }
+  .piani-note-ultima { grid-column: 1 / -1; grid-row: 4; }
+}
+/* Fra 1024 e 1279 px «Attivazione su richiesta» va a capo: la testata dei tre piani ha la stessa altezza. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .piano-nome { min-height: 62px; align-content: flex-start; }
 }
 
 /* ---------- Un aiuto vero ---------- */
@@ -713,4 +718,41 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .piede .marchio-nome { font-size: 18px; }
   .piede-colonne { gap: 72px; }
   .piede-basso { margin-top: 32px; flex-direction: row; justify-content: space-between; gap: 24px; font-size: 14px; }
+}
+
+/* ---------- Animazioni ----------
+   Tutte qui, e solo se il sistema non chiede di ridurre il movimento.
+   Le comparse nascondono un elemento solo se lo script gli ha dato .rv:
+   senza script, o con «riduci movimento», tutto è visibile da subito. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+
+  .js .rv { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .8s cubic-bezier(.2, .7, .2, 1); }
+  .js .rv.in { opacity: 1; transform: none; }
+  .js .rv.fatto { transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease; }
+
+  .dimorino { animation: oscilla 5.5s ease-in-out infinite; }
+  @keyframes oscilla { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
+
+  .timer-cifra.scatta { animation: scatta .45s cubic-bezier(.2, .7, .2, 1); }
+  @keyframes scatta { 0% { opacity: .35; transform: translateY(-14px); } 100% { opacity: 1; transform: none; } }
+
+  .alone::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(closest-side, rgba(159, 209, 180, .22), transparent 70%);
+    animation: alone 14s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes alone { 0% { transform: translate(-22%, -8%); } 100% { transform: translate(22%, 10%); } }
+
+  .campo { transition: box-shadow .18s ease, border-color .18s ease; }
+  .btn { transition: transform .18s ease, filter .18s ease, box-shadow .18s ease; }
+  .scheda, .scheda-scura { transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease; }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.07); box-shadow: 0 8px 20px rgba(28, 58, 46, .18); }
+  .scheda:hover, .js .rv.in.scheda:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(28, 58, 46, .12); }
+  .scheda-scura:hover, .js .rv.in.scheda-scura:hover { transform: translateY(-4px); background: rgba(255, 255, 255, .1); }
 }

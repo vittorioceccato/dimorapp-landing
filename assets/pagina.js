@@ -170,8 +170,9 @@
       if (!p || isNaN(p.a + p.m + p.g + p.h + p.mi)) p = partiScritte(scritto);
       if (!p) return '';
       var settimana = new Date(Date.UTC(p.a, p.m - 1, p.g)).getUTCDay();
-      var ora = (p.h === 1 ? 'all\'' : 'alle ') + p.h + ':' + due(p.mi);
-      return GIORNI[settimana] + ' ' + p.g + ' ' + MESI[p.m - 1] + ' ' + ora;
+      // Spazi non divisibili dentro «8 ottobre» e «alle 10:00»: non vanno a capo a metà.
+      var ora = (p.h === 1 ? 'all\'' : 'alle ') + p.h + ':' + due(p.mi);
+      return GIORNI[settimana] + ' ' + p.g + ' ' + MESI[p.m - 1] + ' ' + ora;
     }
 
     var quando = dataItaliana(lancioMs);
@@ -206,5 +207,37 @@
     (function giro() {
       setTimeout(function () { aggiorna(); giro(); }, 1000 - (Date.now() % 1000) + 20);
     })();
+  })();
+
+  /* ---------- Le comparse allo scorrimento ----------
+     Sezioni e schede compaiono quando entrano nello schermo, in sequenza nelle griglie
+     ([data-rv] un elemento, [data-rv-gruppo] i suoi figli uno dopo l'altro).
+     Con «riduci movimento» non si nasconde niente; senza IntersectionObserver neppure. */
+  (function comparse() {
+    var riduci = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (riduci || !('IntersectionObserver' in window)) return;
+    document.documentElement.classList.add('js');
+
+    var elementi = [].slice.call(document.querySelectorAll('[data-rv]'));
+    [].forEach.call(document.querySelectorAll('[data-rv-gruppo]'), function (g) {
+      [].forEach.call(g.children, function (k, i) {
+        k.style.transitionDelay = (i % 4 * 90) + 'ms';
+        elementi.push(k);
+      });
+    });
+
+    function mostra(e) {
+      e.classList.add('in');
+      setTimeout(function () { e.style.transitionDelay = ''; e.classList.add('fatto'); }, 1300);
+    }
+    var osservatore = new IntersectionObserver(function (voci) {
+      voci.forEach(function (v) {
+        if (v.isIntersecting) { mostra(v.target); osservatore.unobserve(v.target); }
+      });
+    }, { threshold: 0.05 });
+    elementi.forEach(function (e) { e.classList.add('rv'); osservatore.observe(e); });
+
+    // In stampa, tutto visibile.
+    window.addEventListener('beforeprint', function () { elementi.forEach(function (e) { e.classList.add('in', 'fatto'); }); });
   })();
 })();
