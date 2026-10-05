@@ -411,13 +411,9 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
 @media (min-width: 640px) {
   .griglia-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 }
-@media (min-width: 768px) {
-  .griglia-domande { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-}
 @media (min-width: 1024px) {
   .griglia { gap: 24px; }
   .griglia-3, .griglia-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .griglia-domande { gap: 20px; }
   #affitti .griglia, .piani { gap: 20px; }
 }
 
@@ -446,9 +442,18 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
 .scheda-icona p { font-size: 14.5px; line-height: 1.55; }
 .scheda-sicura { border-color: var(--bordo-tenue); }
 
-.domanda { padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+/* Le domande: una riga per domanda, un <details> per riga. Si aprono e si chiudono anche senza
+   script e da tastiera; aprirne una non chiude le altre. Il «+» diventa «−» quando è aperta. */
+.domande { max-width: 880px; margin-inline: auto; display: flex; flex-direction: column; gap: 12px; }
+.domanda summary { list-style: none; padding: 18px 20px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; }
+.domanda summary::-webkit-details-marker { display: none; }
+.domanda summary:focus-visible { border-radius: 14px; outline-offset: -3px; }
 .domanda h3 { font-size: 16.5px; line-height: 1.35; }
-.domanda p { font-size: 14.5px; line-height: 1.6; }
+.domanda p { padding: 0 20px 20px; font-size: 14.5px; line-height: 1.6; }
+.domanda-segno { position: relative; flex: 0 0 auto; width: 30px; height: 30px; border-radius: 999px; background: var(--menta); color: var(--verde); }
+.domanda-segno::before, .domanda-segno::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 2px; margin: -1px 0 0 -6px; border-radius: 2px; background: currentColor; }
+.domanda-segno::after { transform: rotate(90deg); }
+.domanda[open] .domanda-segno::after { transform: rotate(90deg) scaleX(0); }
 
 @media (min-width: 1024px) {
   .scheda { border-radius: 18px; }
@@ -474,9 +479,13 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .scheda-sicura .icona svg { width: 22px; height: 22px; }
   .scheda-sicura h3 { font-size: 18px; }
   .scheda-sicura p { font-size: 15px; }
-  .domanda { padding: 26px 28px; gap: 10px; }
+  .domande { gap: 14px; }
+  .domanda summary { padding: 22px 28px; border-radius: 18px; }
+  .domanda summary:focus-visible { border-radius: 16px; }
   .domanda h3 { font-size: 18px; }
-  .domanda p { font-size: 16px; }
+  .domanda p { padding: 0 28px 26px; font-size: 16px; }
+  .domanda-segno { width: 34px; height: 34px; }
+  .domanda-segno::before, .domanda-segno::after { width: 14px; margin-left: -7px; }
 }
 
 /* Come funziona: la mascotte, il telefono, a mano */
@@ -602,6 +611,21 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
 .piani-testa { margin: 26px 0 16px; display: flex; flex-direction: column; gap: 4px; }
 .piani-testa h3 { margin: 0; font-size: 21px; font-weight: 800; }
 .piani-testa span { font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--muto); }
+/* L'interruttore annuale / mensile. Lo script scrive data-periodo ("anno" o "mese") sulla sezione:
+   senza script l'interruttore non c'è e ogni scheda mostra i due prezzi insieme, come prima.
+   Con «Mensile» la riga del risparmio resta, invisibile: le schede non cambiano altezza. */
+.interruttore { width: fit-content; max-width: 100%; margin: 0 auto 18px; padding: 4px; border: 1px solid var(--bordo); border-radius: 999px; background: #fff; display: flex; gap: 4px; }
+.interruttore-voce { margin: 0; min-height: 44px; padding: 8px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--inchiostro); font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1.25; text-align: center; cursor: pointer; }
+.interruttore-voce[aria-pressed="true"] { background: var(--verde); color: #fff; }
+.interruttore-nota { font-weight: 600; }
+.interruttore-voce[aria-pressed="false"] .interruttore-nota { color: var(--muto); }
+.interruttore-voce:focus-visible { border-radius: 999px; outline-offset: 2px; }
+[data-prezzi]:not([data-periodo]) .interruttore,
+[data-prezzi]:not([data-periodo]) .piano-prezzo-mese,
+[data-prezzi][data-periodo] .piano-oppure,
+[data-prezzi][data-periodo="anno"] .piano-prezzo-mese,
+[data-prezzi][data-periodo="mese"] .piano-prezzo-anno { display: none !important; }
+[data-prezzi][data-periodo="mese"] .piano-risparmio { visibility: hidden; }
 .piano { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
 .piano-nome { min-height: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .piano-nome h4 { margin: 0; font-size: 19px; font-weight: 800; color: var(--inchiostro); }
@@ -624,6 +648,8 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .piani-testa { margin: 36px 0 28px; flex-direction: row; align-items: baseline; justify-content: space-between; gap: 24px; }
   .piani-testa h3 { font-size: 24px; }
   .piani-testa span { font-size: 15px; }
+  .interruttore { margin-bottom: 28px; }
+  .interruttore-voce { padding: 10px 20px; font-size: 15px; }
   .piano { padding: 28px 30px; gap: 12px; }
   .piano-nome h4 { font-size: 22px; }
   .piano-richiesta { padding: 4px 10px; font-size: 12px; }
@@ -751,9 +777,16 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .campo { transition: box-shadow .18s ease, border-color .18s ease; }
   .btn { transition: transform .18s ease, filter .18s ease, box-shadow .18s ease; }
   .scheda, .scheda-scura { transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease; }
+  .domanda-segno::after { transition: transform .2s ease; }
+  .interruttore-voce { transition: background-color .18s ease, color .18s ease; }
 }
 @media (prefers-reduced-motion: no-preference) and (hover: hover) {
   .btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.07); box-shadow: 0 8px 20px rgba(28, 58, 46, .18); }
   .scheda:hover, .js .rv.in.scheda:hover { transform: translateY(-4px); box-shadow: 0 16px 36px rgba(28, 58, 46, .12); }
   .scheda-scura:hover, .js .rv.in.scheda-scura:hover { transform: translateY(-4px); background: rgba(255, 255, 255, .1); }
+  /* Una domanda aperta si legge: non si solleva sotto il mouse. */
+  .domanda:hover, .js .rv.in.domanda:hover { transform: none; }
+}
+@media (hover: hover) {
+  .interruttore-voce[aria-pressed="false"]:hover { background: var(--menta); }
 }

@@ -277,9 +277,9 @@
     <div class="mascotte" data-rv>
       <img class="dimorino mascotte-img" src="assets/img/dimorino-lettura.webp" alt="" width="228" height="200" loading="lazy" decoding="async">
       <div class="mascotte-testi">
-        <span class="occhiello">LA MASCOTTE</span>
+        <span class="occhiello">LA TUA GUIDA</span>
         <h3>Ti presento Dimorino</h3>
-        <p>Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.</p>
+        <p>È la tua guida dentro Dimora: ti segue passo passo e ti aiuta con documenti, scadenze e tutto quello che riguarda la casa. Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.</p>
       </div>
     </div>
     <div class="telefono scuro" data-rv>
@@ -410,7 +410,7 @@
   </div>
 </section>
 
-<section class="sezione" id="prezzi">
+<section class="sezione" id="prezzi" data-prezzi>
   <div class="contenitore">
     <div class="sezione-testa sezione-testa-stretta" data-rv>
       <span class="occhiello">PREZZI</span>
@@ -436,28 +436,37 @@
       </div>
     </div>
     <div class="piani-testa" data-rv>
-      <h3>I piani</h3>
+      <h3 id="piani-titolo">I piani</h3>
       <span>Tutte le funzioni sono in ogni piano. Cambiano le letture AI e lo spazio.</span>
+    </div>
+    <!-- L'interruttore compare solo con lo script, che scrive data-periodo sulla sezione.
+         Senza script le schede mostrano i due prezzi insieme. -->
+    <div class="interruttore" role="group" aria-labelledby="piani-titolo">
+      <button class="interruttore-voce" type="button" data-periodo-scelta="anno" aria-pressed="true">Annuale <span class="interruttore-nota">(risparmi fino al 28%)</span></button>
+      <button class="interruttore-voce" type="button" data-periodo-scelta="mese" aria-pressed="false">Mensile</button>
     </div>
     <div class="griglia griglia-3 piani" data-rv-gruppo>
       <article class="scheda piano" data-piano="Dimora">
         <div class="piano-nome"><h4>Dimora</h4></div>
-        <div class="piano-prezzo"><span class="piano-cifra">59&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
-        <span class="piano-mese">oppure 6,90&nbsp;€ al mese. Con l'annuale risparmi circa il 29%.</span>
-        <div class="piano-dotazione"><span>20 letture AI al mese</span><span>5 GB di archivio</span></div>
-        <p class="piano-desc">Consigliato per chi gestisce la propria casa e, se ne ha, una o due seconde case, anche in affitto. Indicativamente da 1 a 3 immobili.</p>
+        <div class="piano-prezzo piano-prezzo-anno"><span class="piano-cifra">59&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
+        <div class="piano-prezzo piano-prezzo-mese"><span class="piano-cifra">6,90&nbsp;€</span><span class="piano-periodo">al mese</span></div>
+        <span class="piano-mese"><span class="piano-oppure">oppure 6,90&nbsp;€ al mese. </span><span class="piano-risparmio">Con l'annuale risparmi circa il 29%.</span></span>
+        <div class="piano-dotazione"><span>15 letture AI al mese</span><span>5 GB di archivio</span></div>
+        <p class="piano-desc">Consigliato per chi gestisce la propria casa ed eventualmente una o due seconde case, anche in affitto. Indicativamente da 1 a 3 immobili.</p>
       </article>
       <article class="scheda piano" data-piano="Dimora Plus">
         <div class="piano-nome"><h4>Dimora Plus</h4></div>
-        <div class="piano-prezzo"><span class="piano-cifra">119&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
-        <span class="piano-mese">oppure 12,90&nbsp;€ al mese. Con l'annuale risparmi circa il 23%.</span>
+        <div class="piano-prezzo piano-prezzo-anno"><span class="piano-cifra">119&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
+        <div class="piano-prezzo piano-prezzo-mese"><span class="piano-cifra">12,90&nbsp;€</span><span class="piano-periodo">al mese</span></div>
+        <span class="piano-mese"><span class="piano-oppure">oppure 12,90&nbsp;€ al mese. </span><span class="piano-risparmio">Con l'annuale risparmi circa il 23%.</span></span>
         <div class="piano-dotazione"><span>40 letture AI al mese</span><span>20 GB di archivio</span></div>
         <p class="piano-desc">Consigliato per chi affitta con continuità e ha più contratti, inquilini e scadenze da seguire. Indicativamente fino a 10 immobili.</p>
       </article>
       <article class="scheda piano" data-piano="Dimora Max">
         <div class="piano-nome"><h4>Dimora Max</h4><span class="piano-richiesta">Attivazione su richiesta</span></div>
-        <div class="piano-prezzo"><span class="piano-cifra">219&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
-        <span class="piano-mese">oppure 22,90&nbsp;€ al mese. Con l'annuale risparmi circa il 20%.</span>
+        <div class="piano-prezzo piano-prezzo-anno"><span class="piano-cifra">219&nbsp;€</span><span class="piano-periodo">l'anno</span></div>
+        <div class="piano-prezzo piano-prezzo-mese"><span class="piano-cifra">22,90&nbsp;€</span><span class="piano-periodo">al mese</span></div>
+        <span class="piano-mese"><span class="piano-oppure">oppure 22,90&nbsp;€ al mese. </span><span class="piano-risparmio">Con l'annuale risparmi circa il 20%.</span></span>
         <div class="piano-dotazione"><span>80 letture AI al mese</span><span>40 GB di archivio</span></div>
         <p class="piano-desc">Consigliato per chi gestisce molti immobili, propri o di famiglia, e vuole tutto in un posto solo. Oltre 10 immobili.</p>
       </article>
@@ -466,7 +475,7 @@
       <li>Sono indicazioni, non limiti: in ogni piano puoi gestire tutti gli immobili che vuoi.</li>
       <li>Durante la beta ogni documento letto consuma una lettura. Nei futuri piani una lettura copre fino a 10 pagine: per i documenti più lunghi ne serviranno di più, e lo vedrai sempre prima di confermare.</li>
       <li>Archiviare e inserire a mano non consuma letture.</li>
-      <li>Con il piano annuale ricevi anche letture di benvenuto, una volta sola, da usare entro 12 mesi: 20 con Dimora, 60 con Dimora Plus, 100 con Dimora Max.</li>
+      <li>Con il piano annuale ricevi anche letture di benvenuto, una volta sola, da usare entro 12 mesi: 15 con Dimora, 60 con Dimora Plus, 100 con Dimora Max.</li>
       <li data-pacchetti>Ti servono più letture? 20 a 6,90&nbsp;€, 100 a 29,90&nbsp;€, valide 12 mesi.</li>
       <li>Finita la prova, se non scegli un piano il tuo account resta in sola consultazione: vedi, scarichi ed esporti tutto.</li>
       <li class="piani-note-ultima">Piani e prezzi sono previsti e possono ancora cambiare: te li confermiamo prima di attivare i pagamenti.</li>
@@ -521,39 +530,39 @@
       <span class="occhiello">DOMANDE FREQUENTI</span>
       <h2>Prima di iniziare</h2>
     </div>
-    <div class="griglia griglia-domande" data-rv-gruppo>
-      <article class="scheda domanda">
-        <h3>Per chi è pensata Dimora?</h3>
+    <div class="domande" data-rv-gruppo>
+      <details class="scheda domanda">
+        <summary><h3>Per chi è pensata Dimora?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>Per chi ha una casa o più di una da seguire, e per chi affitta: un solo appartamento o più immobili, con contratti e inquilini diversi. Per capire se ti è utile c'è la prova gratuita.</p>
-      </article>
-      <article class="scheda domanda">
-        <h3>Che cosa succede alla fine della prova?</h3>
+      </details>
+      <details class="scheda domanda">
+        <summary><h3>Che cosa succede alla fine della prova?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>Nessun addebito: la carta non te la chiediamo. Se non scegli un piano, il tuo account resta in sola consultazione: vedi, scarichi ed esporti tutto quello che hai caricato. Quando scegli un piano riprendi da dove eri.</p>
-      </article>
-      <article class="scheda domanda">
-        <h3>Quanto costa dopo la prova?</h3>
+      </details>
+      <details class="scheda domanda">
+        <summary><h3>Quanto costa dopo la prova?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>Da 59&nbsp;€ l'anno o 6,90&nbsp;€ al mese. Tutte le funzioni sono in ogni piano: cambiano le letture AI e lo spazio. I tre piani sono nella sezione Prezzi, e senza una tua scelta non c'è nessun addebito.</p>
-      </article>
-      <article class="scheda domanda">
-        <h3>Quali documenti legge?</h3>
+      </details>
+      <details class="scheda domanda">
+        <summary><h3>Quali documenti legge?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>Più di 60 tipi di documenti della casa: bollette, contratti d'affitto, preventivi e bilanci del condominio, F24, polizze, rogiti, conferme di prenotazione e molti altri, in foto, PDF, Word, Excel o CSV. Se un documento non lo riconosce, lo archivi lo stesso e compili a mano.</p>
-      </article>
-      <article class="scheda domanda">
-        <h3>Quanto può essere lungo un documento?</h3>
+      </details>
+      <details class="scheda domanda">
+        <summary><h3>Quanto può essere lungo un documento?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>Nella beta Dimora legge fino a 30 pagine scansionate o fotografate per documento; un PDF con il testo anche di più. Se il documento è più lungo, prima della lettura ti avvisa che alcune pagine potrebbero restare fuori, e alla fine ti dice quante ne ha inviate in lettura.</p>
-      </article>
-      <article class="scheda domanda">
-        <h3>Dove vanno i miei documenti?</h3>
+      </details>
+      <details class="scheda domanda">
+        <summary><h3>I miei documenti sono al sicuro?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>Restano nel tuo archivio, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, e non vengono usati per addestrare modelli. I dettagli sono nell'informativa sulla privacy.</p>
-      </article>
-      <article class="scheda domanda">
-        <h3>Serve installare qualcosa?</h3>
+      </details>
+      <details class="scheda domanda">
+        <summary><h3>Serve installare qualcosa?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>No. Dimora funziona dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. L'app per App Store e Google Play è in arrivo. Entri con la tua mail, senza password.</p>
-      </article>
-      <article class="scheda domanda">
-        <h3>Posso portare via i miei dati?</h3>
+      </details>
+      <details class="scheda domanda">
+        <summary><h3>Posso portare via i miei dati?</h3><span class="domanda-segno" aria-hidden="true"></span></summary>
         <p>Sì. Dalle Impostazioni scarichi i tuoi dati in un file, quando vuoi. Ogni documento lo scarichi dalla sua pagina, e quelli del fascicolo per il commercialista anche tutti insieme, in uno ZIP. Se decidi di andartene, elimini l'account.</p>
-      </article>
+      </details>
     </div>
   </div>
 </section>
