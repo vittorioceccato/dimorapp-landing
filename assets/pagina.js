@@ -81,6 +81,28 @@
     });
   })();
 
+  /* ---------- L'interruttore dei prezzi ----------
+     Due bottoni, «Annuale» e «Mensile»: aria-pressed dice quale è scelto. Si sceglie qui
+     scrivendo data-periodo ("anno" o "mese") sulla sezione, e il CSS mostra il prezzo giusto.
+     Senza script data-periodo non c'è: niente interruttore, i due prezzi insieme.
+     All'apertura è scelto l'annuale. La scelta non si salva da nessuna parte. */
+  (function prezzi() {
+    var sezione = document.querySelector('[data-prezzi]');
+    if (!sezione) return;
+    var bottoni = [].slice.call(sezione.querySelectorAll('[data-periodo-scelta]'));
+    if (bottoni.length !== 2) return;
+    function scegli(periodo) {
+      bottoni.forEach(function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-periodo-scelta') === periodo ? 'true' : 'false');
+      });
+      sezione.setAttribute('data-periodo', periodo);
+    }
+    bottoni.forEach(function (b) {
+      b.addEventListener('click', function () { scegli(b.getAttribute('data-periodo-scelta')); });
+    });
+    scegli('anno');
+  })();
+
   /* ---------- I moduli della lista d'attesa ----------
      Quattro moduli, una regola sola. Scrivono nella tabella waitlist di Supabase
      con la chiave pubblica (la stessa della pagina di prima), source 'landing'.

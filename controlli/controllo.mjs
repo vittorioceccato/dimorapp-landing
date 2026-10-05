@@ -9,7 +9,11 @@
 //   4. prezzi, letture, spazio e pacchetti coincidono con la tabella qui sotto;
 //   5. le risorse caricate vengono solo dal sito stesso e, per il modulo, da Supabase;
 //   6. i collegamenti vanno solo all'app, all'indirizzo canonico e ai mailto: del piè di pagina,
-//      e quelli interni portano a sezioni che esistono.
+//      e quelli interni portano a sezioni che esistono;
+//   7. i testi approvati del piano Dimora, di Dimorino e della domanda sui documenti, parola per parola;
+//   8. l'interruttore annuale / mensile: bottoni veri, l'annuale scelto, il «fino al» ricavato dai prezzi,
+//      e senza script i due prezzi insieme;
+//   9. le domande frequenti: una per riga, chiuse, nell'ordine di sempre.
 // Esce con 1 al primo controllo fallito, dopo averli stampati tutti.
 
 import fs from 'node:fs';
@@ -25,11 +29,11 @@ const JS = leggi('assets/pagina.js');
 // che ha «//» dentro le stringhe solo negli indirizzi «https://».
 const JS_CODICE = JS.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\\])\/\/.*$/gm, '$1');
 
-/* ---------- La tabella: prezzi, letture, spazio, pacchetti (nota della regia del 5/10) ---------- */
+/* ---------- La tabella: prezzi, letture, spazio, pacchetti (note della regia del 5/10) ---------- */
 const PIANI = {
-  'Dimora':      { anno: '59 €',  mese: '6,90 €',  risparmio: 29, letture: 20, gb: 5,  benvenuto: 20 },
-  'Dimora Plus': { anno: '119 €', mese: '12,90 €', risparmio: 23, letture: 40, gb: 20, benvenuto: 60 },
-  'Dimora Max':  { anno: '219 €', mese: '22,90 €', risparmio: 20, letture: 80, gb: 40, benvenuto: 100 },
+  'Dimora':      { anno: '59 €',  mese: '6,90 €',  risparmio: 29, letture: 15, gb: 5,  benvenuto: 15 },
+  'Dimora Plus': { anno: '119 €', mese: '12,90 €', risparmio: 23, letture: 40, gb: 20, benvenuto: 40 },
+  'Dimora Max':  { anno: '219 €', mese: '22,90 €', risparmio: 20, letture: 80, gb: 40, benvenuto: 80 },
 };
 const PROVA = { giorni: 30, letture: 20, gb: 1 };
 const PACCHETTI = [{ letture: 20, prezzo: '6,90 €' }, { letture: 100, prezzo: '29,90 €' }];
@@ -41,6 +45,31 @@ const COLLEGAMENTI_AMMESSI = [
 ];
 const CANONICO = 'https://dimorapp.com/';
 const MAILTO_AMMESSI = ['mailto:assistenza@dimorapp.com'];
+
+/* ---------- I testi approvati da Vitto parola per parola (regia, 5/10) ---------- */
+const TESTI = {
+  dimoraDesc: 'Consigliato per chi gestisce la propria casa ed eventualmente una o due seconde case, anche in affitto. Indicativamente da 1 a 3 immobili.',
+  benvenuto: 'Con il piano annuale ricevi anche letture di benvenuto, una volta sola, da usare entro 12 mesi: 15 con Dimora, 40 con Dimora Plus, 80 con Dimora Max.',
+  guidaOcchiello: 'LA TUA GUIDA',
+  guidaTitolo: 'Ti presento Dimorino',
+  guidaTesto: "È la tua guida dentro Dimora: ti segue passo passo e ti aiuta con documenti, scadenze e tutto quello che riguarda la casa. Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.",
+  sicuroDomanda: 'I miei documenti sono al sicuro?',
+  sicuroRisposta: "Restano nel tuo archivio, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, e non vengono usati per addestrare modelli. I dettagli sono nell'informativa sulla privacy.",
+  annuale: 'Annuale (risparmi fino al {N}%)',
+  mensile: 'Mensile',
+};
+const VIA = ['LA MASCOTTE', 'Dove vanno i miei documenti?', 'se ne ha, una o due seconde case'];
+// Le domande frequenti, nell'ordine di sempre: cambia solo il titolo della sesta.
+const DOMANDE = [
+  'Per chi è pensata Dimora?',
+  'Che cosa succede alla fine della prova?',
+  'Quanto costa dopo la prova?',
+  'Quali documenti legge?',
+  'Quanto può essere lungo un documento?',
+  TESTI.sicuroDomanda,
+  'Serve installare qualcosa?',
+  'Posso portare via i miei dati?',
+];
 
 /* ---------- Un lettore di HTML minimo (la pagina è nostra e ben formata) ---------- */
 const VUOTI = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
@@ -88,6 +117,11 @@ const spazi = (s) => s.replace(/[\s ]+/g, ' ').trim();
 const { tag, testi } = analizza(HTML);
 const finto = (antenati) => antenati.some(t => 'data-finto' in t.attr);
 const corpo = tag.find(t => t.nome === 'body');
+const classi = (t) => (t.attr.class || '').split(/\s+/).filter(Boolean);
+const conClasse = (c, dentro) => tag.filter(t => classi(t).includes(c) && (!dentro || t.antenati.includes(dentro)));
+const testoDi = (t) => spazi(testi.filter(x => x.antenati.includes(t)).map(x => x.testo).join(' '));
+// Un importo scritto «6,90 €» in centesimi.
+const centesimi = (s) => { const m = /^(\d+)(?:,(\d{2}))? €$/.exec(spazi(s)); return m ? +m[1] * 100 + +(m[2] || 0) : NaN; };
 
 // Il testo visibile: i nodi di testo e gli attributi che si vedono o si leggono.
 const visibile = [
@@ -143,12 +177,18 @@ console.log('\n4. Prezzi, letture, spazio e pacchetti');
   for (const s of schede) {
     const atteso = PIANI[s.attr['data-piano']];
     if (!atteso) continue;
-    const t = spazi(testi.filter(x => x.antenati.includes(s)).map(x => x.testo).join(' '));
-    verifica(t.includes(`${atteso.anno} l'anno`), `${s.attr['data-piano']}: ${atteso.anno} l'anno`, t);
-    verifica(t.includes(`oppure ${atteso.mese} al mese. Con l'annuale risparmi circa il ${atteso.risparmio}%.`), `${s.attr['data-piano']}: ${atteso.mese} al mese, risparmio circa il ${atteso.risparmio}%`, t);
+    const t = testoDi(s);
+    const pezzo = (c) => conClasse(c, s).map(testoDi);
+    const uno = (c, atteso) => JSON.stringify(pezzo(c)) === JSON.stringify([atteso]);
+    verifica(uno('piano-prezzo-anno', `${atteso.anno} l'anno`), `${s.attr['data-piano']}: con l'annuale «${atteso.anno} l'anno»`, pezzo('piano-prezzo-anno'));
+    verifica(uno('piano-prezzo-mese', `${atteso.mese} al mese`), `${s.attr['data-piano']}: con il mensile «${atteso.mese} al mese»`, pezzo('piano-prezzo-mese'));
+    verifica(uno('piano-risparmio', `Con l'annuale risparmi circa il ${atteso.risparmio}%.`), `${s.attr['data-piano']}: «Con l'annuale risparmi circa il ${atteso.risparmio}%.»`, pezzo('piano-risparmio'));
+    verifica(uno('piano-oppure', `oppure ${atteso.mese} al mese.`), `${s.attr['data-piano']}: senza script «oppure ${atteso.mese} al mese.» accanto al prezzo dell'anno`, pezzo('piano-oppure'));
     verifica(t.includes(`${atteso.letture} letture AI al mese`) && t.includes(`${atteso.gb} GB di archivio`), `${s.attr['data-piano']}: ${atteso.letture} letture AI al mese, ${atteso.gb} GB`, t);
     const anno = parseFloat(atteso.anno), mese = parseFloat(atteso.mese.replace(',', '.'));
     verifica(Math.round((1 - anno / (12 * mese)) * 100) === atteso.risparmio, `${s.attr['data-piano']}: il risparmio dichiarato torna con i prezzi`);
+    const suRichiesta = s.attr['data-piano'] === 'Dimora Max';
+    verifica(t.includes('Attivazione su richiesta') === suRichiesta, `${s.attr['data-piano']}: «Attivazione su richiesta» ${suRichiesta ? "c'è" : "non c'è"}`);
   }
   verifica(testoVero.includes(`${PROVA.giorni} giorni, ${PROVA.letture} letture con l'AI e ${PROVA.gb} GB di archivio, senza carta.`), `la prova: ${PROVA.giorni} giorni, ${PROVA.letture} letture, ${PROVA.gb} GB`);
   const benvenuto = Object.entries(PIANI).map(([n, p]) => `${p.benvenuto} con ${n}`).join(', ').replace(/, ([^,]*)$/, ', $1');
@@ -203,6 +243,83 @@ console.log('\n6. Collegamenti');
   verifica(canonici.length === 1 && canonici[0].attr.href === CANONICO, `l'indirizzo canonico è ${CANONICO}`);
   const accedi = link.filter(a => spazi(testi.filter(x => x.antenati.includes(a)).map(x => x.testo).join(' ')) === 'Accedi').map(a => a.attr.href);
   verifica(accedi.length >= 2 && accedi.every(h => h === 'https://app.dimorapp.com/login'), '«Accedi» porta a app.dimorapp.com/login', accedi);
+}
+
+console.log('\n7. Testi approvati, parola per parola');
+{
+  const dimora = tag.find(t => t.nome === 'article' && t.attr['data-piano'] === 'Dimora');
+  const desc = dimora ? conClasse('piano-desc', dimora).map(testoDi) : [];
+  verifica(JSON.stringify(desc) === JSON.stringify([TESTI.dimoraDesc]), 'Dimora: la descrizione', desc);
+  const note = tag.filter(t => t.nome === 'li' && t.antenati.some(a => classi(a).includes('piani-note'))).map(testoDi);
+  verifica(note.filter(x => x === TESTI.benvenuto).length === 1, 'la riga del benvenuto', note.filter(x => /benvenuto/.test(x)));
+  const guida = conClasse('mascotte-testi');
+  verifica(guida.length === 1, 'Dimorino ha un riquadro solo');
+  const g = guida[0];
+  const dentro = (prova) => tag.filter(t => t.antenati.includes(g) && prova(t)).map(testoDi);
+  const occhiello = dentro(t => classi(t).includes('occhiello')), titolo = dentro(t => t.nome === 'h3'), testo = dentro(t => t.nome === 'p');
+  verifica(JSON.stringify(occhiello) === JSON.stringify([TESTI.guidaOcchiello]), `Dimorino: «${TESTI.guidaOcchiello}»`, occhiello);
+  verifica(JSON.stringify(titolo) === JSON.stringify([TESTI.guidaTitolo]), `Dimorino: «${TESTI.guidaTitolo}»`, titolo);
+  verifica(JSON.stringify(testo) === JSON.stringify([TESTI.guidaTesto]), 'Dimorino: il testo', testo);
+  const rimasti = VIA.filter(v => tuttoIlTesto.includes(v));
+  verifica(rimasti.length === 0, 'i testi di prima non ci sono più', rimasti);
+}
+
+console.log("\n8. L'interruttore annuale / mensile");
+{
+  const sezione = tag.find(t => t.nome === 'section' && t.attr.id === 'prezzi');
+  verifica(!!sezione && 'data-prezzi' in sezione.attr && !('data-periodo' in sezione.attr), 'la sezione dei prezzi ha data-prezzi e nasce senza data-periodo (lo scrive lo script)');
+  const inter = conClasse('interruttore');
+  verifica(inter.length === 1 && inter[0].antenati.includes(sezione), "l'interruttore è uno, nella sezione dei prezzi");
+  const i0 = inter[0];
+  const testa = conClasse('piani-testa')[0], griglia = conClasse('piani')[0];
+  verifica(!!testa && !!griglia && tag.indexOf(testa) < tag.indexOf(i0) && tag.indexOf(i0) < tag.indexOf(griglia), "l'interruttore sta sotto «Tutte le funzioni…» e sopra le tre schede");
+  verifica(!!testa && testoDi(testa).endsWith('Tutte le funzioni sono in ogni piano. Cambiano le letture AI e lo spazio.'), "la frase sopra l'interruttore non cambia", testa && testoDi(testa));
+  const dentro = tag.filter(t => t.antenati.includes(i0));
+  const bottoni = dentro.filter(t => t.nome === 'button');
+  verifica(bottoni.length === 2 && bottoni.every(b => b.attr.type === 'button') && !dentro.some(t => ['a', 'input', 'label', 'select'].includes(t.nome)), "due bottoni veri (type=\"button\") e nient'altro di cliccabile");
+  const [anno, mese] = bottoni;
+  verifica(anno?.attr['data-periodo-scelta'] === 'anno' && anno?.attr['aria-pressed'] === 'true', "il primo è l'annuale, scelto all'apertura (aria-pressed=\"true\")");
+  verifica(mese?.attr['data-periodo-scelta'] === 'mese' && mese?.attr['aria-pressed'] === 'false', 'il secondo è il mensile (aria-pressed="false")');
+  const tAnno = anno ? testoDi(anno) : '', tMese = mese ? testoDi(mese) : '';
+  const scritto = Number((/fino al (\d+)%/.exec(tAnno) || [])[1]);
+  // Il risparmio più alto, ricavato dai prezzi scritti nelle schede (non dalla tabella e non dal testo), per difetto.
+  const schede = tag.filter(t => t.nome === 'article' && 'data-piano' in t.attr);
+  const cifra = (s, c) => centesimi(conClasse(c, s).flatMap(b => tag.filter(x => x.antenati.includes(b) && classi(x).includes('piano-cifra')).map(testoDi))[0] || '');
+  const risparmi = schede.map(s => (1 - cifra(s, 'piano-prezzo-anno') / (12 * cifra(s, 'piano-prezzo-mese'))) * 100);
+  const massimo = Math.floor(Math.max(...risparmi));
+  verifica(risparmi.length === 3 && risparmi.every(r => isFinite(r) && r > 0), `i risparmi letti dalle schede: ${risparmi.map(r => r.toFixed(2)).join('%, ')}%`);
+  verifica(scritto === massimo, `«fino al ${scritto}%» è il risparmio più alto delle schede, per difetto (${massimo}%)`);
+  verifica(tAnno === TESTI.annuale.replace('{N}', String(massimo)) && tMese === TESTI.mensile, `le due voci: «${tAnno}» e «${tMese}»`);
+  const css = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const regola = (sel) => [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(m => m[1].split(',').map(x => x.trim()).includes(sel)).map(m => m[2]).join(';');
+  const nascosto = (sel) => /display:\s*none/.test(regola(sel));
+  verifica(nascosto('[data-prezzi]:not([data-periodo]) .interruttore') && nascosto('[data-prezzi]:not([data-periodo]) .piano-prezzo-mese'), 'senza script niente interruttore e niente secondo prezzo: restano i due prezzi insieme');
+  verifica(nascosto('[data-prezzi][data-periodo] .piano-oppure'), 'con lo script «oppure … al mese.» sparisce dalle schede');
+  verifica(nascosto('[data-prezzi][data-periodo="anno"] .piano-prezzo-mese') && nascosto('[data-prezzi][data-periodo="mese"] .piano-prezzo-anno'), 'un prezzo alla volta, quello scelto');
+  const riga = regola('[data-prezzi][data-periodo="mese"] .piano-risparmio');
+  verifica(/visibility:\s*hidden/.test(riga) && !/display/.test(riga), 'con il mensile la riga del risparmio non si vede ma tiene il suo spazio', riga);
+  verifica(/setAttribute\('data-periodo', periodo\)/.test(JS_CODICE) && /setAttribute\('aria-pressed'/.test(JS_CODICE) && /scegli\('anno'\)/.test(JS_CODICE), "lo script scrive data-periodo e aria-pressed, e parte dall'annuale");
+}
+
+console.log('\n9. Le domande frequenti');
+{
+  const elenco = conClasse('domande');
+  verifica(elenco.length === 1, 'le domande stanno in un elenco solo');
+  const domande = tag.filter(t => classi(t).includes('domanda'));
+  verifica(domande.length === DOMANDE.length && domande.every(d => d.nome === 'details' && d.antenati.includes(elenco[0])), `ogni domanda è un <details> (${domande.length})`, domande.map(d => d.nome));
+  verifica(domande.every(d => !('open' in d.attr)), "all'apertura della pagina sono tutte chiuse");
+  const titoli = domande.map(d => {
+    const s = tag.filter(t => t.nome === 'summary' && t.antenati.includes(d));
+    const h = s.length === 1 ? tag.filter(t => t.nome === 'h3' && t.antenati.includes(s[0])) : [];
+    return h.length === 1 ? testoDi(h[0]) : null;
+  });
+  verifica(JSON.stringify(titoli) === JSON.stringify(DOMANDE), "il titolo di ogni domanda è nella sua riga (<summary>), nell'ordine di sempre", titoli);
+  const segni = domande.map(d => tag.filter(t => t.antenati.includes(d) && classi(t).includes('domanda-segno')));
+  verifica(segni.every(s => s.length === 1 && s[0].attr['aria-hidden'] === 'true' && !testoDi(s[0])), 'ogni riga ha il suo «+», solo disegnato (aria-hidden)');
+  const risposte = domande.map(d => tag.filter(t => t.nome === 'p' && t.antenati.includes(d)).map(testoDi));
+  verifica(risposte.every(r => r.length === 1 && r[0]), 'ogni domanda ha la sua risposta');
+  const sicura = risposte[DOMANDE.indexOf(TESTI.sicuroDomanda)];
+  verifica(sicura?.[0] === TESTI.sicuroRisposta, `«${TESTI.sicuroDomanda}»: la risposta di sempre`, sicura);
 }
 
 console.log(`\n${passati} passati, ${falliti} falliti`);
