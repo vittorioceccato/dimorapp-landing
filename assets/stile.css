@@ -634,7 +634,8 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .piano .piano-desc { font-size: 14.5px; line-height: 1.6; }
   /* Le note si leggono per colonna: «Durante la beta…» resta subito sopra «Archiviare…». */
   .piani-note { margin-top: 28px; padding: 26px 32px; border-radius: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column; gap: 12px 48px; font-size: 15px; }
-  .piani-note-ultima { grid-column: 1 / -1; grid-row: 4; }
+  /* La nota sui prezzi previsti chiude il riquadro: sotto le due colonne, staccata da una riga sottile, al centro. */
+  .piani-note-ultima { grid-column: 1 / -1; grid-row: 4; margin-top: 6px; padding-top: 18px; border-top: 1px solid rgba(28, 58, 46, .16); text-align: center; }
 }
 /* Fra 1024 e 1279 px «Attivazione su richiesta» va a capo: la testata dei tre piani ha la stessa altezza. */
 @media (min-width: 1024px) and (max-width: 1279px) {
