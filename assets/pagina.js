@@ -125,4 +125,86 @@
 
     body.setAttribute('data-moduli', 'attivi');
   })();
+
+  /* ---------- Il lancio: la data, il conto alla rovescia, lo stato ----------
+     Due valori, scritti una volta sola sul <body> di index.html:
+       data-lancio  la data e l'ora del lancio, con il fuso (es. 2026-10-08T10:00:00+02:00);
+       data-stato   "in arrivo" oppure "aperta" (esattamente così: lo legge anche il CSS).
+     Da qui lo script ricava l'aspetto della pagina e lo scrive in data-aspetto:
+       prima   in arrivo, prima della data: conto alla rovescia e frasi con la data;
+       dopo    in arrivo, dalla data in poi: niente timer né date, «Ci siamo quasi»,
+               i moduli restano. La pagina non dice mai da sola che la beta è aperta;
+       aperta  la beta è aperta: niente timer né moduli, «Inizia la prova gratuita».
+     Giorno e ora si scrivono sempre in italiano e nell'ora italiana (Europe/Rome),
+     qualunque siano la lingua e il fuso del dispositivo. */
+  (function lancio() {
+    var GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+    var MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio',
+      'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+    var scritto = (body.getAttribute('data-lancio') || '').trim();
+    var lancioMs = Date.parse(scritto);
+    if (isNaN(lancioMs)) return; // data scritta male: la pagina resta com'è senza script
+
+    function due(n) { return (n < 10 ? '0' : '') + n; }
+
+    // Le parti della data viste da Roma. Si chiede a Intl il solo calendario in cifre
+    // (en-US dà sempre cifre latine): i nomi di giorni e mesi sono nostri, in italiano.
+    function partiRoma(ms) {
+      var f = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Rome', year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', hourCycle: 'h23'
+      });
+      var p = {};
+      f.formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
+      return { a: +p.year, m: +p.month, g: +p.day, h: (+p.hour) % 24, mi: +p.minute };
+    }
+    // Ripiego per un browser senza fusi orari: l'ora come è scritta in data-lancio,
+    // che va scritta con il fuso italiano (+02:00 d'estate, +01:00 d'inverno).
+    function partiScritte(t) {
+      var r = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(t);
+      return r ? { a: +r[1], m: +r[2], g: +r[3], h: +r[4], mi: +r[5] } : null;
+    }
+    function dataItaliana(ms) {
+      var p = null;
+      try { p = partiRoma(ms); } catch (e) { p = null; }
+      if (!p || isNaN(p.a + p.m + p.g + p.h + p.mi)) p = partiScritte(scritto);
+      if (!p) return '';
+      var settimana = new Date(Date.UTC(p.a, p.m - 1, p.g)).getUTCDay();
+      var ora = (p.h === 1 ? 'all\'' : 'alle ') + p.h + ':' + due(p.mi);
+      return GIORNI[settimana] + ' ' + p.g + ' ' + MESI[p.m - 1] + ' ' + ora;
+    }
+
+    var quando = dataItaliana(lancioMs);
+    if (!quando) return;
+    [].forEach.call(document.querySelectorAll('[data-quando]'), function (el) { el.textContent = quando; });
+
+    var cifre = {};
+    ['g', 'h', 'm', 's'].forEach(function (k) { cifre[k] = document.querySelector('[data-cd="' + k + '"]'); });
+
+    function scriviCifre(restanoMs) {
+      var s = Math.max(0, Math.floor(restanoMs / 1000));
+      var v = { g: Math.floor(s / 86400), h: Math.floor(s % 86400 / 3600), m: Math.floor(s % 3600 / 60), s: s % 60 };
+      Object.keys(v).forEach(function (k) {
+        var el = cifre[k];
+        if (!el || el.textContent === due(v[k])) return;
+        el.textContent = due(v[k]);
+        el.classList.remove('scatta');
+        void el.offsetWidth; // fa ripartire l'animazione della cifra
+        el.classList.add('scatta');
+      });
+    }
+
+    function aggiorna() {
+      var ora = Date.now();
+      var aspetto = body.getAttribute('data-stato') === 'aperta' ? 'aperta'
+        : (ora < lancioMs ? 'prima' : 'dopo');
+      if (aspetto === 'prima') scriviCifre(lancioMs - ora);
+      if (body.getAttribute('data-aspetto') !== aspetto) body.setAttribute('data-aspetto', aspetto);
+    }
+
+    aggiorna();
+    (function giro() {
+      setTimeout(function () { aggiorna(); giro(); }, 1000 - (Date.now() % 1000) + 20);
+    })();
+  })();
 })();
