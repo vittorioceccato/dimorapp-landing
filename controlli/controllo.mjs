@@ -88,6 +88,8 @@ const TESTI = {
   lettureRisposta: 'Una lettura copre fino a 10 pagine di un documento: per un contratto di 14 pagine ne servono 2. Archiviare un documento o inserire i dati a mano non consuma letture.',
   pacchettiDomanda: 'Posso avere più letture?',
   pacchettiRisposta: 'Sì, con i pacchetti aggiuntivi: 10 letture a 4,90 €, 20 a 7,90 €, 100 a 34,90 €. Valgono 12 mesi e si comprano con un piano attivo.',
+  eroe: 'Per chi ha una casa o più di una, e per chi affitta. Dimora legge bollette, contratti e rate del condominio, prepara le scadenze e ti avvisa per tempo. Tu controlli e confermi.',
+  firma: 'ha ideato Dimora',
   guidaOcchiello: 'LA TUA GUIDA',
   guidaTitolo: 'Ti presento Dimorino',
   guidaTesto: "È la tua guida dentro Dimora: ti segue passo passo e ti aiuta con documenti, scadenze e tutto quello che riguarda la casa. Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.",
@@ -113,6 +115,8 @@ const VIA = [
   'non si accumulano',
   // Le formule di prima delle schede.
   'risparmi circa il', 'Indicativamente', 'Consigliato per chi',
+  // Il testo in alto e la firma di prima (6/10).
+  'e per chi affitta da sé', 'legge ogni segnalazione',
 ];
 // Le domande frequenti, nel loro ordine: dopo «Quanto costa dopo la prova?» le due sulle letture.
 const DOMANDE = [
@@ -339,6 +343,10 @@ console.log('\n7. Testi approvati, parola per parola');
   const note = elencoNote.length === 1 ? tag.filter(t => t.nome === 'li' && t.antenati[t.antenati.length - 1] === elencoNote[0]) : [];
   verifica(JSON.stringify(note.map(testoDi)) === JSON.stringify(TESTI.note), `le note sotto le schede sono ${TESTI.note.length}, in quest'ordine, e nient'altro`, note.map(testoDi));
   verifica(note.length > 0 && classi(note[note.length - 1]).includes('piani-note-ultima'), 'la nota sui prezzi previsti chiude il riquadro');
+  const eroe = conClasse('eroe-lead').map(testoDi);
+  verifica(JSON.stringify(eroe) === JSON.stringify([TESTI.eroe]), 'il testo in alto (uno solo, per computer e telefono)', eroe);
+  const firma = conClasse('firma-ruolo').map(testoDi);
+  verifica(JSON.stringify(firma) === JSON.stringify([TESTI.firma]), `la firma della lettera: «${TESTI.firma}»`, firma);
   const allApertura = "30 giorni gratis, 20 letture con l'AI, senza carta.";
   verifica(tuttoIlTesto.split(allApertura).length - 1 === 3, `«${allApertura}» in cima e in fondo, come prima (3 volte)`);
   const guida = conClasse('mascotte-testi');
@@ -399,6 +407,17 @@ console.log("\n8. L'interruttore annuale / mensile");
   // Dove «l'anno, in un'unica soluzione» non sta accanto alla cifra, il periodo va sotto in tutte e tre le schede.
   const strette = /@media\s*\(max-width:\s*359px\),\s*\(min-width:\s*1024px\)\s*and\s*\(max-width:\s*1279px\)\s*\{[^{}]*\{[^{}]*flex-wrap:\s*wrap[^{}]*\}\s*\.piano-periodo\s*\{\s*flex-basis:\s*100%;?\s*\}/.test(css);
   verifica(strette, 'nelle schede strette (sotto i 360 px e fra 1024 e 1279 px) il periodo va sotto la cifra: le righe del prezzo restano uguali');
+  // Sotto il mouse un piano non si sposta: le tre schede restano alla stessa altezza.
+  const hover = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => m[1].split(',').map(x => x.trim()).includes('.piano:hover'));
+  verifica(hover.length === 1 && /transform:\s*none/.test(hover[0][2]) && /border-color/.test(hover[0][2]) && hover[0][1].includes('.js .rv.in.piano:hover'), 'sotto il mouse un piano non si solleva: si distingue con ombra e bordo', hover.map(m => m[2]));
+  // Le note: centrate, una sotto l'altra, in una colonna di 760 px al massimo; l'ultima più piccola e più chiara, senza riga.
+  const note = regola('.piani-note'), righe = regola('.piani-note li'), ultima = regola('.piani-note .piani-note-ultima');
+  verifica(/align-items:\s*center/.test(note) && /text-align:\s*center/.test(note) && /flex-direction:\s*column/.test(note) && !/grid/.test(css.match(/\.piani-note\s*\{[^}]*\}/g).join(' ')), 'le note sono centrate, una sotto l\'altra (niente colonne)', note);
+  verifica(/max-width:\s*760px/.test(righe), 'le note stanno in una colonna larga al massimo 760 px', righe);
+  verifica(/color:\s*var\(--muto\)/.test(ultima) && !/border/.test(css.match(/[^{}]*piani-note-ultima[^{}]*\{[^}]*\}/g).join(' ')), 'l\'ultima nota è più chiara e senza riga di separazione', ultima);
+  const corpi = [...css.matchAll(/\.piani-note \.piani-note-ultima\s*\{[^}]*font-size:\s*([\d.]+)px/g)].map(m => +m[1]);
+  const corpiNote = [...css.matchAll(/\.piani-note\s*\{[^}]*font-size:\s*([\d.]+)px/g)].map(m => +m[1]);
+  verifica(corpi.length === 2 && corpiNote.length === 2 && corpi.every((c, i) => c < corpiNote[i]), `l'ultima nota è più piccola delle altre, sul telefono e sul computer (${corpi.join('/')} contro ${corpiNote.join('/')} px)`);
   const insieme = [...css.matchAll(/([^{}]+)\{/g)].map(m => m[1].split(',').map(x => x.trim())).filter(s => s.includes('.piano-mese') && s.includes('.piano .piano-regalo'));
   verifica(insieme.length === 2, 'la riga del regalo ha lo stile della riga del risparmio (le stesse regole di .piano-mese, sul telefono e sul computer)', insieme.length);
   verifica(/setAttribute\('data-periodo', periodo\)/.test(JS_CODICE) && /setAttribute\('aria-pressed'/.test(JS_CODICE) && /scegli\('anno'\)/.test(JS_CODICE), "lo script scrive data-periodo e aria-pressed, e parte dall'annuale");

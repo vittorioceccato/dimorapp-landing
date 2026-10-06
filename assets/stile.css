@@ -639,7 +639,11 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
 .piano .piano-regalo { margin-top: auto; }
 .piano-dotazione { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--bordo-mock); border-bottom: 1px solid var(--bordo-mock); font-size: 14.5px; font-weight: 700; color: var(--inchiostro); }
 .piano .piano-desc { font-size: 14px; line-height: 1.55; }
-.piani-note { list-style: none; margin: 16px 0 0; padding: 20px; border-radius: 16px; background: var(--menta); display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--inchiostro); }
+/* Le note: centrate, una sotto l'altra, in una colonna larga al massimo 760 px.
+   L'ultima (piani e prezzi previsti) più piccola e più chiara. */
+.piani-note { list-style: none; margin: 16px 0 0; padding: 20px; border-radius: 16px; background: var(--menta); display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--inchiostro); text-align: center; }
+.piani-note li { max-width: 760px; }
+.piani-note .piani-note-ultima { font-size: 13px; color: var(--muto); }
 @media (min-width: 1024px) {
   .prova { flex-direction: row; align-items: center; justify-content: space-between; gap: 32px; padding: 28px 32px; }
   .prova-testi { gap: 6px; flex: 1 1 0; min-width: 0; }
@@ -661,10 +665,8 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .piano-mese, .piano .piano-regalo { font-size: 14px; }
   .piano-dotazione { gap: 8px; padding: 14px 0; font-size: 15px; }
   .piano .piano-desc { font-size: 14.5px; line-height: 1.6; }
-  /* Le prime due note stanno una accanto all'altra. */
-  .piani-note { margin-top: 28px; padding: 26px 32px; border-radius: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 48px; font-size: 15px; }
-  /* La nota sui prezzi previsti chiude il riquadro: sotto le due colonne, staccata da una riga sottile, al centro. */
-  .piani-note-ultima { grid-column: 1 / -1; margin-top: 6px; padding-top: 18px; border-top: 1px solid rgba(28, 58, 46, .16); text-align: center; }
+  .piani-note { margin-top: 28px; padding: 26px 32px; border-radius: 18px; gap: 12px; font-size: 15px; }
+  .piani-note .piani-note-ultima { font-size: 14px; }
 }
 /* Fra 1024 e 1279 px «Attivazione su richiesta» va a capo: la testata dei tre piani ha la stessa altezza. */
 @media (min-width: 1024px) and (max-width: 1279px) {
@@ -796,6 +798,9 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .scheda-scura:hover, .js .rv.in.scheda-scura:hover { transform: translateY(-4px); background: rgba(255, 255, 255, .1); }
   /* Una domanda aperta si legge: non si solleva sotto il mouse. */
   .domanda:hover, .js .rv.in.domanda:hover { transform: none; }
+  /* Nemmeno un piano: le tre schede restano alla stessa altezza, quella sotto il mouse si distingue
+     con l'ombra e il bordo. */
+  .piano:hover, .js .rv.in.piano:hover { transform: none; border-color: var(--verde-chiaro); }
 }
 @media (hover: hover) {
   .interruttore-voce[aria-pressed="false"]:hover { background: var(--menta); }
