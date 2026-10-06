@@ -613,7 +613,7 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
 .piani-testa span { font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--muto); }
 /* L'interruttore annuale / mensile. Lo script scrive data-periodo ("anno" o "mese") sulla sezione:
    senza script l'interruttore non c'è e ogni scheda mostra i due prezzi insieme, come prima.
-   Con «Mensile» la riga del risparmio resta, invisibile: le schede non cambiano altezza. */
+   Con «Mensile» le righe del risparmio e del regalo restano, invisibili: le schede non cambiano altezza. */
 .interruttore { width: fit-content; max-width: 100%; margin: 0 auto 18px; padding: 4px; border: 1px solid var(--bordo); border-radius: 999px; background: #fff; display: flex; gap: 4px; }
 .interruttore-voce { margin: 0; min-height: 44px; padding: 8px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--inchiostro); font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1.25; text-align: center; cursor: pointer; }
 .interruttore-voce[aria-pressed="true"] { background: var(--verde); color: #fff; }
@@ -625,7 +625,8 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
 [data-prezzi][data-periodo] .piano-oppure,
 [data-prezzi][data-periodo="anno"] .piano-prezzo-mese,
 [data-prezzi][data-periodo="mese"] .piano-prezzo-anno { display: none !important; }
-[data-prezzi][data-periodo="mese"] .piano-risparmio { visibility: hidden; }
+[data-prezzi][data-periodo="mese"] .piano-risparmio,
+[data-prezzi][data-periodo="mese"] .piano-regalo { visibility: hidden; }
 .piano { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
 .piano-nome { min-height: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .piano-nome h4 { margin: 0; font-size: 19px; font-weight: 800; color: var(--inchiostro); }
@@ -633,7 +634,9 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
 .piano-prezzo { display: flex; align-items: baseline; gap: 8px; }
 .piano-cifra { font-size: 34px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; color: var(--inchiostro); white-space: nowrap; }
 .piano-periodo { font-size: 14px; font-weight: 600; color: var(--muto); }
-.piano-mese { font-size: 13.5px; font-weight: 600; line-height: 1.5; color: var(--muto); }
+.piano-mese, .piano .piano-regalo { font-size: 13.5px; font-weight: 600; line-height: 1.5; color: var(--muto); }
+/* Il regalo dell'annuale chiude la scheda: in fondo, alla stessa altezza nelle tre schede. */
+.piano .piano-regalo { margin-top: auto; }
 .piano-dotazione { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--bordo-mock); border-bottom: 1px solid var(--bordo-mock); font-size: 14.5px; font-weight: 700; color: var(--inchiostro); }
 .piano .piano-desc { font-size: 14px; line-height: 1.55; }
 .piani-note { list-style: none; margin: 16px 0 0; padding: 20px; border-radius: 16px; background: var(--menta); display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--inchiostro); }
@@ -655,17 +658,24 @@ h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1
   .piano-richiesta { padding: 4px 10px; font-size: 12px; }
   .piano-cifra { font-size: 44px; }
   .piano-periodo { font-size: 15px; }
-  .piano-mese { font-size: 14px; }
+  .piano-mese, .piano .piano-regalo { font-size: 14px; }
   .piano-dotazione { gap: 8px; padding: 14px 0; font-size: 15px; }
   .piano .piano-desc { font-size: 14.5px; line-height: 1.6; }
-  /* Le note si leggono per colonna: «Durante la beta…» resta subito sopra «Archiviare…». */
-  .piani-note { margin-top: 28px; padding: 26px 32px; border-radius: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column; gap: 12px 48px; font-size: 15px; }
+  /* Le prime due note stanno una accanto all'altra. */
+  .piani-note { margin-top: 28px; padding: 26px 32px; border-radius: 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 48px; font-size: 15px; }
   /* La nota sui prezzi previsti chiude il riquadro: sotto le due colonne, staccata da una riga sottile, al centro. */
-  .piani-note-ultima { grid-column: 1 / -1; grid-row: 4; margin-top: 6px; padding-top: 18px; border-top: 1px solid rgba(28, 58, 46, .16); text-align: center; }
+  .piani-note-ultima { grid-column: 1 / -1; margin-top: 6px; padding-top: 18px; border-top: 1px solid rgba(28, 58, 46, .16); text-align: center; }
 }
 /* Fra 1024 e 1279 px «Attivazione su richiesta» va a capo: la testata dei tre piani ha la stessa altezza. */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .piano-nome { min-height: 62px; align-content: flex-start; }
+}
+/* Dove «l'anno, in un'unica soluzione» non sta accanto alla cifra (schede strette: fra 1024 e 1279 px,
+   e sotto i 360 px), il periodo va sotto la cifra in tutte e tre le schede, anche «al mese»:
+   le righe del prezzo hanno la stessa altezza, le schede restano allineate e non saltano cambiando periodo. */
+@media (max-width: 359px), (min-width: 1024px) and (max-width: 1279px) {
+  .piano-prezzo { flex-wrap: wrap; row-gap: 2px; }
+  .piano-periodo { flex-basis: 100%; }
 }
 
 /* ---------- Un aiuto vero ---------- */
