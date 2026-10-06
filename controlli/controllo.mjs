@@ -18,7 +18,9 @@
 //      senza script i due prezzi insieme e il regalo, con il mensile risparmio e regalo invisibili;
 //   9. le domande frequenti: una per riga, chiuse, nel loro ordine, e le risposte nuove parola per parola;
 //  10. le statistiche di Vercel: i due tag una volta sola, la coda prima dello script, lo script da
-//      quel percorso esatto, nessun altro /_vercel/ e solo i cinque eventi previsti.
+//      quel percorso esatto, nessun altro /_vercel/ e solo i cinque eventi previsti; ogni collegamento
+//      verso il login e ogni modulo della lista d'attesa con la sua etichetta, nessuna coppia
+//      evento e posizione ripetuta.
 // Esce con 1 al primo controllo fallito, dopo averli stampati tutti.
 
 import fs from 'node:fs';
@@ -492,6 +494,21 @@ console.log('\n10. Le statistiche di Vercel');
   verifica(conEvento.every(t => t.attr['data-posizione']), `ogni elemento con un evento ha la sua posizione (${conEvento.length})`, conEvento.filter(t => !t.attr['data-posizione']).map(t => t.attr['data-evento']));
   verifica((JS_CODICE.match(/closest\('\[data-evento\]'\)/g) || []).length === 1 && (JS_CODICE.match(/'event'/g) || []).length === 1, "un ascoltatore solo per i clic, un punto solo che manda gli eventi");
   verifica(/statistica\('beforeSend'/.test(JS_CODICE), "gli indirizzi si ripuliscono prima dell'invio (beforeSend)");
+  // La protezione per le modifiche future (7/10): un pulsante nuovo verso l'app, o un modulo nuovo della
+  // lista d'attesa, senza etichetta non deve passare in silenzio. Si trova dall'indirizzo, si conta dalla funzione.
+  const versoLogin = tag.filter(t => (t.attr.href || '').startsWith(COLLEGAMENTI_AMMESSI[0]));
+  const loginSenza = versoLogin.filter(t => !t.attr['data-evento'] || !t.attr['data-posizione']);
+  verifica(versoLogin.length > 0 && loginSenza.length === 0, `ogni collegamento verso ${COLLEGAMENTI_AMMESSI[0]} ha data-evento e data-posizione (${versoLogin.length} trovati)`, loginSenza.map(t => t.attr));
+  const moduliLista = tag.filter(t => t.nome === 'form' && 'data-wl' in t.attr);
+  const moduliSenza = moduliLista.filter(t => !t.attr['data-posizione']);
+  verifica(moduliLista.length > 0 && moduliSenza.length === 0, `ogni modulo della lista d'attesa ha la sua data-posizione (${moduliLista.length} trovati)`, moduliSenza.map(t => t.attr));
+  // I moduli mandano lista_iscritto o lista_gia_iscritto: per loro la coppia è «lista» e la posizione.
+  const coppie = [
+    ...conEvento.map(t => `${t.attr['data-evento']} · ${t.attr['data-posizione'] || ''}`),
+    ...moduliLista.map(t => `lista · ${t.attr['data-posizione'] || ''}`),
+  ];
+  const doppie = [...new Set(coppie.filter((c, i) => coppie.indexOf(c) !== i))];
+  verifica(doppie.length === 0, `nessuna coppia evento e posizione ripetuta (${coppie.length} coppie)`, doppie);
 }
 
 console.log(`\n${passati} passati, ${falliti} falliti`);
