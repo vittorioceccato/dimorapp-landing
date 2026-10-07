@@ -58,19 +58,19 @@ const TESTI = {
     'Dimora': {
       dotazione: ['Fino a 3 immobili', '10 letture AI al mese', '5 GB di archivio'],
       risparmio: "Con l'annuale risparmi 23,80 €.",
-      desc: 'Per la tua casa o per pochi immobili, anche in affitto.',
+      desc: 'Per la tua casa o pochi immobili, anche in affitto.',
       regalo: 'In regalo con il primo annuale: 10 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
     'Dimora Plus': {
       dotazione: ['Fino a 10 immobili', '20 letture AI al mese', '10 GB di archivio'],
       risparmio: "Con l'annuale risparmi 35,80 €.",
-      desc: 'Per seguire più immobili, tuoi o di famiglia.',
+      desc: 'Per gestire più immobili, con affitti e incassi sotto controllo.',
       regalo: 'In regalo con il primo annuale: 20 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
     'Dimora Max': {
       dotazione: ['Fino a 25 immobili', '40 letture AI al mese', '20 GB di archivio'],
       risparmio: "Con l'annuale risparmi 55,80 €.",
-      desc: 'Per chi gestisce molti immobili.',
+      desc: 'Per chi gestisce un patrimonio immobiliare più ampio.',
       regalo: 'In regalo con il primo annuale: 40 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
   },
@@ -159,6 +159,8 @@ const VIA = [
   'Senza moduli da riempire a mano', 'Sai quanto ti costa ogni casa', 'Per chi gestisce da sé uno o più affitti',
   'Una bolletta o una rata del condominio bastano',
   'Per la tua casa e una o due seconde case', 'Per chi affitta più immobili e ha contratti', 'propri o di famiglia',
+  // Le righe dei piani del comando del 7/10, cambiate lo stesso giorno sugli appunti di Vitto.
+  'Per la tua casa o per pochi immobili', 'tuoi o di famiglia', 'Per chi gestisce molti immobili.',
 ];
 // Le domande frequenti, nel loro ordine: dopo «Quanto costa dopo la prova?» le due sulle letture.
 const DOMANDE = [
