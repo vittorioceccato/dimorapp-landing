@@ -1,6 +1,6 @@
 /* Dimora — landing. Un foglio solo, nessun passo di build.
    Telefono prima: le regole senza media query valgono per il telefono,
-   le altre aggiungono a 640, 768, 1024, 1280 px. */
+   le altre aggiungono a 640, 768, 1024, 1280 px; l'apertura anche a 641 e a 1220 px (il portatile). */
 
 @font-face {
   font-family: 'Plus Jakarta Sans';
@@ -229,101 +229,90 @@ body[data-moduli] .modulo-senza-js { display: none !important; }
 }
 @media (min-width: 1280px) { .nav-larga { gap: 32px; } }
 
-/* ---------- Apertura ---------- */
-.eroe { padding: 32px 0 40px; }
-.eroe-griglia { display: flex; flex-direction: column; gap: 32px; }
-.eroe-testo { display: flex; flex-direction: column; gap: 20px; max-width: 640px; }
-.etichetta-beta { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--menta); color: var(--verde); font-size: 13px; font-weight: 700; }
-.pallino { width: 7px; height: 7px; border-radius: 999px; background: var(--verde); flex-shrink: 0; }
-h1 { margin: 0; font-size: clamp(36px, calc(26px + 2.2vw), 58px); line-height: 1.08; font-weight: 800; letter-spacing: -.02em; color: var(--inchiostro); }
-.h1-verde { display: block; color: var(--verde); }
-.eroe-lead { margin: 0; font-size: 16px; line-height: 1.6; color: var(--muto); }
-.eroe-nota { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muto); text-align: center; }
-.eroe-link { align-self: flex-start; font-size: 15px; font-weight: 700; color: var(--inchiostro); }
-.eroe-elenco { list-style: none; margin: 0; padding: 16px 0 0; border-top: 1px solid var(--bordo-tenue); display: flex; flex-direction: column; gap: 10px; font-size: 14px; font-weight: 600; }
-.eroe-elenco li { display: flex; align-items: center; gap: 10px; }
-.eroe-elenco svg { flex-shrink: 0; width: 16px; height: 16px; }
+/* ---------- Apertura ----------
+   Due fasce. In alto il titolo e il testo con il campo mail; sotto, le schermate vere dell'app.
+   Da 1220 px in su: titolo a sinistra, testo a destra; sotto, a tutta larghezza, il portatile con la home,
+   il telefono con la bolletta letta e la foto della bolletta fra i due.
+   Fino a 1219 px: niente portatile; la foto piccola appoggiata al telefono, il bollino e la scritta accanto.
+   1220 e non 1200: a 1220 px la home nel portatile è al 67,5% della sua grandezza (1180 px), sotto si legge male.
+   Le schermate si mostrano intere e nelle loro proporzioni: nessun ritaglio. */
+.eroe { padding: 32px 0 52px; }
+.eroe-alto { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+.eroe-occhiello { font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--verde); }
+h1 { margin: 14px 0 0; font-size: 36px; line-height: 1.08; font-weight: 800; letter-spacing: -.02em; color: var(--inchiostro); }
+.h1-verde { display: block; margin-top: 6px; color: var(--verde); }
+.eroe-destra { max-width: 620px; }
+.eroe-lead { margin: 0; font-size: 16.5px; line-height: 1.6; color: var(--muto); }
+.eroe-destra .blocco-modulo { margin-top: 22px; }
+.eroe-nota { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muto); }
 .btn-inizia { align-self: stretch; }
 @media (min-width: 640px) {
-  .eroe-nota { text-align: left; }
   .btn-inizia { align-self: flex-start; }
 }
-
-/* Anteprima dell'app per il telefono */
-.mock-mob { max-width: 520px; }
-.mm-app { border-radius: 22px; border: 1px solid var(--bordo); background: #fff; box-shadow: 0 18px 44px rgba(28, 58, 46, .14); overflow: hidden; }
-.mk-striscia { padding: 8px 14px; background: var(--menta); color: var(--inchiostro); font-size: 11px; font-weight: 600; }
-.mm-contenuto { padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--fondo); }
-.mk-ciao { font-size: 17px; font-weight: 800; color: var(--inchiostro); }
-.mk-kpi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.mk-kpi > div { padding: 10px; border-radius: 12px; border: 1px solid var(--bordo); background: #fff; display: flex; flex-direction: column; gap: 2px; }
-.mk-kpi-num { font-size: 18px; font-weight: 800; color: var(--inchiostro); }
-.mk-ambra { color: var(--ambra); }
-.mk-kpi-tit { font-size: 10px; font-weight: 600; color: var(--muto); }
-.mk-pill { padding: 4px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; white-space: nowrap; }
-.mk-pill-ambra { background: var(--ambra-fondo); color: var(--ambra); }
-.mk-pill-neutra { background: var(--neutro); color: var(--muto); }
-.mk-pill-verde { background: var(--menta); color: var(--menta-testo); }
-.mk-bolletta { padding: 16px; border-radius: 18px; border: 1px solid var(--bordo); background: #fff; display: flex; flex-direction: column; gap: 10px; }
-.mm-bolletta { padding: 12px; border-radius: 12px; }
-.mk-boll-testa { display: flex; align-items: center; gap: 10px; }
-.mk-boll-icona { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: var(--menta); color: var(--verde); display: flex; align-items: center; justify-content: center; }
-.mm-bolletta .mk-boll-icona { width: 32px; height: 32px; }
-.mk-boll-tit { display: flex; flex-direction: column; gap: 2px; }
-.mk-boll-tit span:first-child { font-size: 13px; font-weight: 800; color: var(--inchiostro); }
-.mk-boll-tit span:last-child { font-size: 11px; font-weight: 500; color: var(--muto); }
-.mk-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.mk-chip { padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-.mk-riga { display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--bordo-mock); font-size: 12px; }
-.mk-riga span:first-child { color: var(--muto); font-weight: 600; }
-.mk-riga span:last-child { color: var(--inchiostro); font-weight: 800; text-align: right; }
-.mk-conferma { height: 38px; border-radius: 10px; background: var(--verde); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
-
-/* Anteprima dell'app per il computer: disegnata a 640 px e ridotta con zoom sotto i 1440 px. */
-.mock-desk { display: none; }
-@media (min-width: 1024px) {
-  .eroe { padding: 72px 0 104px; }
-  .eroe-griglia { flex-direction: row; align-items: center; justify-content: space-between; gap: 40px; }
-  .eroe-testo { flex: 1 1 0; min-width: 0; max-width: 520px; gap: 24px; }
-  .etichetta-beta { padding: 6px 14px; font-size: 14px; }
-  .etichetta-beta .pallino { width: 8px; height: 8px; }
+@media (min-width: 641px) {
+  .eroe { padding: 44px 0 60px; }
+  h1 { font-size: 50px; }
   .eroe-lead { font-size: 19px; }
   .eroe-nota { font-size: 15px; }
-  .eroe-elenco { padding-top: 20px; font-size: 15px; }
-  .eroe-elenco svg { width: 18px; height: 18px; }
-  .mock-mob { display: none; }
-  .mock-desk { display: block; position: relative; flex: 0 0 640px; width: 640px; height: 600px; zoom: .68; }
 }
-@media (min-width: 1152px) { .mock-desk { zoom: .78; } }
-@media (min-width: 1280px) { .eroe-griglia { gap: 56px; } .mock-desk { zoom: .86; } }
-@media (min-width: 1440px) { .eroe-griglia { gap: 64px; } .mock-desk { zoom: 1; } }
 
-.md-app { position: absolute; top: 0; right: 0; width: 640px; height: 540px; border-radius: 22px; border: 1px solid var(--bordo); background: #fff; box-shadow: 0 24px 60px rgba(28, 58, 46, .14); overflow: hidden; display: flex; }
-.md-barra { width: 168px; flex-shrink: 0; background: var(--verde-scuro); padding: 18px 12px; display: flex; flex-direction: column; gap: 6px; }
-.md-logo { display: flex; align-items: center; gap: 8px; padding: 0 6px 14px; font-size: 14px; font-weight: 800; color: #fff; }
-.md-logo-segno { width: 26px; height: 26px; border-radius: 8px; background: var(--verde); display: flex; align-items: center; justify-content: center; }
-.md-logo-segno img { width: 20px; height: auto; display: block; }
-.md-voce { display: flex; align-items: center; gap: 8px; padding: 8px 10px; color: var(--su-scuro); font-size: 12px; font-weight: 600; }
-.md-voce-attiva { border-radius: 10px; background: rgba(255, 255, 255, .12); color: #fff; font-weight: 700; }
-.md-aggiungi { margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; height: 36px; border-radius: 10px; background: var(--verde); color: #fff; font-size: 12px; font-weight: 700; }
-.md-corpo { flex-grow: 1; min-width: 0; background: var(--fondo); display: flex; flex-direction: column; }
-.md-corpo .mk-striscia { padding: 8px 18px; }
-.md-contenuto { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.md-saluto { display: flex; flex-direction: column; gap: 2px; }
-.md-saluto .mk-ciao { font-size: 18px; }
-.md-sotto { font-size: 12px; font-weight: 600; color: var(--muto); }
-.md-contenuto .mk-kpi { gap: 10px; }
-.md-contenuto .mk-kpi > div { padding: 12px; }
-.md-contenuto .mk-kpi-num { font-size: 20px; }
-.md-contenuto .mk-kpi-tit { font-size: 11px; }
-.md-occhiello { font-size: 10px; font-weight: 800; letter-spacing: .08em; color: var(--muto); }
-.md-casa { padding: 12px; border-radius: 12px; border: 1px solid var(--bordo); background: #fff; display: flex; align-items: center; gap: 12px; }
-.md-casa-lettera { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; }
-.md-casa-testi { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.md-casa-nome { font-size: 13px; font-weight: 700; color: var(--inchiostro); }
-.md-casa-dove { font-size: 11px; font-weight: 500; color: var(--muto); }
-.md-bolletta { position: absolute; left: -48px; bottom: 0; width: 312px; box-shadow: 0 20px 48px rgba(28, 58, 46, .18); }
-.md-dimorino { position: absolute; left: 280px; bottom: -14px; width: 160px; height: 141px; object-fit: contain; }
+/* Le schermate. Telefono: una colonna larga 300 px, la foto della bolletta in alto a sinistra. */
+.ap-dispositivi { position: relative; isolation: isolate; width: 300px; margin: 30px auto 0; padding: 0 0 46px; display: grid; grid-template-columns: 118px 1fr; column-gap: 12px; align-items: center; }
+.ap-portatile { display: none; }
+.ap-zona, .ap-foto-posto { display: contents; }
+.ap-foto { position: relative; z-index: 3; grid-row: 1; grid-column: 1; width: 116px; margin-left: 6px; padding: 4px; border-radius: 6px; background: #fff; box-shadow: 0 2px 4px rgba(28, 58, 46, .1), 0 18px 34px rgba(28, 58, 46, .26); transform: rotate(-4deg); }
+.ap-foto img { display: block; width: 100%; height: auto; border-radius: 2px; }
+.ap-angolo { position: absolute; width: 14px; height: 14px; border: 2.5px solid var(--verde); }
+.ap-a1 { left: -9px; top: -9px; border-right: 0; border-bottom: 0; border-radius: 6px 0 0 0; }
+.ap-a2 { right: -9px; top: -9px; border-left: 0; border-bottom: 0; border-radius: 0 6px 0 0; }
+.ap-a3 { left: -9px; bottom: -9px; border-right: 0; border-top: 0; border-radius: 0 0 0 6px; }
+.ap-a4 { right: -9px; bottom: -9px; border-left: 0; border-top: 0; border-radius: 0 0 6px 0; }
+.ap-legame { grid-row: 1; grid-column: 2; display: flex; align-items: center; gap: 10px; }
+.ap-bollino { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--verde); display: flex; align-items: center; justify-content: center; }
+.ap-scritta { font-size: 13.5px; font-weight: 800; letter-spacing: .01em; line-height: 1.3; color: var(--verde); }
+.ap-scritta br { display: none; }
+.ap-telefono { position: relative; z-index: 2; grid-row: 2; grid-column: 1 / -1; width: 300px; margin-top: -20px; padding: 30px 0 18px; border: 8px solid #1B1E20; border-radius: 38px; background: var(--fondo); box-shadow: 0 0 0 1px #3A4043, 0 22px 40px rgba(28, 58, 46, .3); overflow: hidden; }
+.ap-telefono::before { content: ""; position: absolute; top: 11px; left: 36%; width: 28%; height: 7px; border-radius: 4px; background: #1B1E20; }
+.ap-telefono img { display: block; width: 100%; height: auto; }
+/* Dimorino sporge a destra del telefono, ma non oltre il bordo dello schermo. */
+.ap-dimorino { position: absolute; right: max(-40px, calc(156px - 50vw)); bottom: 0; width: 80px; height: auto; }
+
+.ap-didascalia { margin: 26px 0 0; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 14.5px; line-height: 1.45; color: var(--muto); }
+.ap-didascalia b { color: var(--inchiostro); }
+.ap-vantaggi { list-style: none; margin: 26px 0 0; padding: 22px 0 0; border-top: 1px solid var(--bordo-tenue); display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px 28px; font-size: 15px; line-height: 1.4; font-weight: 600; }
+.ap-vantaggi li { display: flex; align-items: flex-start; gap: 10px; }
+.ap-vantaggi svg { flex-shrink: 0; margin-top: 1px; }
+@media (min-width: 641px) {
+  .ap-vantaggi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Computer: il portatile disegnato (cornice in CSS, base in SVG) con la home, il telefono a destra,
+   la foto della bolletta sotto il riquadro «Suggerimento» della home, Dimorino nell'angolo della tastiera.
+   La fascia è larga al massimo 1312 px: più del contenuto, perché la home resti grande. */
+@media (min-width: 1220px) {
+  .eroe-alto { grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 64px; align-items: end; }
+  .eroe-destra { max-width: none; }
+  .ap-dispositivi { display: block; width: min(calc(100% - 48px), 1312px); margin-top: 36px; padding: 0 0 34px; }
+  .ap-portatile { display: block; position: relative; width: calc(95.4% - 300px); margin-left: 4.6%; }
+  .ap-portatile::after { content: ""; position: absolute; z-index: -1; left: -4%; right: -4%; bottom: -16px; height: 34px; border-radius: 50%; background: rgba(28, 58, 46, .26); filter: blur(18px); }
+  .ap-schermo { box-sizing: content-box; aspect-ratio: 1475 / 775; border: 11px solid #1B1E20; border-bottom-width: 13px; border-radius: 16px 16px 3px 3px; background: var(--fondo); box-shadow: 0 0 0 1px #3A4043; overflow: hidden; }
+  .ap-schermo img { display: block; width: 100%; height: auto; }
+  .ap-base { display: block; width: 111.11%; height: auto; aspect-ratio: 1000 / 124; margin: -1px 0 0 -5.555%; }
+  .ap-telefono { position: absolute; right: -16px; bottom: 0; margin: 0; }
+  /* La zona ha la misura dello schermo del portatile: la foto si appoggia al suo bordo destro, all'81,5% dell'altezza. */
+  .ap-zona { display: block; position: absolute; left: calc(4.6% + 11px); right: 311px; top: 11px; aspect-ratio: 1475 / 775; pointer-events: none; }
+  .ap-foto-posto { display: block; position: absolute; z-index: 3; top: 81.5%; right: -21px; width: 184px; }
+  /* La foto sotto il bollino: il bollino sta sopra il bordo fra foto e telefono. */
+  .ap-foto { z-index: auto; width: auto; margin: 0; padding: 6px; transform: rotate(-5deg); }
+  .ap-angolo { width: 20px; height: 20px; border-width: 3px; }
+  .ap-legame { display: contents; }
+  .ap-bollino { position: absolute; right: -25px; top: 40%; width: 38px; height: 38px; border: 3px solid var(--fondo); box-shadow: 0 6px 14px rgba(28, 58, 46, .28); }
+  .ap-scritta { position: absolute; left: -30px; right: -30px; top: calc(100% + 16px); text-align: center; line-height: 1.35; white-space: nowrap; }
+  .ap-scritta br { display: inline; }
+  .ap-dimorino { left: -14px; right: auto; bottom: 22px; width: 104px; }
+  .ap-didascalia { margin-top: 112px; flex-direction: row; justify-content: center; gap: 40px; }
+  .ap-vantaggi { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 
 /* ---------- Il lancio ---------- */
 .scuro { background: var(--verde-scuro); color: #fff; }
