@@ -538,7 +538,7 @@ console.log("\n10. L'apertura e i sei raccordi");
   verifica(JSON.stringify(scritta) === JSON.stringify([APERTURA.scritta]) && conClasse('ap-scritta')[0]?.antenati.includes(disp[0]), `la scritta verde accanto alla foto: «${APERTURA.scritta}»`, scritta);
   const bollino = conClasse('ap-bollino');
   verifica(bollino.length === 1 && bollino[0].attr['aria-hidden'] === 'true', 'il bollino della fotocamera è uno, solo disegnato (aria-hidden)');
-  verifica(conClasse('ap-angolo').length === 4, 'quattro angolini da inquadratura attorno alla foto');
+  verifica(!/ap-angolo/.test(HTML + CSS), 'niente angolini attorno alla foto (tolti il 7/10, su richiesta di Vitto)');
   const dida = conClasse('ap-didascalia');
   const righe = dida.length === 1 ? tag.filter(t => t.nome === 'span' && t.antenati[t.antenati.length - 1] === dida[0]) : [];
   const lette = righe.map(r => { const b = tag.filter(t => t.nome === 'b' && t.antenati.includes(r)); return [b.length === 1 ? testoDi(b[0]) : null, testoDi(r)]; });
