@@ -124,6 +124,7 @@ const APERTURA = {
   ],
   homeLarghezzaReale: 1180, // la home è stata acquisita a 1180 px (densità 1,25)
   homeScalaMinima: 0.67,
+  barraDiScorrimento: 17, // su Windows la barra classica toglie 17 px alla pagina, non alla media query
   // I sei raccordi.
   comeTitolo: 'Fotografi il documento. Dimora si ricorda il resto.',
   comeSotto: 'Dal documento alla scadenza, in tre passi.',
@@ -577,7 +578,8 @@ console.log("\n10. L'apertura e i sei raccordi");
   verifica(!!letti, 'la soglia del portatile e le sue misure si leggono dal CSS', { soglia, fascia: fascia?.slice(1), portatile: portatile?.slice(1), cornice: cornice?.[1] });
   if (letti) {
     const scala = (vw) => (Math.min(vw - +fascia[1], +fascia[2]) * +portatile[1] / 100 - +portatile[2] - 2 * +cornice[1]) / APERTURA.homeLarghezzaReale;
-    verifica(scala(soglia) >= APERTURA.homeScalaMinima, `il portatile compare da ${soglia} px: lì la home è al ${(scala(soglia) * 100).toFixed(1)}% (almeno ${APERTURA.homeScalaMinima * 100}%)`);
+    const conBarra = scala(soglia - APERTURA.barraDiScorrimento);
+    verifica(conBarra >= APERTURA.homeScalaMinima, `il portatile compare da ${soglia} px: lì la home è al ${(scala(soglia) * 100).toFixed(1)}%, e al ${(conBarra * 100).toFixed(1)}% con la barra di scorrimento (almeno ${APERTURA.homeScalaMinima * 100}%)`);
     verifica(Math.abs(soglia - 1200) <= 60, `la soglia (${soglia} px) resta a qualche decina di pixel da 1200`);
     console.log(`        la home: ${[1280, 1440, 1920].map(v => `${v} px ${(scala(v) * 100).toFixed(1)}%`).join(', ')}`);
   }

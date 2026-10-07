@@ -1,6 +1,6 @@
 /* Dimora — landing. Un foglio solo, nessun passo di build.
    Telefono prima: le regole senza media query valgono per il telefono,
-   le altre aggiungono a 640, 768, 1024, 1280 px; l'apertura anche a 641 e a 1220 px (il portatile). */
+   le altre aggiungono a 640, 768, 1024, 1280 px; l'apertura anche a 641 e a 1240 px (il portatile). */
 
 @font-face {
   font-family: 'Plus Jakarta Sans';
@@ -231,10 +231,11 @@ body[data-moduli] .modulo-senza-js { display: none !important; }
 
 /* ---------- Apertura ----------
    Due fasce. In alto il titolo e il testo con il campo mail; sotto, le schermate vere dell'app.
-   Da 1220 px in su: titolo a sinistra, testo a destra; sotto, a tutta larghezza, il portatile con la home,
+   Da 1240 px in su: titolo a sinistra, testo a destra; sotto, a tutta larghezza, il portatile con la home,
    il telefono con la bolletta letta e la foto della bolletta fra i due.
-   Fino a 1219 px: niente portatile; la foto piccola appoggiata al telefono, il bollino e la scritta accanto.
-   1220 e non 1200: a 1220 px la home nel portatile è al 67,5% della sua grandezza (1180 px), sotto si legge male.
+   Fino a 1239 px: niente portatile; la foto piccola appoggiata al telefono, il bollino e la scritta accanto.
+   1240 e non 1200: a 1240 px la home nel portatile è al 69% della sua grandezza (1180 px), e resta sopra il 67%
+   anche con la barra di scorrimento di Windows (17 px in meno). Più piccola si legge male.
    Le schermate si mostrano intere e nelle loro proporzioni: nessun ritaglio. */
 .eroe { padding: 32px 0 52px; }
 .eroe-alto { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
@@ -289,7 +290,7 @@ h1 { margin: 14px 0 0; font-size: 36px; line-height: 1.08; font-weight: 800; let
 /* Computer: il portatile disegnato (cornice in CSS, base in SVG) con la home, il telefono a destra,
    la foto della bolletta sotto il riquadro «Suggerimento» della home, Dimorino nell'angolo della tastiera.
    La fascia è larga al massimo 1312 px: più del contenuto, perché la home resti grande. */
-@media (min-width: 1220px) {
+@media (min-width: 1240px) {
   .eroe-alto { grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 64px; align-items: end; }
   .eroe-destra { max-width: none; }
   .ap-dispositivi { display: block; width: min(calc(100% - 48px), 1312px); margin-top: 36px; padding: 0 0 34px; }
