@@ -235,7 +235,10 @@
      Le due schermate sono collegamenti al loro file: senza script (o senza <dialog>) si apre il file.
      Con lo script si aprono nella finestra della lente, adattate allo schermo; «Dimensione reale» (o un tocco
      sull'immagine) le mostra alla grandezza a cui sono state acquisite, da esplorare scorrendo.
-     Si chiude con «Chiudi», con Esc o toccando fuori; il fuoco torna alla schermata da cui si è partiti. */
+     Si chiude con «Chiudi», con Esc o toccando fuori; il fuoco torna alla schermata da cui si è partiti.
+     Ogni apertura mette nella finestra un'immagine nuova. L'evento «close» arriva dopo la chiusura, in un compito
+     a parte: se nel frattempo la lente è stata riaperta non si pulisce niente. Prima la pulizia toglieva l'indirizzo
+     all'immagine anche quando arrivava dopo la riapertura, e la lente riaperta mostrava solo il testo alternativo. */
   (function lente() {
     var finestra = document.querySelector('[data-lente-finestra]');
     var aperture = [].slice.call(document.querySelectorAll('a[data-lente]'));
@@ -245,21 +248,32 @@
     var modo = finestra.querySelector('[data-lente-modo]');
     var chiudi = finestra.querySelector('[data-lente-chiudi]');
     if (!titolo || !area || !modo || !chiudi) return;
-    var img = document.createElement('img');
-    img.decoding = 'async';
-    area.appendChild(img);
+    var img = null;
     var reale = false, larghezza = 0, partenza = null;
 
+    function nuovaImmagine(indirizzo, testo) {
+      var nuova = document.createElement('img');
+      nuova.decoding = 'async';
+      nuova.alt = testo;
+      nuova.addEventListener('load', serveIlModo);
+      nuova.addEventListener('click', function () { if (!modo.hidden) { reale = !reale; mostra(); } });
+      nuova.src = indirizzo;
+      while (area.firstChild) area.removeChild(area.firstChild);
+      area.appendChild(nuova);
+      img = nuova;
+    }
     // Adattata, la schermata non supera la sua grandezza reale; se adattata è già quasi reale, il pulsante non serve.
     function serveIlModo() {
-      if (reale || !larghezza || !img.complete) return;
+      if (!img || reale || !larghezza || !img.complete) return;
       modo.hidden = img.getBoundingClientRect().width >= larghezza * 0.9;
       area.classList.toggle('lente-senza-modo', modo.hidden);
     }
     function mostra() {
       area.classList.toggle('lente-reale', reale);
-      img.style.width = reale && larghezza ? larghezza + 'px' : '';
-      img.style.maxWidth = !reale && larghezza ? 'min(100%, ' + larghezza + 'px)' : '';
+      if (img) {
+        img.style.width = reale && larghezza ? larghezza + 'px' : '';
+        img.style.maxWidth = !reale && larghezza ? 'min(100%, ' + larghezza + 'px)' : '';
+      }
       modo.setAttribute('aria-pressed', reale ? 'true' : 'false');
       modo.textContent = reale ? 'Adatta allo schermo' : 'Dimensione reale';
       area.scrollTop = 0;
@@ -267,20 +281,19 @@
     }
     function apri(a) {
       var interna = a.querySelector('img');
+      var testo = interna ? interna.alt : '';
       partenza = a;
       larghezza = parseInt(a.getAttribute('data-larghezza'), 10) || 0;
-      img.src = a.getAttribute('href');
-      img.alt = interna ? interna.alt : '';
-      titolo.textContent = interna ? interna.alt : '';
+      nuovaImmagine(a.getAttribute('href'), testo);
+      titolo.textContent = testo;
       reale = false;
       modo.hidden = false;
       mostra();
       document.documentElement.classList.add('lente-aperta');
-      finestra.showModal();
+      if (!finestra.open) finestra.showModal();
       chiudi.focus();
       serveIlModo();
     }
-    img.addEventListener('load', serveIlModo);
     window.addEventListener('resize', function () { if (finestra.open) serveIlModo(); });
 
     aperture.forEach(function (a) {
@@ -291,7 +304,6 @@
       });
     });
     modo.addEventListener('click', function () { reale = !reale; mostra(); });
-    img.addEventListener('click', function () { if (!modo.hidden) { reale = !reale; mostra(); } });
     chiudi.addEventListener('click', function () { finestra.close(); });
     // Un tocco fuori dal riquadro della finestra (sullo sfondo) la chiude.
     finestra.addEventListener('click', function (e) {
@@ -300,9 +312,102 @@
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) finestra.close();
     });
     finestra.addEventListener('close', function () {
+      if (finestra.open) return; // riaperta prima che arrivasse questo evento: l'immagine è quella nuova
       document.documentElement.classList.remove('lente-aperta');
-      img.removeAttribute('src');
+      while (area.firstChild) area.removeChild(area.firstChild);
+      img = null;
       if (partenza) partenza.focus();
+    });
+  })();
+
+  /* ---------- La barra che segue (fino a 1200 px, lo decide il CSS) ----------
+     Quando la testata esce dallo schermo, data-barra="fissa" sull'<html>: la barra si ferma in alto, più bassa.
+     La testata tiene il suo spazio, quindi la pagina non salta. Mentre un campo della pagina ha il fuoco,
+     data-scrivendo: su un telefono la barra si toglie e non finisce sopra il campo con la tastiera aperta. */
+  (function barra() {
+    var html = document.documentElement;
+    var testata = document.querySelector('.testata');
+    if (testata && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (voci) {
+        var fuori = !voci[voci.length - 1].isIntersecting;
+        if (fuori) html.setAttribute('data-barra', 'fissa'); else html.removeAttribute('data-barra');
+      }).observe(testata);
+    }
+    document.addEventListener('focusin', function (e) {
+      if (e.target && e.target.matches && e.target.matches('input, textarea')) html.setAttribute('data-scrivendo', '');
+    });
+    document.addEventListener('focusout', function () { html.removeAttribute('data-scrivendo'); });
+  })();
+
+  /* ---------- Le righe che scorrono (fino a 640 px, lo decide il CSS) ----------
+     Sotto ogni riga [data-scorre] i puntini, uno per scheda, che dicono a che punto sei (solo disegnati).
+     Quando la riga scorre davvero diventa raggiungibile da tastiera (le frecce la fanno scorrere) e, per un lettore
+     di schermo, una regione con il nome del titolo della sua sezione (data-scorre ne porta l'id). */
+  (function righe() {
+    var righe = [].slice.call(document.querySelectorAll('[data-scorre]'));
+    if (!righe.length) return;
+    var tutte = righe.map(function (riga) {
+      var schede = [].slice.call(riga.children);
+      var puntini = document.createElement('div');
+      puntini.className = 'puntini';
+      puntini.setAttribute('aria-hidden', 'true');
+      schede.forEach(function () { puntini.appendChild(document.createElement('span')); });
+      riga.parentNode.insertBefore(puntini, riga.nextSibling);
+      var attivo = -1, inAttesa = false;
+      function aggiorna() {
+        inAttesa = false;
+        var x = riga.scrollLeft, fine = riga.scrollWidth - riga.clientWidth;
+        var bordo = parseFloat(window.getComputedStyle(riga).paddingLeft) || 0;
+        var scelto = 0;
+        if (fine > 1 && x >= fine - 2) scelto = schede.length - 1;
+        else {
+          var meglio = Infinity;
+          schede.forEach(function (s, i) { var d = Math.abs(s.offsetLeft - bordo - x); if (d < meglio) { meglio = d; scelto = i; } });
+        }
+        if (scelto === attivo) return;
+        attivo = scelto;
+        [].forEach.call(puntini.children, function (p, i) { if (i === scelto) p.setAttribute('data-attivo', ''); else p.removeAttribute('data-attivo'); });
+      }
+      riga.addEventListener('scroll', function () {
+        if (!inAttesa) { inAttesa = true; window.requestAnimationFrame(aggiorna); }
+      }, { passive: true });
+      aggiorna();
+      return { riga: riga, aggiorna: aggiorna };
+    });
+    function accessibili() {
+      tutte.forEach(function (t) {
+        var r = t.riga;
+        if (r.scrollWidth > r.clientWidth + 1) {
+          r.setAttribute('tabindex', '0');
+          r.setAttribute('role', 'region');
+          r.setAttribute('aria-labelledby', r.getAttribute('data-scorre'));
+        } else {
+          r.removeAttribute('tabindex');
+          r.removeAttribute('role');
+          r.removeAttribute('aria-labelledby');
+        }
+        t.aggiorna();
+      });
+    }
+    accessibili();
+    var timer = null;
+    window.addEventListener('resize', function () { clearTimeout(timer); timer = setTimeout(accessibili, 150); });
+    window.addEventListener('load', accessibili);
+  })();
+
+  /* ---------- La lettera sul telefono ----------
+     Fino a 640 px (lo decide il CSS) si leggono la domanda e il primo paragrafo; il resto si apre con
+     «Continua a leggere», una volta sola, e il fuoco va al testo che si è aperto. Senza script si legge tutta. */
+  (function lettera() {
+    var scheda = document.querySelector('[data-storia]');
+    var apri = scheda ? scheda.querySelector('[data-storia-apri]') : null;
+    var resto = document.getElementById('storia-resto');
+    if (!apri || !resto) return;
+    scheda.setAttribute('data-chiusa', '');
+    apri.addEventListener('click', function () {
+      apri.setAttribute('aria-expanded', 'true');
+      scheda.removeAttribute('data-chiusa');
+      resto.focus();
     });
   })();
 

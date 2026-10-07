@@ -29,7 +29,11 @@
 -->
 <body data-stato="in arrivo" data-lancio="2026-10-08T10:00:00+02:00">
 
+<!-- Fino a 1200 px, quando la testata esce dallo schermo la sua barra resta fissa in alto, più bassa:
+     marchio, «Avvisami» e menu («Accedi» resta se c'è posto, altrimenti va nel menu). Lo decide lo script
+     (data-barra sull'<html>); la testata tiene il suo spazio, così la pagina non salta. -->
 <header class="testata" id="top">
+  <div class="testata-barra">
   <div class="contenitore testata-riga">
     <a class="marchio" href="#top">
       <span class="marchio-segno"><img src="assets/dimora-mark-cream.svg" alt="" width="31" height="17"></span>
@@ -44,7 +48,7 @@
     </nav>
     <div class="testata-azioni">
       <span class="beta">BETA</span>
-      <a class="btn btn-chiaro btn-testata" href="https://app.dimorapp.com/login">Accedi</a>
+      <a class="btn btn-chiaro btn-testata btn-accedi" href="https://app.dimorapp.com/login">Accedi</a>
       <a class="btn btn-verde btn-testata v-arrivo solo-largo" href="#lancio">Avvisami</a>
       <a class="btn btn-verde btn-testata v-aperta solo-largo" href="https://app.dimorapp.com/login">Inizia</a>
       <details class="menu" data-menu>
@@ -57,11 +61,13 @@
           <a href="#affitti">Per chi affitta</a>
           <a href="#prezzi">Prezzi</a>
           <a href="#domande">Domande</a>
+          <a class="menu-accedi" href="https://app.dimorapp.com/login">Accedi</a>
           <a class="btn btn-verde menu-cta v-arrivo" href="#lancio">Avvisami</a>
           <a class="btn btn-verde menu-cta v-aperta" href="https://app.dimorapp.com/login">Inizia</a>
         </nav>
       </details>
     </div>
+  </div>
   </div>
 </header>
 
@@ -92,15 +98,16 @@
     </div>
 
     <!-- Le due schermate vere dell'app (account dimostrativo, 7/10), intere e nelle loro proporzioni.
-         Portatile e telefono sono disegnati qui, in CSS e SVG. Ogni schermata è un collegamento al suo file:
-         con lo script si apre ingrandita nella finestra qui sotto, senza script si apre il file. -->
+         Portatile e telefono sono disegnati qui, in CSS e SVG; il telefono ha in alto una striscia del colore della
+         schermata, con l'isola, e sotto la schermata (390 × 800 punti, a densità tripla). Ogni schermata è un
+         collegamento al suo file: con lo script si apre ingrandita nella finestra qui sotto, senza script si apre il file. -->
     <div class="eroe-visivo" data-rv>
       <div class="ap-dispositivi">
         <div class="ap-portatile">
           <div class="ap-schermo"><a class="ap-lente" href="assets/img/home-computer.webp" data-lente data-larghezza="1180" title="Ingrandisci"><span class="nascosto">Ingrandisci: </span><img src="assets/img/home-computer.webp" alt="La home di Dimora da computer: menu, saluto, riepilogo, le tre case e le scadenze in arrivo." width="1475" height="775" loading="lazy" decoding="async"><span class="ap-lente-segno" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><path d="M10.5 7.8v5.4"/><path d="M7.8 10.5h5.4"/></svg></span></a></div>
           <svg class="ap-base" preserveAspectRatio="none" viewBox="0 -9 1000 176" aria-hidden="true"><defs><linearGradient id="ap-base-piano" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E5457"/><stop offset="1" stop-color="#6C7376"/></linearGradient><linearGradient id="ap-base-bordo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A9194"/><stop offset=".25" stop-color="#585E61"/><stop offset="1" stop-color="#34393B"/></linearGradient></defs><rect x="50" y="-9" width="900" height="10" fill="#191C1E"/><polygon points="50,0 950,0 1000,150 0,150" fill="url(#ap-base-piano)"/><polygon points="88.8,5.6 911.2,5.6 937.9,93.7 62.1,93.7" fill="#43494C" /><polygon points="100.0,7.5 150.3,7.5 148.8,13.2 98.3,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="155.0,7.5 205.3,7.5 204.0,13.2 153.5,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="210.0,7.5 260.3,7.5 259.2,13.2 208.7,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="265.0,7.5 315.2,7.5 314.5,13.2 264.0,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="320.0,7.5 370.2,7.5 369.7,13.2 319.2,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="374.9,7.5 425.2,7.5 424.9,13.2 374.4,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="429.9,7.5 480.2,7.5 480.1,13.2 429.6,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="484.9,7.5 535.2,7.5 535.3,13.2 484.9,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="539.9,7.5 590.2,7.5 590.6,13.2 540.1,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="594.9,7.5 645.2,7.5 645.8,13.2 595.3,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="649.9,7.5 700.2,7.5 701.0,13.2 650.5,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="704.9,7.5 755.2,7.5 756.2,13.2 705.7,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="759.9,7.5 810.1,7.5 811.4,13.2 761.0,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="814.8,7.5 865.1,7.5 866.7,13.2 816.2,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="869.8,7.5 900.0,7.5 901.7,13.2 871.4,13.2" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="97.9,14.8 148.7,14.8 145.6,27.0 94.2,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="153.5,14.8 204.3,14.8 201.7,27.0 150.3,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="209.1,14.8 259.9,14.8 257.8,27.0 206.5,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="264.7,14.8 315.5,14.8 313.9,27.0 262.6,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="320.3,14.8 371.2,14.8 370.0,27.0 318.7,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="375.9,14.8 426.8,14.8 426.1,27.0 374.8,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="431.5,14.8 482.4,14.8 482.2,27.0 430.9,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="487.1,14.8 538.0,14.8 538.3,27.0 487.0,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="542.7,14.8 593.6,14.8 594.4,27.0 543.1,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="598.3,14.8 649.2,14.8 650.5,27.0 599.2,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="653.9,14.8 704.8,14.8 706.6,27.0 655.3,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="709.5,14.8 760.4,14.8 762.7,27.0 711.4,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="765.1,14.8 816.0,14.8 818.9,27.0 767.5,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="820.7,14.8 902.1,14.8 905.8,27.0 823.6,27.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="93.8,28.6 170.9,28.6 167.8,41.4 90.0,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="175.6,28.6 227.0,28.6 224.5,41.4 172.6,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="231.8,28.6 283.2,28.6 281.2,41.4 229.3,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="288.0,28.6 339.4,28.6 337.9,41.4 286.0,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="344.1,28.6 395.5,28.6 394.6,41.4 342.7,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="400.3,28.6 451.7,28.6 451.3,41.4 399.4,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="456.5,28.6 507.9,28.6 508.0,41.4 456.1,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="512.7,28.6 564.1,28.6 564.7,41.4 512.8,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="568.8,28.6 620.2,28.6 621.3,41.4 569.5,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="625.0,28.6 676.4,28.6 678.0,41.4 626.2,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="681.2,28.6 732.6,28.6 734.7,41.4 682.9,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="737.4,28.6 788.8,28.6 791.4,41.4 739.6,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="793.5,28.6 844.9,28.6 848.1,41.4 796.3,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="849.7,28.6 906.2,28.6 910.0,41.4 852.9,41.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="89.5,43.1 183.6,43.1 180.5,56.4 85.6,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="188.4,43.1 240.7,43.1 238.2,56.4 185.4,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="245.5,43.1 297.8,43.1 295.8,56.4 243.1,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="302.6,43.1 354.9,43.1 353.5,56.4 300.7,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="359.7,43.1 411.9,43.1 411.1,56.4 358.3,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="416.8,43.1 469.0,43.1 468.7,56.4 416.0,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="473.9,43.1 526.1,43.1 526.4,56.4 473.6,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="531.0,43.1 583.2,43.1 584.0,56.4 531.3,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="588.1,43.1 640.3,43.1 641.7,56.4 588.9,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="645.1,43.1 697.4,43.1 699.3,56.4 646.5,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="702.2,43.1 754.5,43.1 756.9,56.4 704.2,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="759.3,43.1 811.6,43.1 814.6,56.4 761.8,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="816.4,43.1 910.5,43.1 914.4,56.4 819.5,56.4" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="85.1,58.2 207.3,58.2 204.5,72.0 81.0,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="212.2,58.2 265.4,58.2 263.1,72.0 209.4,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="270.3,58.2 323.4,58.2 321.7,72.0 268.0,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="328.3,58.2 381.5,58.2 380.3,72.0 326.6,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="386.4,58.2 439.5,58.2 438.9,72.0 385.2,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="444.4,58.2 497.6,58.2 497.5,72.0 443.8,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="502.4,58.2 555.6,58.2 556.2,72.0 502.5,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="560.5,58.2 613.6,58.2 614.8,72.0 561.1,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="618.5,58.2 671.7,58.2 673.4,72.0 619.7,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="676.6,58.2 729.7,58.2 732.0,72.0 678.3,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="734.6,58.2 787.8,58.2 790.6,72.0 736.9,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="792.7,58.2 914.9,58.2 919.0,72.0 795.5,72.0" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="80.4,73.8 146.2,73.8 142.0,90.6 75.5,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="151.1,73.8 205.9,73.8 202.4,90.6 147.0,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="210.8,73.8 265.6,73.8 262.8,90.6 207.4,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="270.5,73.8 336.2,73.8 334.3,90.6 267.8,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="341.2,73.8 647.9,73.8 649.6,90.6 339.3,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="652.8,73.8 718.5,73.8 721.1,90.6 654.6,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="723.5,73.8 778.2,73.8 781.5,90.6 726.1,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="783.2,73.8 837.9,73.8 841.9,90.6 786.5,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="842.9,73.8 919.6,73.8 924.5,90.6 846.9,90.6" fill="#1F2325" stroke="#2E3336" stroke-width=".8" stroke-linejoin="round"/><polygon points="369.3,101.7 630.7,101.7 634.3,142.1 365.7,142.1" fill="#5A6164" stroke="#454B4E" stroke-width="1.2" stroke-linejoin="round"/><path d="M0 150 H1000 V156 Q1000 166 986 166 H14 Q0 166 0 156 Z" fill="url(#ap-base-bordo)"/><rect x="440" y="150" width="120" height="5" rx="2.5" fill="#2B3032" opacity=".7"/></svg>
         </div>
-        <div class="ap-telefono"><a class="ap-lente" href="assets/img/lettura-bolletta-telefono.webp" data-lente data-larghezza="390" title="Ingrandisci"><span class="nascosto">Ingrandisci: </span><img src="assets/img/lettura-bolletta-telefono.webp" alt="Dimora da telefono: una bolletta appena letta, con fornitore, importo, scadenza e il pulsante per archiviarla." width="469" height="798" decoding="async"><span class="ap-lente-segno" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><path d="M10.5 7.8v5.4"/><path d="M7.8 10.5h5.4"/></svg></span></a></div>
+        <div class="ap-telefono"><span class="ap-telefono-stato" aria-hidden="true"><span class="ap-isola"></span></span><a class="ap-lente" href="assets/img/lettura-bolletta-telefono-alta.webp" data-lente data-larghezza="390" title="Ingrandisci"><span class="nascosto">Ingrandisci: </span><img src="assets/img/lettura-bolletta-telefono-alta.webp" alt="Dimora da telefono: una bolletta appena letta, con fornitore, importo, scadenza e il pulsante per archiviarla." width="1170" height="2400" decoding="async"><span class="ap-lente-segno" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/><path d="M10.5 7.8v5.4"/><path d="M7.8 10.5h5.4"/></svg></span></a></div>
         <div class="ap-zona">
           <div class="ap-foto-posto">
             <div class="ap-foto"><img src="assets/img/foto-bolletta.webp" alt="La foto di una bolletta della luce: totale da pagare 96,48 euro entro il 26 ottobre 2026." width="412" height="621" decoding="async"></div>
@@ -169,11 +176,16 @@
       </div>
       <figcaption>Il quaderno dei conti di casa di mia mamma: un'agenda del 2013, riusata per il 2026.</figcaption>
     </figure>
-    <div class="storia-scheda" data-rv>
-      <p class="storia-domanda">Se ti chiedessi quante spese ha generato la tua casa nel 2025, sapresti rispondere?</p>
-      <p>Per molti la risposta è sparsa ovunque: la bolletta nella mail, la rata del mutuo sull'estratto conto, la fattura dell'idraulico in un cassetto. Con una seconda casa, o una casa in affitto, si aggiungono canoni, contratti e altre scadenze.</p>
-      <p>Mia mamma tiene tutto a mano, nel quaderno della foto, con una cura che rispetto. Io ho voluto togliere la fatica di rimettere insieme i pezzi.</p>
-      <p>Dimora nasce da qui: tutto nello stesso posto, casa per casa. Questi problemi li conosco, perché sono anche i miei.</p>
+    <!-- Sul telefono la lettera mostra la domanda e il primo paragrafo; il resto si apre con «Continua a leggere».
+         Lo fa lo script (data-storia): senza script si legge tutta. La firma resta sempre visibile. -->
+    <div class="storia-scheda" data-rv data-storia>
+      <p class="storia-domanda">Sai quanto ti costano i tuoi immobili e, se li affitti, quanto ti rendono?</p>
+      <p>Per molti la risposta è sparsa ovunque: la bolletta nella mail, la rata del mutuo sull'estratto conto, la fattura dell'idraulico in un cassetto. Se affitti, devi anche tenere insieme contratti, canoni incassati, pagamenti in ritardo e scadenze.</p>
+      <div class="storia-resto" id="storia-resto" tabindex="-1">
+        <p>Mia mamma tiene tutto a mano, nel quaderno della foto, con una cura che rispetto. Io ho voluto togliere la fatica di rimettere insieme i pezzi.</p>
+        <p>Dimora nasce da qui: documenti, spese e affitti nello stesso posto, casa per casa. Questi problemi li conosco, perché sono anche i miei.</p>
+      </div>
+      <button class="storia-continua" type="button" data-storia-apri aria-expanded="false" aria-controls="storia-resto">Continua a leggere</button>
       <div class="firma">
         <span class="firma-iniziale" aria-hidden="true">V</span>
         <span class="firma-testi"><span class="firma-nome">Vittorio</span><span class="firma-ruolo">ha ideato Dimora</span></span>
@@ -186,10 +198,10 @@
   <div class="contenitore">
     <div class="sezione-testa" data-rv>
       <span class="occhiello">PER CHI È</span>
-      <h2>Per chi segue le proprie case, e per chi le affitta</h2>
+      <h2 id="perchi-titolo">Per chi segue le proprie case, e per chi le affitta</h2>
       <p>Che tu abbia una casa sola o più immobili in affitto, documenti, spese e scadenze stanno nello stesso posto.</p>
     </div>
-    <div class="griglia griglia-3" data-rv-gruppo>
+    <div class="griglia griglia-3" data-rv-gruppo data-scorre="perchi-titolo">
       <article class="scheda scheda-banda">
         <div class="banda"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>LA TUA CASA</span></div>
         <div class="banda-corpo">
@@ -219,10 +231,10 @@
   <div class="contenitore">
     <div class="sezione-testa" data-rv>
       <span class="occhiello">COME FUNZIONA</span>
-      <h2>Fotografi il documento. Dimora si ricorda il resto.</h2>
+      <h2 id="come-titolo">Fotografi il documento. Dimora si ricorda il resto.</h2>
       <p>Dal documento alla scadenza, in tre passi.</p>
     </div>
-    <div class="griglia griglia-3" data-rv-gruppo>
+    <div class="griglia griglia-3" data-rv-gruppo data-scorre="come-titolo">
       <article class="scheda scheda-passo">
         <span class="passo-num" aria-hidden="true">1</span>
         <h3>Carichi</h3>
@@ -336,10 +348,10 @@
   <div class="contenitore">
     <div class="sezione-testa" data-rv>
       <span class="occhiello">PER CHI AFFITTA</span>
-      <h2>L'affitto, dal contratto alla disdetta</h2>
+      <h2 id="affitti-titolo">L'affitto, dal contratto alla disdetta</h2>
       <p>Contratti, incassi, ritardi e scadenze fiscali, contratto per contratto. E vedi quanto rendono i tuoi affitti.</p>
     </div>
-    <div class="griglia griglia-6" data-rv-gruppo>
+    <div class="griglia griglia-6" data-rv-gruppo data-scorre="affitti-titolo">
       <article class="scheda-scura">
         <svg class="scura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9FD1B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
         <h3>Carichi il contratto, Dimora prepara il resto</h3>
@@ -410,7 +422,7 @@
       <button class="interruttore-voce" type="button" data-periodo-scelta="anno" aria-pressed="true">Annuale <span class="interruttore-nota">(risparmi fino al 28%)</span></button>
       <button class="interruttore-voce" type="button" data-periodo-scelta="mese" aria-pressed="false">Mensile</button>
     </div>
-    <div class="griglia griglia-3 piani" data-rv-gruppo>
+    <div class="griglia griglia-3 piani" data-rv-gruppo data-scorre="piani-titolo">
       <article class="scheda piano" data-piano="Dimora">
         <div class="piano-nome"><h4>Dimora</h4></div>
         <div class="piano-prezzo piano-prezzo-anno"><span class="piano-cifra">59&nbsp;€</span><span class="piano-periodo">l'anno, in un'unica soluzione</span></div>
