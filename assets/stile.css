@@ -1,6 +1,6 @@
 /* Dimora — landing. Un foglio solo, nessun passo di build.
    Telefono prima: le regole senza media query valgono per il telefono,
-   le altre aggiungono a 640, 768, 1024, 1280 px; l'apertura anche a 641 e a 1240 px (il portatile). */
+   le altre aggiungono a 640, 768, 1024, 1280 px; l'apertura anche a 641 px e, sulla sua larghezza, a 1000 px (container query). */
 
 @font-face {
   font-family: 'Plus Jakarta Sans';
@@ -230,21 +230,22 @@ body[data-moduli] .modulo-senza-js { display: none !important; }
 @media (min-width: 1280px) { .nav-larga { gap: 32px; } }
 
 /* ---------- Apertura ----------
-   Due fasce. In alto il titolo e il testo con il campo mail; sotto, le schermate vere dell'app.
-   Da 1240 px in su: titolo a sinistra, testo a destra; sotto, a tutta larghezza, il portatile con la home,
-   il telefono con la bolletta letta e la foto della bolletta fra i due.
-   Fino a 1239 px: niente portatile; la foto piccola appoggiata al telefono, il bollino e la scritta accanto.
-   1240 e non 1200: a 1240 px la home nel portatile è al 69% della sua grandezza (1180 px), e resta sopra il 67%
-   anche con la barra di scorrimento di Windows (17 px in meno). Più piccola si legge male.
-   Le schermate si mostrano intere e nelle loro proporzioni: nessun ritaglio. */
-.eroe { padding: 32px 0 52px; }
-.eroe-alto { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+   Sul computer due colonne: a sinistra titolo, testo e iscrizione; a destra il portatile con la home,
+   il telefono con la bolletta letta e la foto della bolletta fra i due; sotto, i quattro vantaggi.
+   Più stretto: una colonna, con la foto piccola appoggiata al telefono, il bollino e la scritta accanto.
+   Il passaggio lo decide la larghezza vera dell'apertura (container query), non quella della finestra:
+   la barra di scorrimento non inganna. Il gruppo dei dispositivi è disegnato in proporzione alla sua
+   larghezza (unità cqw), così resta lo stesso disegno a ogni misura; Dimorino ha una misura sua.
+   Le schermate si mostrano intere e nelle loro proporzioni, e si aprono ingrandite (la lente, più sotto). */
+.eroe { container: eroe / inline-size; padding: 32px 0 52px; }
+.eroe-griglia { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+.eroe-testo { display: flex; flex-direction: column; gap: 22px; }
 .eroe-occhiello { font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--verde); }
 h1 { margin: 14px 0 0; font-size: 36px; line-height: 1.08; font-weight: 800; letter-spacing: -.02em; color: var(--inchiostro); }
 .h1-verde { display: block; margin-top: 6px; color: var(--verde); }
-.eroe-destra { max-width: 620px; }
+.eroe-iscrizione { max-width: 620px; }
 .eroe-lead { margin: 0; font-size: 16.5px; line-height: 1.6; color: var(--muto); }
-.eroe-destra .blocco-modulo { margin-top: 22px; }
+.eroe-iscrizione .blocco-modulo { margin-top: 22px; }
 .eroe-nota { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muto); }
 .btn-inizia { align-self: stretch; }
 @media (min-width: 640px) {
@@ -257,8 +258,8 @@ h1 { margin: 14px 0 0; font-size: 36px; line-height: 1.08; font-weight: 800; let
   .eroe-nota { font-size: 15px; }
 }
 
-/* Le schermate. Telefono: una colonna larga 300 px, la foto della bolletta in alto a sinistra. */
-.ap-dispositivi { position: relative; isolation: isolate; width: 300px; margin: 30px auto 0; padding: 0 0 46px; display: grid; grid-template-columns: 118px 1fr; column-gap: 12px; align-items: center; }
+/* Le schermate. Telefono e larghezze intermedie: una colonna larga 300 px, la foto in alto a sinistra. */
+.ap-dispositivi { position: relative; isolation: isolate; width: 300px; margin: 8px auto 0; padding: 0 0 46px; display: grid; grid-template-columns: 118px 1fr; column-gap: 12px; align-items: center; }
 .ap-portatile { display: none; }
 .ap-zona, .ap-foto-posto { display: contents; }
 .ap-foto { position: relative; z-index: 3; grid-row: 1; grid-column: 1; width: 116px; margin-left: 6px; padding: 4px; border-radius: 6px; background: #fff; box-shadow: 0 2px 4px rgba(28, 58, 46, .1), 0 18px 34px rgba(28, 58, 46, .26); transform: rotate(-4deg); }
@@ -269,11 +270,23 @@ h1 { margin: 14px 0 0; font-size: 36px; line-height: 1.08; font-weight: 800; let
 .ap-scritta br { display: none; }
 .ap-telefono { position: relative; z-index: 2; grid-row: 2; grid-column: 1 / -1; width: 300px; margin-top: -20px; padding: 30px 0 18px; border: 8px solid #1B1E20; border-radius: 38px; background: var(--fondo); box-shadow: 0 0 0 1px #3A4043, 0 22px 40px rgba(28, 58, 46, .3); overflow: hidden; }
 .ap-telefono::before { content: ""; position: absolute; top: 11px; left: 36%; width: 28%; height: 7px; border-radius: 4px; background: #1B1E20; }
-.ap-telefono img { display: block; width: 100%; height: auto; }
-/* Dimorino sporge a destra del telefono, ma non oltre il bordo dello schermo. */
-.ap-dimorino { position: absolute; right: max(-40px, calc(156px - 50vw)); bottom: 0; width: 80px; height: auto; }
+/* Dimorino sporge a destra del telefono, ma non oltre il bordo dell'apertura: 100cqw è la sua larghezza vera,
+   senza la barra di scorrimento (con 50vw, a 390 px e una barra, sporgeva di 2 px). */
+.ap-dimorino { position: absolute; right: -16px; right: max(-40px, calc((300px - 100cqw) / 2 + 4px)); bottom: 0; width: 80px; height: auto; }
 
-.ap-didascalia { margin: 26px 0 0; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 14.5px; line-height: 1.45; color: var(--muto); }
+/* Le schermate si aprono ingrandite: ognuna è un collegamento al suo file, con una lente piccola. */
+.ap-lente { display: block; position: relative; color: var(--verde); cursor: zoom-in; }
+.ap-lente img { display: block; width: 100%; height: auto; }
+.ap-lente:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; border-radius: 0; }
+.ap-lente-segno { --s: 30px; position: absolute; width: var(--s); height: var(--s); border-radius: 50%; background: #fff; color: var(--verde); box-shadow: 0 0 0 1px var(--bordo), 0 4px 10px rgba(28, 58, 46, .2); display: flex; align-items: center; justify-content: center; }
+.ap-lente-segno svg { width: 55%; height: 55%; }
+.ap-lente:hover .ap-lente-segno, .ap-lente:focus-visible .ap-lente-segno { background: var(--verde); color: #fff; }
+/* Nel portatile, nello spazio vuoto sotto le case; nel telefono, sulla cornice in alto a destra. */
+.ap-schermo .ap-lente-segno { left: 52%; bottom: 5%; }
+.ap-telefono .ap-lente { position: static; }
+.ap-telefono .ap-lente-segno { --s: 26px; top: 3px; right: 12px; }
+
+.eroe-visivo .ap-didascalia { margin: 26px 0 0; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 14.5px; line-height: 1.45; color: var(--muto); }
 .ap-didascalia b { color: var(--inchiostro); }
 .ap-vantaggi { list-style: none; margin: 26px 0 0; padding: 22px 0 0; border-top: 1px solid var(--bordo-tenue); display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px 28px; font-size: 15px; line-height: 1.4; font-weight: 600; }
 .ap-vantaggi li { display: flex; align-items: flex-start; gap: 10px; }
@@ -282,31 +295,61 @@ h1 { margin: 14px 0 0; font-size: 36px; line-height: 1.08; font-weight: 800; let
   .ap-vantaggi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Computer: il portatile disegnato (cornice in CSS, base in SVG) con la home, il telefono a destra,
-   la foto della bolletta sotto il riquadro «Suggerimento» della home, Dimorino nell'angolo della tastiera.
-   La fascia è larga al massimo 1312 px: più del contenuto, perché la home resti grande. */
-@media (min-width: 1240px) {
-  .eroe-alto { grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 64px; align-items: end; }
-  .eroe-destra { max-width: none; }
-  .ap-dispositivi { display: block; width: min(calc(100% - 48px), 1312px); margin-top: 36px; padding: 0 0 34px; }
-  .ap-portatile { display: block; position: relative; width: calc(95.4% - 300px); margin-left: 4.6%; }
-  .ap-portatile::after { content: ""; position: absolute; z-index: -1; left: -4%; right: -4%; bottom: -16px; height: 34px; border-radius: 50%; background: rgba(28, 58, 46, .26); filter: blur(18px); }
-  .ap-schermo { box-sizing: content-box; aspect-ratio: 1475 / 775; border: 11px solid #1B1E20; border-bottom-width: 13px; border-radius: 16px 16px 3px 3px; background: var(--fondo); box-shadow: 0 0 0 1px #3A4043; overflow: hidden; }
-  .ap-schermo img { display: block; width: 100%; height: auto; }
+/* Computer, da 1000 px di apertura: due colonne, il gruppo dei dispositivi a destra.
+   Dentro il gruppo ogni misura è in percentuale o in cqw (1cqw = 1% della sua larghezza): il disegno è quello
+   approvato il 7/10, solo più piccolo. Dimorino no: è largo 165 px a ogni misura del gruppo. */
+@container eroe (min-width: 1000px) {
+  .eroe-griglia { grid-template-columns: minmax(0, 430px) minmax(0, 1fr); column-gap: 48px; align-items: center; }
+  .eroe-iscrizione { max-width: none; }
+  .ap-dispositivi { container-type: inline-size; display: block; width: 100%; margin: 0; padding: 0 0 2.6%; }
+  .ap-portatile { display: block; position: relative; width: 72.5%; margin-left: 4.6%; }
+  .ap-portatile::after { content: ""; position: absolute; z-index: -1; left: -4%; right: -4%; bottom: -1.2cqw; height: 2.6cqw; border-radius: 50%; background: rgba(28, 58, 46, .26); filter: blur(12px); }
+  .ap-schermo { box-sizing: content-box; aspect-ratio: 1475 / 775; border: .84cqw solid #1B1E20; border-bottom-width: .99cqw; border-radius: 1.22cqw 1.22cqw .23cqw .23cqw; background: var(--fondo); box-shadow: 0 0 0 1px #3A4043; overflow: hidden; }
   .ap-base { display: block; width: 111.11%; height: auto; aspect-ratio: 1000 / 124; margin: -1px 0 0 -5.555%; }
-  .ap-telefono { position: absolute; right: -16px; bottom: 0; margin: 0; }
+  .ap-telefono { position: absolute; right: -1.22%; bottom: 0; width: 22.87%; margin: 0; padding: 2.29cqw 0 1.37cqw; border-width: .61cqw; border-radius: 2.9cqw; box-shadow: 0 0 0 1px #3A4043, 0 1.7cqw 3cqw rgba(28, 58, 46, .3); }
+  .ap-telefono::before { top: .84cqw; height: .53cqw; border-radius: .3cqw; }
+  .ap-telefono .ap-lente-segno { --s: 24px; top: max(2px, .3cqw); right: 7%; }
   /* La zona ha la misura dello schermo del portatile: la foto si appoggia al suo bordo destro, all'81,5% dell'altezza. */
-  .ap-zona { display: block; position: absolute; left: calc(4.6% + 11px); right: 311px; top: 11px; aspect-ratio: 1475 / 775; pointer-events: none; }
-  .ap-foto-posto { display: block; position: absolute; z-index: 3; top: 81.5%; right: -21px; width: 184px; }
+  .ap-zona { display: block; position: absolute; left: calc(4.6% + .84cqw); right: calc(22.9% + .84cqw); top: .84cqw; aspect-ratio: 1475 / 775; pointer-events: none; }
+  .ap-foto-posto { display: block; position: absolute; z-index: 3; top: 81.5%; right: -1.6cqw; width: 14cqw; }
   /* La foto sotto il bollino: il bollino sta sopra il bordo fra foto e telefono. */
-  .ap-foto { z-index: auto; width: auto; margin: 0; padding: 6px; transform: rotate(-5deg); }
+  .ap-foto { z-index: auto; width: auto; margin: 0; padding: max(3px, .46cqw); transform: rotate(-5deg); }
   .ap-legame { display: contents; }
-  .ap-bollino { position: absolute; right: -25px; top: 40%; width: 38px; height: 38px; border: 3px solid var(--fondo); box-shadow: 0 6px 14px rgba(28, 58, 46, .28); }
-  .ap-scritta { position: absolute; left: -30px; right: -30px; top: calc(100% + 16px); text-align: center; line-height: 1.35; white-space: nowrap; }
+  .ap-bollino { --b: clamp(28px, 2.9cqw, 38px); position: absolute; right: calc(var(--b) / -2 - .45cqw); top: 40%; width: var(--b); height: var(--b); border: 3px solid var(--fondo); box-shadow: 0 6px 14px rgba(28, 58, 46, .28); }
+  .ap-bollino svg { width: 55%; height: 55%; }
+  .ap-scritta { position: absolute; left: -48px; right: -48px; top: calc(100% + 12px); text-align: center; font-size: 13px; line-height: 1.35; white-space: nowrap; }
   .ap-scritta br { display: inline; }
-  .ap-dimorino { left: -14px; right: auto; bottom: 22px; width: 130px; }
-  .ap-didascalia { margin-top: 112px; flex-direction: row; justify-content: center; gap: 40px; }
+  /* Dimorino in piedi davanti all'angolo sinistro del portatile, sulla tastiera: la sua testa resta sotto lo schermo
+     (13,6cqw è la distanza fra il fondo del gruppo e il fondo dello schermo; la sua altezza è 0,88 la larghezza).
+     Largo 165 px dove il gruppo è largo (da 1280 px di finestra), mai meno di 130 px: non segue il portatile. */
+  .ap-dimorino { --d: clamp(130px, 24cqw, 165px); left: -24px; right: auto; bottom: calc(13.6cqw - var(--d) * .88 - 2px); width: var(--d); }
+  /* La didascalia sotto Dimorino e sotto la scritta verde, che escono dal fondo del gruppo. */
+  .eroe-visivo .ap-didascalia { margin-top: calc(max(clamp(130px, 24%, 165px) * .88 + 2px - 13.6%, 2.5% + 48px) + 14px); flex-flow: row wrap; justify-content: center; gap: 4px 28px; }
   .ap-vantaggi { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* La lente: una finestra (dialog) con la schermata adattata allo schermo o alla sua dimensione reale, da esplorare
+   scorrendo. Si chiude con «Chiudi», con Esc o toccando fuori. Sul telefono occupa tutto lo schermo. */
+html.lente-aperta { overflow: hidden; }
+.lente { width: min(1240px, calc(100vw - 32px)); max-width: none; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); padding: 0; border: 0; border-radius: 18px; background: #fff; color: var(--inchiostro); box-shadow: 0 24px 60px rgba(0, 0, 0, .35); overflow: hidden; }
+.lente[open] { display: flex; flex-direction: column; }
+.lente::backdrop { background: rgba(20, 40, 32, .72); }
+.lente-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 10px 10px 18px; border-bottom: 1px solid var(--bordo-tenue); }
+.lente-titolo { flex: 1 1 260px; min-width: 0; margin: 0; font-size: 14px; font-weight: 700; line-height: 1.4; }
+.lente-azioni { display: flex; gap: 8px; margin-left: auto; }
+.lente-bottone { min-height: 44px; padding: 0 16px; border: 1px solid var(--bordo); border-radius: 12px; background: #fff; color: var(--inchiostro); font: inherit; font-size: 15px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.lente-bottone[aria-pressed="true"] { background: var(--menta); }
+.lente-chiudi { border-color: var(--verde); background: var(--verde); color: #fff; }
+.lente-area { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; display: flex; padding: 16px; background: var(--fondo); }
+.lente-area img { display: block; margin: auto; max-width: 100%; max-height: calc(100vh - 32px - 66px - 32px); max-height: calc(100dvh - 32px - 66px - 32px); width: auto; height: auto; border-radius: 6px; box-shadow: 0 6px 24px rgba(28, 58, 46, .18); cursor: zoom-in; }
+.lente-reale img { max-width: none; max-height: none; cursor: zoom-out; }
+.lente-senza-modo img { cursor: default; }
+@media (max-width: 639px) {
+  .lente { width: 100vw; height: 100vh; height: 100dvh; max-height: none; margin: 0; border-radius: 0; }
+  .lente-barra { padding: 8px 8px 8px 14px; }
+  .lente-titolo { flex-basis: 100%; font-size: 13px; }
+  .lente-area { padding: 10px; }
+  .lente-area img { max-height: none; }
 }
 
 /* ---------- Il lancio ---------- */

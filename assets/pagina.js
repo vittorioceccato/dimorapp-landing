@@ -231,6 +231,81 @@
     })();
   })();
 
+  /* ---------- La lente sulle schermate dell'apertura ----------
+     Le due schermate sono collegamenti al loro file: senza script (o senza <dialog>) si apre il file.
+     Con lo script si aprono nella finestra della lente, adattate allo schermo; «Dimensione reale» (o un tocco
+     sull'immagine) le mostra alla grandezza a cui sono state acquisite, da esplorare scorrendo.
+     Si chiude con «Chiudi», con Esc o toccando fuori; il fuoco torna alla schermata da cui si è partiti. */
+  (function lente() {
+    var finestra = document.querySelector('[data-lente-finestra]');
+    var aperture = [].slice.call(document.querySelectorAll('a[data-lente]'));
+    if (!finestra || !aperture.length || typeof finestra.showModal !== 'function') return;
+    var titolo = finestra.querySelector('.lente-titolo');
+    var area = finestra.querySelector('[data-lente-area]');
+    var modo = finestra.querySelector('[data-lente-modo]');
+    var chiudi = finestra.querySelector('[data-lente-chiudi]');
+    if (!titolo || !area || !modo || !chiudi) return;
+    var img = document.createElement('img');
+    img.decoding = 'async';
+    area.appendChild(img);
+    var reale = false, larghezza = 0, partenza = null;
+
+    // Adattata, la schermata non supera la sua grandezza reale; se adattata è già quasi reale, il pulsante non serve.
+    function serveIlModo() {
+      if (reale || !larghezza || !img.complete) return;
+      modo.hidden = img.getBoundingClientRect().width >= larghezza * 0.9;
+      area.classList.toggle('lente-senza-modo', modo.hidden);
+    }
+    function mostra() {
+      area.classList.toggle('lente-reale', reale);
+      img.style.width = reale && larghezza ? larghezza + 'px' : '';
+      img.style.maxWidth = !reale && larghezza ? 'min(100%, ' + larghezza + 'px)' : '';
+      modo.setAttribute('aria-pressed', reale ? 'true' : 'false');
+      modo.textContent = reale ? 'Adatta allo schermo' : 'Dimensione reale';
+      area.scrollTop = 0;
+      area.scrollLeft = 0;
+    }
+    function apri(a) {
+      var interna = a.querySelector('img');
+      partenza = a;
+      larghezza = parseInt(a.getAttribute('data-larghezza'), 10) || 0;
+      img.src = a.getAttribute('href');
+      img.alt = interna ? interna.alt : '';
+      titolo.textContent = interna ? interna.alt : '';
+      reale = false;
+      modo.hidden = false;
+      mostra();
+      document.documentElement.classList.add('lente-aperta');
+      finestra.showModal();
+      chiudi.focus();
+      serveIlModo();
+    }
+    img.addEventListener('load', serveIlModo);
+    window.addEventListener('resize', function () { if (finestra.open) serveIlModo(); });
+
+    aperture.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // nuova scheda: il file
+        e.preventDefault();
+        apri(a);
+      });
+    });
+    modo.addEventListener('click', function () { reale = !reale; mostra(); });
+    img.addEventListener('click', function () { if (!modo.hidden) { reale = !reale; mostra(); } });
+    chiudi.addEventListener('click', function () { finestra.close(); });
+    // Un tocco fuori dal riquadro della finestra (sullo sfondo) la chiude.
+    finestra.addEventListener('click', function (e) {
+      if (e.target !== finestra) return;
+      var r = finestra.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) finestra.close();
+    });
+    finestra.addEventListener('close', function () {
+      document.documentElement.classList.remove('lente-aperta');
+      img.removeAttribute('src');
+      if (partenza) partenza.focus();
+    });
+  })();
+
   /* ---------- Le comparse allo scorrimento ----------
      Sezioni e schede compaiono quando entrano nello schermo, in sequenza nelle griglie
      ([data-rv] un elemento, [data-rv-gruppo] i suoi figli uno dopo l'altro).

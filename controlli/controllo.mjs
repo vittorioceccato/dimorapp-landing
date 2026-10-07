@@ -17,7 +17,7 @@
 //      senza script i due prezzi insieme e il regalo, con il mensile risparmio e regalo invisibili;
 //   9. le domande frequenti: una per riga, chiuse, nel loro ordine, e le risposte nuove parola per parola;
 //  10. l'apertura del 7/10 e i sei raccordi: testi parola per parola, le tre schermate con le loro misure vere
-//      e i loro testi alternativi, e la soglia del portatile ricavata dal CSS (la home almeno al 67%).
+//      e i loro testi alternativi, la lente sulle due schermate, il passaggio di disposizione e Dimorino.
 // Esce con 1 al primo controllo fallito, dopo averli stampati tutti.
 
 import fs from 'node:fs';
@@ -122,9 +122,10 @@ const APERTURA = {
     { src: 'assets/img/lettura-bolletta-telefono.webp', w: 469, h: 798, alt: 'Dimora da telefono: una bolletta appena letta, con fornitore, importo, scadenza e il pulsante per archiviarla.' },
     { src: 'assets/img/foto-bolletta.webp', w: 412, h: 621, alt: 'La foto di una bolletta della luce: totale da pagare 96,48 euro entro il 26 ottobre 2026.' },
   ],
-  homeLarghezzaReale: 1180, // la home è stata acquisita a 1180 px (densità 1,25)
-  homeScalaMinima: 0.67,
-  barraDiScorrimento: 17, // su Windows la barra classica toglie 17 px alla pagina, non alla media query
+  // La lente (7/10, sera): le due schermate si aprono ingrandite, alla grandezza a cui sono state acquisite.
+  lente: { 'assets/img/home-computer.webp': 1180, 'assets/img/lettura-bolletta-telefono.webp': 390 },
+  // Dimorino sul computer: una misura sua, fra 130 e 165 px (il 7/10 era 130; «+25–30%»), che non segue il portatile.
+  dimorinoComputer: { min: 130, max: 165 },
   // I sei raccordi.
   comeTitolo: 'Fotografi il documento. Dimora si ricorda il resto.',
   comeSotto: 'Dal documento alla scadenza, in tre passi.',
@@ -374,8 +375,10 @@ console.log('\n6. Collegamenti');
   verifica(interni.length > 0 && rotti.length === 0, `i ${interni.length} collegamenti interni portano a sezioni che esistono`, rotti);
   const mailto = link.filter(a => a.attr.href.startsWith('mailto:'));
   verifica(mailto.length > 0 && mailto.every(a => MAILTO_AMMESSI.includes(a.attr.href) && a.antenati.some(x => x.nome === 'footer')), 'i mailto: sono solo quelli del piè di pagina', mailto.map(a => a.attr.href));
-  const altri = link.filter(a => !a.attr.href.startsWith('#') && !a.attr.href.startsWith('mailto:')).map(a => a.attr.href).filter(h => !COLLEGAMENTI_AMMESSI.includes(h) && h !== CANONICO);
-  verifica(altri.length === 0, 'gli altri collegamenti vanno solo all\'app (login, termini, privacy) o all\'indirizzo canonico', altri);
+  // Le schermate dell'apertura sono collegamenti al loro file (la lente): ammessi, purché il file sia nel repository.
+  const aUnaSchermata = (a) => 'data-lente' in a.attr && fs.existsSync(path.join(RADICE, a.attr.href));
+  const altri = link.filter(a => !a.attr.href.startsWith('#') && !a.attr.href.startsWith('mailto:') && !aUnaSchermata(a)).map(a => a.attr.href).filter(h => !COLLEGAMENTI_AMMESSI.includes(h) && h !== CANONICO);
+  verifica(altri.length === 0, "gli altri collegamenti vanno solo all'app (login, termini, privacy), all'indirizzo canonico o ai file delle schermate", altri);
   const canonici = tag.filter(t => t.nome === 'link' && t.attr.rel === 'canonical');
   verifica(canonici.length === 1 && canonici[0].attr.href === CANONICO, `l'indirizzo canonico è ${CANONICO}`);
   const accedi = link.filter(a => spazi(testi.filter(x => x.antenati.includes(a)).map(x => x.testo).join(' ')) === 'Accedi').map(a => a.attr.href);
@@ -571,20 +574,30 @@ console.log("\n10. L'apertura e i sei raccordi");
   const cssPulito = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
   const regoleAp = [...cssPulito.matchAll(/([^{}]*\.ap-[^{}]*)\{([^{}]*)\}/g)];
   verifica(regoleAp.length > 10 && !regoleAp.some(m => /object-fit|object-position/.test(m[2])), "nessun object-fit nelle regole dell'apertura: le schermate restano intere e nelle loro proporzioni");
-  // La soglia del portatile, letta dal CSS: alla larghezza più piccola in cui c'è, la home è almeno al 67%.
-  const soglia = Number((/@media\s*\(min-width:\s*(\d+)px\)\s*\{[^@]*?\.ap-portatile\s*\{[^}]*display:\s*block/.exec(cssPulito) || [])[1]);
-  const fascia = /\.ap-dispositivi\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*(\d+)px\),\s*(\d+)px\)/.exec(cssPulito);
-  const portatile = /\.ap-portatile\s*\{[^}]*width:\s*calc\(([\d.]+)%\s*-\s*(\d+)px\)/.exec(cssPulito);
-  const cornice = /\.ap-schermo\s*\{[^}]*border:\s*(\d+)px/.exec(cssPulito);
-  const letti = soglia && fascia && portatile && cornice;
-  verifica(!!letti, 'la soglia del portatile e le sue misure si leggono dal CSS', { soglia, fascia: fascia?.slice(1), portatile: portatile?.slice(1), cornice: cornice?.[1] });
-  if (letti) {
-    const scala = (vw) => (Math.min(vw - +fascia[1], +fascia[2]) * +portatile[1] / 100 - +portatile[2] - 2 * +cornice[1]) / APERTURA.homeLarghezzaReale;
-    const conBarra = scala(soglia - APERTURA.barraDiScorrimento);
-    verifica(conBarra >= APERTURA.homeScalaMinima, `il portatile compare da ${soglia} px: lì la home è al ${(scala(soglia) * 100).toFixed(1)}%, e al ${(conBarra * 100).toFixed(1)}% con la barra di scorrimento (almeno ${APERTURA.homeScalaMinima * 100}%)`);
-    verifica(Math.abs(soglia - 1200) <= 60, `la soglia (${soglia} px) resta a qualche decina di pixel da 1200`);
-    console.log(`        la home: ${[1280, 1440, 1920].map(v => `${v} px ${(scala(v) * 100).toFixed(1)}%`).join(', ')}`);
+  // La lente: le due schermate (non la foto della bolletta) sono collegamenti al loro stesso file, con la grandezza reale.
+  for (const [src, larghezza] of Object.entries(APERTURA.lente)) {
+    const img = immagini.find(i => i.attr.src === src);
+    const a = img && img.antenati.filter(x => x.nome === 'a').pop();
+    verifica(!!a && 'data-lente' in a.attr && a.attr.href === src && +a.attr['data-larghezza'] === larghezza, `${src}: si apre ingrandita (il collegamento è al suo file, grandezza reale ${larghezza} px)`, a && [a.attr.href, a.attr['data-larghezza']]);
+    verifica(!!a && tag.some(s => s.antenati.includes(a) && classi(s).includes('ap-lente-segno') && s.attr['aria-hidden'] === 'true'), `${src}: la lente piccola che lo dice, solo disegnata`);
   }
+  const foto = immagini.find(i => i.attr.src === 'assets/img/foto-bolletta.webp');
+  verifica(!!foto && !foto.antenati.some(x => x.nome === 'a'), 'la foto della bolletta non è un collegamento');
+  const finestre = tag.filter(x => x.nome === 'dialog' && 'data-lente-finestra' in x.attr);
+  verifica(finestre.length === 1, 'la finestra della lente è una sola (<dialog>)');
+  const bottoni = finestre.length ? tag.filter(b => b.nome === 'button' && b.antenati.includes(finestre[0])) : [];
+  const chiudi = bottoni.find(b => 'data-lente-chiudi' in b.attr), modo = bottoni.find(b => 'data-lente-modo' in b.attr);
+  verifica(!!chiudi && chiudi.attr.type === 'button' && testoDi(chiudi) === 'Chiudi', 'la finestra ha un bottone «Chiudi» vero');
+  verifica(!!modo && modo.attr.type === 'button' && testoDi(modo) === 'Dimensione reale' && modo.attr['aria-pressed'] === 'false', 'e «Dimensione reale», un bottone che dice se è premuto');
+  verifica(/showModal\(\)/.test(JS_CODICE) && /typeof finestra\.showModal !== 'function'/.test(JS_CODICE) && /e\.preventDefault\(\)/.test(JS_CODICE) && /partenza\.focus\(\)/.test(JS_CODICE) && /addEventListener\('close'/.test(JS_CODICE), 'lo script: finestra modale (Esc la chiude), il fuoco torna alla schermata, senza <dialog> si apre il file');
+  // Il passaggio fra le disposizioni lo decide la larghezza dell'apertura (container query), non la finestra.
+  const passaggio = Number((/@container\s+eroe\s*\(min-width:\s*(\d+)px\)\s*\{[^@]*?\.ap-portatile\s*\{[^}]*display:\s*block/.exec(cssPulito) || [])[1]);
+  verifica(/\.eroe\s*\{[^}]*container:\s*eroe\s*\/\s*inline-size/.test(cssPulito) && passaggio > 0, `il portatile compare quando l'apertura è larga almeno ${passaggio} px (container query, non la finestra)`);
+  verifica(/\.ap-dispositivi\s*\{[^}]*container-type:\s*inline-size/.test(cssPulito) && /\.ap-schermo\s*\{[^}]*cqw/.test(cssPulito) && /\.ap-telefono\s*\{[^}]*cqw/.test(cssPulito), 'il gruppo dei dispositivi è disegnato in proporzione alla sua larghezza (cqw)');
+  // Dimorino: sul computer una misura sua, fra 130 e 165 px; sul telefono senza vw (a 390 px con la barra sporgeva).
+  const dimo = /\.ap-dimorino\s*\{[^}]*--d:\s*clamp\((\d+)px,\s*[\d.]+cqw,\s*(\d+)px\)[^}]*width:\s*var\(--d\)/.exec(cssPulito);
+  verifica(!!dimo && +dimo[1] === APERTURA.dimorinoComputer.min && +dimo[2] === APERTURA.dimorinoComputer.max, `Dimorino sul computer fra ${APERTURA.dimorinoComputer.min} e ${APERTURA.dimorinoComputer.max} px, non in proporzione al portatile`, dimo && dimo.slice(1));
+  verifica(![...cssPulito.matchAll(/([^{}]*\.ap-dimorino[^{}]*)\{([^{}]*)\}/g)].some(m => /vw/.test(m[2])), "Dimorino non si misura sulla finestra (vw): non sporge oltre l'apertura");
   // I sei raccordi.
   const testaDi = (id, nome) => { const s = tag.find(t => t.nome === 'section' && t.attr.id === id); const t = s && conClasse('sezione-testa', s)[0]; return t ? tag.filter(x => x.nome === nome && x.antenati.includes(t)).map(testoDi) : null; };
   verifica(JSON.stringify(testaDi('come', 'h2')) === JSON.stringify([APERTURA.comeTitolo]) && JSON.stringify(testaDi('come', 'p')) === JSON.stringify([APERTURA.comeSotto]), `«Come funziona»: «${APERTURA.comeTitolo}», e sotto «${APERTURA.comeSotto}»`, [testaDi('come', 'h2'), testaDi('come', 'p')]);
