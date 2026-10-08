@@ -729,11 +729,18 @@ console.log('\n12. Le statistiche di Vercel');
 {
   const html = HTML.replace(/<!--[\s\S]*?-->/g, '');
   const testa = html.slice(0, html.indexOf('</head>'));
-  const script = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].map(m => ({ attr: attributi(m[1]), corpo: m[2].trim(), pos: m.index }));
+  const script = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].map(m => ({ attr: attributi(m[1]), corpo: m[2].trim(), pos: m.index, fine: m.index + m[0].length }));
   const coda = script.filter(s => !s.attr.src && spazi(s.corpo) === CODA_VA);
   const dalla = script.filter(s => s.attr.src === DALLA_PIATTAFORMA);
   verifica(coda.length === 1 && dalla.length === 1, 'i due tag ci sono, una volta sola ciascuno', { coda: coda.length, script: dalla.length });
-  verifica(coda.length === 1 && dalla.length === 1 && coda[0].pos < dalla[0].pos && dalla[0].pos < testa.length, 'la coda `va` viene prima dello script, tutti e due nella testata');
+  // L'ordine (8/10): la coda nella testata, prima di ogni altro script e prima di ogni foglio di stile (uno script dopo un
+  // foglio di stile ferma la lettura finché il CSS non arriva: su 3G pagina.js arrivava quasi un secondo dopo); lo script
+  // delle statistiche nel corpo, subito dopo assets/pagina.js (in mezzo solo spazi).
+  const primoStile = html.search(/<link\b[^>]*\brel=["']?stylesheet/i);
+  verifica(coda.length === 1 && script[0] === coda[0] && coda[0].pos < testa.length && primoStile > 0 && coda[0].pos < primoStile, 'la coda `va` è nella testata, prima di ogni altro script e del foglio di stile');
+  const pagina = script.filter(s => s.attr.src === 'assets/pagina.js');
+  const dopoPagina = pagina.length === 1 && dalla.length === 1 && dalla[0].pos >= pagina[0].fine ? html.slice(pagina[0].fine, dalla[0].pos) : null;
+  verifica(pagina.length === 1 && dalla.length === 1 && dalla[0].pos > testa.length && dopoPagina !== null && /^\s*$/.test(dopoPagina), `lo script delle statistiche è nel corpo, subito dopo assets/pagina.js`, { pagina: pagina.length, inTesta: dalla.length === 1 && dalla[0].pos < testa.length, inMezzo: dopoPagina && dopoPagina.slice(0, 80) });
   verifica(dalla.length === 1 && 'defer' in dalla[0].attr, `lo script carica proprio ${DALLA_PIATTAFORMA}, con defer`);
   const inLinea = script.filter(s => !s.attr.src);
   verifica(inLinea.length === 1, 'nessun altro script scritto nella pagina oltre alla coda', inLinea.map(s => s.corpo.slice(0, 60)));

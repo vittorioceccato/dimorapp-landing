@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Vercel Web Analytics: i due tag della documentazione per l'HTML semplice. Lo script è servito dal sito stesso.
+     Qui, prima di tutto, la coda: prima del foglio di stile, perché uno script dopo un foglio di stile ferma la
+     lettura della pagina finché il CSS non arriva, e su una rete lenta pagina.js arrivava quasi un secondo dopo.
+     Lo script sta in fondo, subito dopo assets/pagina.js. Gli indirizzi si ripuliscono prima dell'invio (beforeSend)
+     e gli eventi partono da assets/pagina.js. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
 <title>Dimora: gestione di immobili e affitti</title>
 <meta name="description" content="Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze, tu controlli e confermi. Documenti, spese, contratti e incassi in un unico posto.">
 <link rel="canonical" href="https://dimorapp.com/">
@@ -19,12 +27,6 @@
 <meta name="twitter:image" content="https://dimorapp.com/dimora-og.png">
 <link rel="preload" href="assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/stile.css">
-<!-- Vercel Web Analytics: i due tag della documentazione per l'HTML semplice. Lo script è servito dal sito stesso.
-     Gli indirizzi si ripuliscono prima dell'invio (beforeSend) e gli eventi partono da assets/pagina.js. -->
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <!--
   LO STATO DELLA PAGINA E LA DATA DEL LANCIO STANNO QUI, E SOLO QUI.
@@ -617,5 +619,6 @@
 </dialog>
 
 <script src="assets/pagina.js"></script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
