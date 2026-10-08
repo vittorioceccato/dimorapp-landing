@@ -17,7 +17,11 @@
 //   8. l'interruttore annuale / mensile: bottoni veri, l'annuale scelto, il «fino al» ricavato dai prezzi,
 //      senza script i due prezzi insieme e il regalo, con il mensile risparmio e regalo invisibili;
 //   9. le domande frequenti: una per riga, chiuse, nel loro ordine, e le risposte nuove parola per parola;
-//  10. le statistiche di Vercel: i due tag una volta sola, la coda prima dello script, lo script da
+//  10. l'apertura del 7/10 e i sei raccordi: testi parola per parola, le tre schermate con le loro misure vere
+//      e i loro testi alternativi, la lente sulle due schermate, il passaggio di disposizione e Dimorino;
+//  11. il telefono (7/10, sera): il modello nuovo e la sua schermata, la lente che si riapre, la barra che segue,
+//      le quattro righe che scorrono, la lettera con «Continua a leggere», niente testo sotto i 12 px fino a 640 px.
+//  12. le statistiche di Vercel: i due tag una volta sola, la coda prima dello script, lo script da
 //      quel percorso esatto, nessun altro /_vercel/ e solo i cinque eventi previsti; ogni collegamento
 //      verso il login e ogni modulo della lista d'attesa con la sua etichetta, nessuna coppia
 //      evento e posizione ripetuta.
@@ -66,19 +70,19 @@ const TESTI = {
     'Dimora': {
       dotazione: ['Fino a 3 immobili', '10 letture AI al mese', '5 GB di archivio'],
       risparmio: "Con l'annuale risparmi 23,80 €.",
-      desc: 'Per la tua casa e una o due seconde case, anche in affitto.',
+      desc: 'Per la tua casa o pochi immobili, anche in affitto.',
       regalo: 'In regalo con il primo annuale: 10 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
     'Dimora Plus': {
       dotazione: ['Fino a 10 immobili', '20 letture AI al mese', '10 GB di archivio'],
       risparmio: "Con l'annuale risparmi 35,80 €.",
-      desc: 'Per chi affitta più immobili e ha contratti, inquilini e scadenze da seguire.',
+      desc: 'Per gestire più immobili, con affitti e incassi sotto controllo.',
       regalo: 'In regalo con il primo annuale: 20 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
     'Dimora Max': {
       dotazione: ['Fino a 25 immobili', '40 letture AI al mese', '20 GB di archivio'],
       risparmio: "Con l'annuale risparmi 55,80 €.",
-      desc: 'Per chi gestisce molti immobili, propri o di famiglia.',
+      desc: 'Per chi gestisce un patrimonio immobiliare più ampio.',
       regalo: 'In regalo con il primo annuale: 40 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
   },
@@ -98,7 +102,8 @@ const TESTI = {
   lettureRisposta: 'Una lettura copre fino a 10 pagine di un documento: per un contratto di 14 pagine ne servono 2. Archiviare un documento o inserire i dati a mano non consuma letture.',
   pacchettiDomanda: 'Posso avere più letture?',
   pacchettiRisposta: 'Sì, con i pacchetti aggiuntivi: 10 letture a 4,90 €, 20 a 7,90 €, 100 a 34,90 €. Valgono 12 mesi e si comprano con un piano attivo.',
-  eroe: 'Per chi ha una casa o più di una, e per chi affitta. Dimora legge bollette, contratti e rate del condominio, prepara le scadenze e ti avvisa per tempo. Tu controlli e confermi.',
+  // L'apertura (7/10): il testo serve anche da descrizione della pagina, per i motori di ricerca e per i social.
+  eroe: 'Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze, tu controlli e confermi. Documenti, spese, contratti e incassi in un unico posto.',
   firma: 'ha ideato Dimora',
   guidaOcchiello: 'LA TUA GUIDA',
   guidaTitolo: 'Ti presento Dimorino',
@@ -108,8 +113,56 @@ const TESTI = {
   annuale: 'Annuale (risparmi fino al {N}%)',
   mensile: 'Mensile',
 };
+/* ---------- L'apertura e i sei raccordi (regia, 7/10), parola per parola ---------- */
+const APERTURA = {
+  titoloScheda: 'Dimora: gestione di immobili e affitti',
+  occhiello: 'Gestione di immobili e affitti',
+  // Il titolo su quattro righe, l'ultima in verde.
+  righeTitolo: ['Le tue case', 'e i tuoi affitti,', 'sotto controllo.'],
+  titoloVerde: 'Da una foto.',
+  scritta: 'Fai una foto o carica un PDF. Dimora compila per te.',
+  didascalia: [['Dal computer', 'hai tutti gli immobili sotto gli occhi.'], ['Dal telefono', 'fotografi il documento e lo confermi.']],
+  vantaggi: [
+    'Ogni immobile ha la sua scheda: documenti, spese, scadenze',
+    'Contratti, incassi e pagamenti in ritardo',
+    'Promemoria via mail per le tue scadenze',
+    'Legge foto, PDF, Word ed Excel: più di 60 tipi di documenti',
+  ],
+  // Le tre schermate: file, misure vere in pixel, testo alternativo (quello dell'anteprima approvata).
+  schermate: [
+    { src: 'assets/img/home-computer.webp', w: 1475, h: 775, alt: 'La home di Dimora da computer: menu, saluto, riepilogo, le tre case e le scadenze in arrivo.' },
+    { src: 'assets/img/lettura-bolletta-telefono-alta.webp', w: 1170, h: 2400, alt: 'Dimora da telefono: una bolletta appena letta, con fornitore, importo, scadenza e il pulsante per archiviarla.' },
+    { src: 'assets/img/foto-bolletta.webp', w: 412, h: 621, alt: 'La foto di una bolletta della luce: totale da pagare 96,48 euro entro il 26 ottobre 2026.' },
+  ],
+  // La lente (7/10, sera): le due schermate si aprono ingrandite, alla grandezza a cui sono state acquisite.
+  lente: { 'assets/img/home-computer.webp': 1180, 'assets/img/lettura-bolletta-telefono-alta.webp': 390 },
+  // Dimorino sul computer: una misura sua, fra 130 e 165 px (il 7/10 era 130; «+25–30%»), che non segue il portatile.
+  dimorinoComputer: { min: 130, max: 165 },
+  // I sei raccordi.
+  comeTitolo: 'Fotografi il documento. Dimora si ricorda il resto.',
+  comeSotto: 'Dal documento alla scadenza, in tre passi.',
+  costiTitolo: 'Costi e rendimento, casa per casa',
+  costiTesto: 'Mutuo, spese e manutenzioni, anno per anno. Se affitti, vedi anche la resa netta del tuo portafoglio.',
+  affittiSotto: 'Contratti, incassi, ritardi e scadenze fiscali, contratto per contratto. E vedi quanto rendono i tuoi affitti.',
+  chiusura: "Una bolletta o un contratto d'affitto bastano per vedere come funziona. La prova è gratuita: 30 giorni, senza carta.",
+};
+/* ---------- La lettera (regia, 7/10, sera), parola per parola: la domanda e i tre paragrafi ---------- */
+const LETTERA = {
+  domanda: 'Sai quanto ti costano i tuoi immobili e, se li affitti, quanto ti rendono?',
+  paragrafi: [
+    "Per molti la risposta è sparsa ovunque: la bolletta nella mail, la rata del mutuo sull'estratto conto, la fattura dell'idraulico in un cassetto. Se affitti, devi anche tenere insieme contratti, canoni incassati, pagamenti in ritardo e scadenze.",
+    'Mia mamma tiene tutto a mano, nel quaderno della foto, con una cura che rispetto. Io ho voluto togliere la fatica di rimettere insieme i pezzi.',
+    'Dimora nasce da qui: documenti, spese e affitti nello stesso posto, casa per casa. Questi problemi li conosco, perché sono anche i miei.',
+  ],
+  // La didascalia della foto resta com'era, con il 2026.
+  didascalia: "Il quaderno dei conti di casa di mia mamma: un'agenda del 2013, riusata per il 2026.",
+  continua: 'Continua a leggere',
+};
 // I testi di prima, che non devono esserci più da nessuna parte (né nella pagina, né nello stile, né nello script).
 const VIA = [
+  // La lettera di prima (7/10, sera).
+  'quante spese ha generato la tua casa nel 2025', 'Con una seconda casa, o una casa in affitto, si aggiungono canoni',
+  'Dimora nasce da qui: tutto nello stesso posto',
   'LA MASCOTTE', 'Dove vanno i miei documenti?', 'se ne ha, una o due seconde case',
   // Le sei note sotto le schede tolte il 6/10.
   'Sono indicazioni, non limiti: in ogni piano puoi gestire tutti gli immobili che vuoi.',
@@ -127,6 +180,15 @@ const VIA = [
   'risparmi circa il', 'Indicativamente', 'Consigliato per chi',
   // Il testo in alto e la firma di prima (6/10).
   'e per chi affitta da sé', 'legge ogni segnalazione',
+  // L'apertura di prima, con l'anteprima disegnata e il suo elenco, e i testi cambiati dai raccordi (7/10).
+  'Ciao Giulia', 'Questa settimana hai 2 scadenze', 'Conferma e ricordamelo', 'Guarda come funziona',
+  'Promemoria via mail a 30, 7 e 1 giorno', 'Confermi tu ogni dato prima che entri',
+  'Per chi ha una casa o più di una', 'Dimora — la tua casa, senza burocrazia', "Carichi un documento, Dimora lo legge con l'AI", 'finalmente in ordine',
+  'Senza moduli da riempire a mano', 'Sai quanto ti costa ogni casa', 'Per chi gestisce da sé uno o più affitti',
+  'Una bolletta o una rata del condominio bastano',
+  'Per la tua casa e una o due seconde case', 'Per chi affitta più immobili e ha contratti', 'propri o di famiglia',
+  // Le righe dei piani del comando del 7/10, cambiate lo stesso giorno sugli appunti di Vitto.
+  'Per la tua casa o per pochi immobili', 'tuoi o di famiglia', 'Per chi gestisce molti immobili.',
 ];
 // Le domande frequenti, nel loro ordine: dopo «Quanto costa dopo la prova?» le due sulle letture.
 const DOMANDE = [
@@ -141,9 +203,10 @@ const DOMANDE = [
   'Serve installare qualcosa?',
   'Posso portare via i miei dati?',
 ];
+// La risposta cambiata il 7/10.
+const PER_CHI_RISPOSTA = "Per chi gestisce direttamente i propri immobili: la casa in cui vive, le seconde case, quelle che affitta. Per capire se ti è utile c'è la prova gratuita.";
 // Le risposte che non cambiano (oltre a quella sui documenti al sicuro).
 const RISPOSTE_DI_SEMPRE = {
-  'Per chi è pensata Dimora?': "Per chi ha una casa o più di una da seguire, e per chi affitta: un solo appartamento o più immobili, con contratti e inquilini diversi. Per capire se ti è utile c'è la prova gratuita.",
   'Quali documenti legge?': "Più di 60 tipi di documenti della casa: bollette, contratti d'affitto, preventivi e bilanci del condominio, F24, polizze, rogiti, conferme di prenotazione e molti altri, in foto, PDF, Word, Excel o CSV. Se un documento non lo riconosce, lo archivi lo stesso e compili a mano.",
   'Quanto può essere lungo un documento?': 'Nella beta Dimora legge fino a 30 pagine scansionate o fotografate per documento; un PDF con il testo anche di più. Se il documento è più lungo, prima della lettura ti avvisa che alcune pagine potrebbero restare fuori, e alla fine ti dice quante ne ha inviate in lettura.',
   'Serve installare qualcosa?': "No. Dimora funziona dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. L'app per App Store e Google Play è in arrivo. Entri con la tua mail, senza password.",
@@ -207,8 +270,11 @@ const inEuro = (c) => `${Math.floor(c / 100)},${String(c % 100).padStart(2, '0')
 // Il testo visibile: i nodi di testo e gli attributi che si vedono o si leggono.
 const visibile = [
   ...testi.map(t => ({ testo: t.testo, finto: finto(t.antenati), antenati: t.antenati })),
-  ...tag.flatMap(t => ['alt', 'placeholder', 'title', 'aria-label'].filter(a => t.attr[a]).map(a => ({ testo: t.attr[a], finto: finto(t.antenati), antenati: t.antenati }))),
+  ...tag.flatMap(t => ['alt', 'placeholder', 'title', 'aria-label'].filter(a => t.attr[a]).map(a => ({ testo: t.attr[a], finto: finto(t.antenati), antenati: t.antenati, attributo: a, tag: t }))),
 ];
+// I testi alternativi delle schermate dell'apertura descrivono le schermate (una bolletta dimostrativa con la sua
+// scadenza): le loro date non sono date del lancio. Si controllano parola per parola nella sezione 10.
+const dellaSchermata = (v) => v.attributo === 'alt' && v.antenati.some(a => classi(a).includes('ap-dispositivi'));
 const tuttoIlTesto = spazi(visibile.map(v => v.testo).join(' '));
 const testoVero = spazi(visibile.filter(v => !v.finto).map(v => v.testo).join(' '));
 
@@ -244,7 +310,9 @@ console.log('\n3. Data del lancio e stato, in un punto solo');
   const volte = [HTML, CSS, JS].reduce((n, f) => n + (f.split(giorno).length - 1), 0);
   verifica(volte === 1, `la data ${giorno} compare una volta sola fra HTML, CSS e script (${volte})`);
   const MESI = 'gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre';
-  const aMano = [...tuttoIlTesto.matchAll(new RegExp(`\\b\\d{1,2} (${MESI})\\b|\\balle \\d{1,2}:\\d{2}\\b`, 'g'))].map(m => m[0]);
+  const senzaSchermate = spazi(visibile.filter(v => !dellaSchermata(v)).map(v => v.testo).join(' '));
+  verifica(visibile.filter(dellaSchermata).length === APERTURA.schermate.length, `i testi alternativi esclusi qui sono solo quelli delle ${APERTURA.schermate.length} schermate dell'apertura`);
+  const aMano = [...senzaSchermate.matchAll(new RegExp(`\\b\\d{1,2} (${MESI})\\b|\\balle \\d{1,2}:\\d{2}\\b`, 'g'))].map(m => m[0]);
   verifica(aMano.length === 0, 'nessuna data scritta a mano nel testo (le frasi con la data le compone lo script)', aMano);
   const nelloScript = [...JS_CODICE.matchAll(new RegExp(`\\d{1,2} (${MESI})|\\d{1,2}:\\d{2}|20\\d\\d-\\d\\d-\\d\\d`, 'g'))].map(m => m[0]);
   verifica(nelloScript.length === 0, 'nessuna data scritta nello script', nelloScript);
@@ -334,8 +402,10 @@ console.log('\n6. Collegamenti');
   verifica(interni.length > 0 && rotti.length === 0, `i ${interni.length} collegamenti interni portano a sezioni che esistono`, rotti);
   const mailto = link.filter(a => a.attr.href.startsWith('mailto:'));
   verifica(mailto.length > 0 && mailto.every(a => MAILTO_AMMESSI.includes(a.attr.href) && a.antenati.some(x => x.nome === 'footer')), 'i mailto: sono solo quelli del piè di pagina', mailto.map(a => a.attr.href));
-  const altri = link.filter(a => !a.attr.href.startsWith('#') && !a.attr.href.startsWith('mailto:')).map(a => a.attr.href).filter(h => !COLLEGAMENTI_AMMESSI.includes(h) && h !== CANONICO);
-  verifica(altri.length === 0, 'gli altri collegamenti vanno solo all\'app (login, termini, privacy) o all\'indirizzo canonico', altri);
+  // Le schermate dell'apertura sono collegamenti al loro file (la lente): ammessi, purché il file sia nel repository.
+  const aUnaSchermata = (a) => 'data-lente' in a.attr && fs.existsSync(path.join(RADICE, a.attr.href));
+  const altri = link.filter(a => !a.attr.href.startsWith('#') && !a.attr.href.startsWith('mailto:') && !aUnaSchermata(a)).map(a => a.attr.href).filter(h => !COLLEGAMENTI_AMMESSI.includes(h) && h !== CANONICO);
+  verifica(altri.length === 0, "gli altri collegamenti vanno solo all'app (login, termini, privacy), all'indirizzo canonico o ai file delle schermate", altri);
   const canonici = tag.filter(t => t.nome === 'link' && t.attr.rel === 'canonical');
   verifica(canonici.length === 1 && canonici[0].attr.href === CANONICO, `l'indirizzo canonico è ${CANONICO}`);
   const accedi = link.filter(a => spazi(testi.filter(x => x.antenati.includes(a)).map(x => x.testo).join(' ')) === 'Accedi').map(a => a.attr.href);
@@ -463,6 +533,8 @@ console.log('\n9. Le domande frequenti');
     const data = risposte[DOMANDE.indexOf(d)];
     verifica(data?.[0] === r, `«${d}»: la risposta approvata`, data);
   }
+  const perChi = risposte[DOMANDE.indexOf('Per chi è pensata Dimora?')];
+  verifica(perChi?.[0] === PER_CHI_RISPOSTA, '«Per chi è pensata Dimora?»: la risposta del 7/10', perChi);
   // Le altre non cambiano.
   for (const [d, r] of Object.entries(RISPOSTE_DI_SEMPRE)) {
     const data = risposte[DOMANDE.indexOf(d)];
@@ -470,7 +542,190 @@ console.log('\n9. Le domande frequenti');
   }
 }
 
-console.log('\n10. Le statistiche di Vercel');
+console.log("\n10. L'apertura e i sei raccordi");
+{
+  // La scheda del browser e le descrizioni: il titolo nuovo, e il testo dell'apertura per motori di ricerca e social.
+  const titolo = testi.filter(x => x.antenati.some(a => a.nome === 'title')).map(x => spazi(x.testo));
+  verifica(JSON.stringify(titolo) === JSON.stringify([APERTURA.titoloScheda]), `il titolo della scheda: «${APERTURA.titoloScheda}»`, titolo);
+  const meta = (k, v) => tag.filter(t => t.nome === 'meta' && t.attr[k] === v).map(t => t.attr.content);
+  verifica(JSON.stringify(meta('property', 'og:title')) === JSON.stringify([APERTURA.titoloScheda]) && JSON.stringify(meta('name', 'twitter:title')) === JSON.stringify([APERTURA.titoloScheda]), 'og:title e twitter:title sono il titolo della scheda');
+  for (const [k, v] of [['name', 'description'], ['property', 'og:description'], ['name', 'twitter:description']]) {
+    verifica(JSON.stringify(meta(k, v)) === JSON.stringify([TESTI.eroe]), `${v}: il testo dell'apertura`, meta(k, v));
+  }
+  // Il titolo: quattro righe (tre a capo), l'ultima in verde.
+  const h1 = tag.filter(t => t.nome === 'h1');
+  verifica(h1.length === 1, 'un titolo solo nella pagina');
+  const pezziH1 = h1.length ? testi.filter(x => x.antenati.includes(h1[0])).map(x => spazi(x.testo)).filter(Boolean) : [];
+  verifica(JSON.stringify(pezziH1) === JSON.stringify([...APERTURA.righeTitolo, APERTURA.titoloVerde]), 'il titolo: «Le tue case / e i tuoi affitti, / sotto controllo. / Da una foto.»', pezziH1);
+  verifica(h1.length && tag.filter(t => t.nome === 'br' && t.antenati.includes(h1[0])).length === 2, 'le prime tre righe sono separate da due a capo');
+  const verde = conClasse('h1-verde');
+  verifica(verde.length === 1 && verde[0].antenati.includes(h1[0]) && testoDi(verde[0]) === APERTURA.titoloVerde, `«${APERTURA.titoloVerde}» in verde, su una riga sua`);
+  const occhiello = conClasse('eroe-occhiello').map(testoDi);
+  verifica(JSON.stringify(occhiello) === JSON.stringify([APERTURA.occhiello]), `il sopratitolo: «${APERTURA.occhiello}»`, occhiello);
+  const disp = conClasse('ap-dispositivi');
+  verifica(disp.length === 1, 'le schermate stanno in un riquadro solo');
+  const scritta = conClasse('ap-scritta').map(testoDi);
+  verifica(JSON.stringify(scritta) === JSON.stringify([APERTURA.scritta]) && conClasse('ap-scritta')[0]?.antenati.includes(disp[0]), `la scritta verde accanto alla foto: «${APERTURA.scritta}»`, scritta);
+  const bollino = conClasse('ap-bollino');
+  verifica(bollino.length === 1 && bollino[0].attr['aria-hidden'] === 'true', 'il bollino della fotocamera è uno, solo disegnato (aria-hidden)');
+  verifica(!/ap-angolo/.test(HTML + CSS), 'niente angolini attorno alla foto (tolti il 7/10, su richiesta di Vitto)');
+  const dida = conClasse('ap-didascalia');
+  const righe = dida.length === 1 ? tag.filter(t => t.nome === 'span' && t.antenati[t.antenati.length - 1] === dida[0]) : [];
+  const lette = righe.map(r => { const b = tag.filter(t => t.nome === 'b' && t.antenati.includes(r)); return [b.length === 1 ? testoDi(b[0]) : null, testoDi(r)]; });
+  verifica(JSON.stringify(lette) === JSON.stringify(APERTURA.didascalia.map(([g, t]) => [g, `${g} ${t}`])), 'la didascalia: «Dal computer …» e «Dal telefono …», con il grassetto', lette);
+  const elenco = conClasse('ap-vantaggi');
+  const vantaggi = elenco.length === 1 ? tag.filter(t => t.nome === 'li' && t.antenati[t.antenati.length - 1] === elenco[0]).map(testoDi) : [];
+  verifica(JSON.stringify(vantaggi) === JSON.stringify(APERTURA.vantaggi), 'i quattro vantaggi, in ordine', vantaggi);
+  verifica(elenco.length === 1 && tag.indexOf(disp[0]) < tag.indexOf(elenco[0]) && tag.indexOf(dida[0]) < tag.indexOf(elenco[0]), 'i vantaggi stanno sotto le schermate e la didascalia');
+  // Le tre schermate: il file giusto, le misure vere (lette dal file), il testo alternativo.
+  const immagini = disp.length ? tag.filter(t => t.nome === 'img' && t.antenati.includes(disp[0]) && !classi(t).includes('ap-dimorino')) : [];
+  verifica(immagini.length === APERTURA.schermate.length, `le schermate sono ${APERTURA.schermate.length}`, immagini.map(i => i.attr.src));
+  // Le misure di un WebP si leggono dalla sua intestazione (VP8, VP8L o VP8X), senza librerie.
+  const misureWebp = (file) => {
+    const b = fs.readFileSync(path.join(RADICE, file));
+    if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
+    const tipo = b.toString('ascii', 12, 16);
+    if (tipo === 'VP8L') { const v = b.readUInt32LE(21); return { w: (v & 0x3fff) + 1, h: ((v >> 14) & 0x3fff) + 1 }; }
+    if (tipo === 'VP8X') return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
+    if (tipo === 'VP8 ') return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+    return null;
+  };
+  for (const atteso of APERTURA.schermate) {
+    const img = immagini.find(i => i.attr.src === atteso.src);
+    const vere = img ? misureWebp(atteso.src) : null;
+    verifica(!!img && !!vere && vere.w === atteso.w && vere.h === atteso.h, `${atteso.src}: il file è di ${atteso.w} × ${atteso.h} px`, vere);
+    verifica(!!img && +img.attr.width === atteso.w && +img.attr.height === atteso.h, `${atteso.src}: larghezza e altezza dichiarate (${atteso.w} × ${atteso.h}), la pagina non salta`, img && [img.attr.width, img.attr.height]);
+    verifica(img?.attr.alt === atteso.alt, `${atteso.src}: il testo alternativo`, img?.attr.alt);
+  }
+  // Le schermate si mostrano intere: nessun ritaglio nelle regole dell'apertura.
+  const cssPulito = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const regoleAp = [...cssPulito.matchAll(/([^{}]*\.ap-[^{}]*)\{([^{}]*)\}/g)];
+  verifica(regoleAp.length > 10 && !regoleAp.some(m => /object-fit|object-position/.test(m[2])), "nessun object-fit nelle regole dell'apertura: le schermate restano intere e nelle loro proporzioni");
+  // La lente: le due schermate (non la foto della bolletta) sono collegamenti al loro stesso file, con la grandezza reale.
+  for (const [src, larghezza] of Object.entries(APERTURA.lente)) {
+    const img = immagini.find(i => i.attr.src === src);
+    const a = img && img.antenati.filter(x => x.nome === 'a').pop();
+    verifica(!!a && 'data-lente' in a.attr && a.attr.href === src && +a.attr['data-larghezza'] === larghezza, `${src}: si apre ingrandita (il collegamento è al suo file, grandezza reale ${larghezza} px)`, a && [a.attr.href, a.attr['data-larghezza']]);
+    verifica(!!a && tag.some(s => s.antenati.includes(a) && classi(s).includes('ap-lente-segno') && s.attr['aria-hidden'] === 'true'), `${src}: la lente piccola che lo dice, solo disegnata`);
+  }
+  const foto = immagini.find(i => i.attr.src === 'assets/img/foto-bolletta.webp');
+  verifica(!!foto && !foto.antenati.some(x => x.nome === 'a'), 'la foto della bolletta non è un collegamento');
+  const finestre = tag.filter(x => x.nome === 'dialog' && 'data-lente-finestra' in x.attr);
+  verifica(finestre.length === 1, 'la finestra della lente è una sola (<dialog>)');
+  const bottoni = finestre.length ? tag.filter(b => b.nome === 'button' && b.antenati.includes(finestre[0])) : [];
+  const chiudi = bottoni.find(b => 'data-lente-chiudi' in b.attr), modo = bottoni.find(b => 'data-lente-modo' in b.attr);
+  verifica(!!chiudi && chiudi.attr.type === 'button' && testoDi(chiudi) === 'Chiudi', 'la finestra ha un bottone «Chiudi» vero');
+  verifica(!!modo && modo.attr.type === 'button' && testoDi(modo) === 'Dimensione reale' && modo.attr['aria-pressed'] === 'false', 'e «Dimensione reale», un bottone che dice se è premuto');
+  verifica(/showModal\(\)/.test(JS_CODICE) && /typeof finestra\.showModal !== 'function'/.test(JS_CODICE) && /e\.preventDefault\(\)/.test(JS_CODICE) && /partenza\.focus\(\)/.test(JS_CODICE) && /addEventListener\('close'/.test(JS_CODICE), 'lo script: finestra modale (Esc la chiude), il fuoco torna alla schermata, senza <dialog> si apre il file');
+  // Il portatile c'è a ogni larghezza (7/10, sera): nessuna regola lo nasconde. Le due disposizioni si dividono a 1200 px.
+  verifica(![...cssPulito.matchAll(/([^{}]*\.ap-portatile[^{}]*)\{([^{}]*)\}/g)].some(m => /display:\s*none/.test(m[2])), 'il portatile non si nasconde a nessuna larghezza');
+  const fino = /@media\s*\(max-width:\s*1200px\)\s*\{[^@]*?\.ap-dispositivi\s*\{[^}]*max-width:\s*560px/.test(cssPulito);
+  const da = /@media\s*\(min-width:\s*1201px\)\s*\{[^@]*?\.eroe-griglia\s*\{[^}]*grid-template-columns/.test(cssPulito);
+  verifica(fino && da, 'fino a 1200 px il gruppo in colonna, largo al massimo 560 px; da 1201 px le due colonne di prima');
+  verifica(/\.ap-dispositivi\s*\{[^}]*container-type:\s*inline-size/.test(cssPulito) && /\.ap-schermo\s*\{[^}]*cqw/.test(cssPulito) && /\.ap-telefono\s*\{[^}]*cqw/.test(cssPulito), 'il gruppo dei dispositivi è disegnato in proporzione alla sua larghezza (cqw)');
+  // Dimorino: sul computer una misura sua, fra 130 e 165 px; sul telefono senza vw (a 390 px con la barra sporgeva).
+  const dimo = /\.ap-dimorino\s*\{[^}]*--d:\s*clamp\((\d+)px,\s*[\d.]+cqw,\s*(\d+)px\)[^}]*width:\s*var\(--d\)/.exec(cssPulito);
+  verifica(!!dimo && +dimo[1] === APERTURA.dimorinoComputer.min && +dimo[2] === APERTURA.dimorinoComputer.max, `Dimorino sul computer fra ${APERTURA.dimorinoComputer.min} e ${APERTURA.dimorinoComputer.max} px, non in proporzione al portatile`, dimo && dimo.slice(1));
+  verifica(![...cssPulito.matchAll(/([^{}]*\.ap-dimorino[^{}]*)\{([^{}]*)\}/g)].some(m => /vw/.test(m[2])), "Dimorino non si misura sulla finestra (vw): non sporge oltre l'apertura");
+  // I sei raccordi.
+  const testaDi = (id, nome) => { const s = tag.find(t => t.nome === 'section' && t.attr.id === id); const t = s && conClasse('sezione-testa', s)[0]; return t ? tag.filter(x => x.nome === nome && x.antenati.includes(t)).map(testoDi) : null; };
+  verifica(JSON.stringify(testaDi('come', 'h2')) === JSON.stringify([APERTURA.comeTitolo]) && JSON.stringify(testaDi('come', 'p')) === JSON.stringify([APERTURA.comeSotto]), `«Come funziona»: «${APERTURA.comeTitolo}», e sotto «${APERTURA.comeSotto}»`, [testaDi('come', 'h2'), testaDi('come', 'p')]);
+  const funzioni = tag.find(t => t.nome === 'section' && t.attr.id === 'funzioni');
+  const schedaCosti = tag.filter(t => t.nome === 'article' && t.antenati.includes(funzioni)).find(a => tag.some(h => h.nome === 'h3' && h.antenati.includes(a) && testoDi(h) === APERTURA.costiTitolo));
+  verifica(!!schedaCosti && testoDi(tag.find(p => p.nome === 'p' && p.antenati.includes(schedaCosti))) === APERTURA.costiTesto, `«Che cosa fa per te»: «${APERTURA.costiTitolo}», testo invariato`);
+  verifica(JSON.stringify(testaDi('affitti', 'p')) === JSON.stringify([APERTURA.affittiSotto]), '«Per chi affitta»: il sottotitolo nuovo', testaDi('affitti', 'p'));
+  const chiusura = conClasse('finale-testi').flatMap(f => tag.filter(p => p.nome === 'p' && p.antenati.includes(f)).map(testoDi));
+  verifica(chiusura.length === 1 && chiusura[0].startsWith(APERTURA.chiusura), 'la chiusura: «Una bolletta o un contratto d\'affitto bastano…», il resto della frase com\'era', chiusura);
+  // Il titolo di prima dell'apertura ora è il titolo di «Come funziona», e solo lì.
+  verifica(spazi(entita(HTML)).split(APERTURA.comeTitolo).length - 1 === 1, `«${APERTURA.comeTitolo}» compare una volta sola, come titolo di «Come funziona»`);
+}
+
+console.log('\n11. Il telefono: il modello nuovo, la lente, la barra che segue, le righe che scorrono, la lettera');
+{
+  const cssPulito = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const regola = (sel) => [...cssPulito.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => m[1].split(',').map(x => x.trim()).includes(sel)).map(m => m[2]).join(';');
+  // Il blocco «fino a 640 px» (un solo @media, letto contando le graffe).
+  // Il primo blocco con quella testata che contiene «dentro» (le @media con la stessa testata possono essere più d'una).
+  const blocco = (testa, dentro = '') => { for (let i = cssPulito.indexOf(testa); i >= 0; i = cssPulito.indexOf(testa, i + 1)) { const p = cssPulito.indexOf('{', i); let n = 0, j = p; for (; j < cssPulito.length; j++) { if (cssPulito[j] === '{') n++; else if (cssPulito[j] === '}' && --n === 0) break; } const corpo = cssPulito.slice(p + 1, j); if (corpo.includes(dentro)) return corpo; } return ''; };
+  const stretto = blocco('@media (max-width: 640px)', '.storia-resto');
+  verifica(stretto.length > 1000, `c'è il blocco «fino a 640 px» (${stretto.length} caratteri)`);
+
+  // Il telefono: una striscia di 44 punti su 390 del colore della schermata, con l'isola dentro, e sotto la schermata intera.
+  const tel = conClasse('ap-telefono');
+  const stato = conClasse('ap-telefono-stato'), isola = conClasse('ap-isola');
+  verifica(tel.length === 1 && stato.length === 1 && stato[0].antenati.includes(tel[0]) && stato[0].attr['aria-hidden'] === 'true' && isola.length === 1 && isola[0].antenati.includes(stato[0]), 'il telefono ha in alto la striscia con l\'isola, solo disegnate (aria-hidden)');
+  const img = tel.length ? tag.find(t => t.nome === 'img' && t.antenati.includes(tel[0])) : null;
+  verifica(!!img && tag.indexOf(stato[0]) < tag.indexOf(img), 'la striscia sta sopra la schermata');
+  verifica(!!img && +img.attr.width === 3 * 390 && +img.attr.height === 3 * 800, 'la schermata è 390 × 800 punti a densità tripla (1170 × 2400 px)', img && [img.attr.width, img.attr.height]);
+  const striscia = regola('.ap-telefono-stato');
+  verifica(/aspect-ratio:\s*390\s*\/\s*44/.test(striscia) && /background:\s*#F2F5F0/i.test(striscia), 'la striscia è alta 44 punti su 390, del colore di fondo della schermata (#F2F5F0)', striscia);
+  const iso = regola('.ap-isola');
+  const top = Number((/top:\s*([\d.]+)%/.exec(iso) || [])[1]), alta = Number((/height:\s*([\d.]+)%/.exec(iso) || [])[1]);
+  verifica(top > 0 && alta > 0 && top + alta <= 100, `l'isola sta tutta dentro la striscia (dal ${top}% al ${(top + alta).toFixed(1)}%): non copre la schermata`, iso);
+  // Sul computer: largo 23cqw, il telefono non è più alto del portatile (le misure lette dallo stile).
+  const telCss = regola('.ap-telefono');
+  const cornice = Number((/border:\s*calc\(var\(--tel\)\s*\*\s*([\d.]+)\)/.exec(telCss) || [])[1]);
+  const largo = Number((/--tel:\s*([\d.]+)cqw/.exec(regola('.ap-dispositivi')) || [])[1]);
+  const computer = blocco('@media (min-width: 1201px)', '.ap-portatile');
+  const port = Number((/\.ap-portatile\s*\{[^}]*width:\s*([\d.]+)%/.exec(computer) || [])[1]);
+  const bordi = (/\.ap-schermo\s*\{[^}]*border-width:\s*([\d.]+)cqw\s+([\d.]+)cqw\s+([\d.]+)cqw/.exec(computer) || []).slice(1).map(Number);
+  const altezzaTel = largo * (1 - 2 * cornice) * 844 / 390 + 2 * cornice * largo;
+  const altezzaPort = (port - 2 * bordi[0]) * 775 / 1475 + bordi[0] + bordi[2] + port * 1.1111 * 124 / 1000;
+  verifica(largo > 0 && cornice > 0 && cornice <= .03 && bordi.length === 3 && altezzaTel < altezzaPort, `sul computer il telefono (${largo}cqw, cornice ${(cornice * 100).toFixed(1)}%) è alto ${altezzaTel.toFixed(1)}cqw, meno del portatile (${altezzaPort.toFixed(1)}cqw)`);
+  const piccolo = Number((/--tel:\s*clamp\((\d+)px,\s*[\d.]+cqw,\s*(\d+)px\)/.exec(blocco('@media (max-width: 1200px)', '.ap-dispositivi')) || [])[1]);
+  verifica(piccolo >= 230, `fino a 1200 px il telefono non è mai più stretto di ${piccolo} px: i valori nei campi si leggono`);
+
+  // La lente: la pulizia della chiusura non tocca una lente già riaperta.
+  verifica(/addEventListener\('close',\s*function\s*\(\)\s*\{\s*if\s*\(finestra\.open\)\s*return;/.test(JS_CODICE) && !/removeAttribute\('src'\)/.test(JS_CODICE), 'la lente: se è già stata riaperta, la chiusura di prima non le toglie l\'immagine');
+
+  // La barra che segue, fino a 1200 px.
+  const barra = blocco('@media (max-width: 1200px)', 'scroll-padding-top');
+  const padding = Number((/html\s*\{[^}]*scroll-padding-top:\s*(\d+)px/.exec(barra) || [])[1]);
+  const altaBarra = Number((/\[data-barra="fissa"\]\s*\.testata-riga\s*\{[^}]*height:\s*(\d+)px/.exec(barra) || [])[1]);
+  verifica(altaBarra >= 48 && altaBarra <= 56 && padding > altaBarra, `la barra fissa è alta ${altaBarra} px e le ancore si fermano ${padding} px sotto il bordo`);
+  verifica(/\[data-barra="fissa"\]\s*\.testata-barra\s*\{[^}]*position:\s*fixed/.test(barra) && /\.testata\s*\{[^}]*height:\s*65px/.test(cssPulito), 'la barra diventa fissa e la testata tiene il suo spazio (la pagina non salta)');
+  const daBarra = conClasse('solo-largo').map(a => [classi(a).includes('v-arrivo') ? 'arrivo' : 'aperta', a.attr.href, testoDi(a)]);
+  const daMenu = conClasse('menu-cta').map(a => [classi(a).includes('v-arrivo') ? 'arrivo' : 'aperta', a.attr.href, testoDi(a)]);
+  verifica(JSON.stringify(daBarra) === JSON.stringify(daMenu), '«Avvisami» della barra fa quello che fa «Avvisami» nel menu, stato del lancio compreso', [daBarra, daMenu]);
+  const accediMenu = conClasse('menu-accedi');
+  verifica(accediMenu.length === 1 && accediMenu[0].attr.href === 'https://app.dimorapp.com/login' && testoDi(accediMenu[0]) === 'Accedi', '«Accedi» c\'è anche nel menu, per quando non sta nella barra');
+  verifica(/barra\(\)/.test(JS_CODICE) && /setAttribute\('data-barra', 'fissa'\)/.test(JS_CODICE), 'lo script segna la barra fissa quando la testata esce dallo schermo');
+
+  // Le quattro righe che scorrono.
+  const righe = tag.filter(t => 'data-scorre' in t.attr);
+  const sezioni = righe.map(r => (r.antenati.find(a => a.nome === 'section') || {}).attr?.id);
+  verifica(JSON.stringify(sezioni) === JSON.stringify(['perchi', 'come', 'affitti', 'prezzi']), 'le righe che scorrono sono quattro: Per chi è, Come funziona, Per chi affitta, I piani', sezioni);
+  const titoli = righe.map(r => { const t = tag.find(x => x.attr.id === r.attr['data-scorre']); return t && /^h[23]$/.test(t.nome) && t.antenati.includes(r.antenati.find(a => a.nome === 'section')) ? testoDi(t) : null; });
+  verifica(titoli.every(Boolean), 'ognuna prende il nome dal titolo della sua sezione (niente testo nuovo)', titoli);
+  const scorre = /\[data-scorre\]\s*\{[^}]*overflow-x:\s*auto[^}]*scroll-snap-type:\s*x mandatory/.test(stretto) && /\[data-scorre\]\s*>\s*\*\s*\{[^}]*\*\s*\.82\)[^}]*scroll-snap-align:\s*start/.test(stretto);
+  verifica(scorre, 'fino a 640 px scorrono con il dito e si agganciano (CSS), ogni scheda larga l\'82% dello schermo');
+  verifica(/setAttribute\('role', 'region'\)/.test(JS_CODICE) && /setAttribute\('tabindex', '0'\)/.test(JS_CODICE) && /setAttribute\('aria-labelledby'/.test(JS_CODICE) && /className = 'puntini'/.test(JS_CODICE), 'lo script aggiunge i puntini e rende la riga raggiungibile da tastiera e leggibile come regione');
+
+  // La lettera.
+  const scheda = tag.find(t => 'data-storia' in t.attr);
+  const ps = scheda ? tag.filter(t => t.nome === 'p' && t.antenati.includes(scheda)) : [];
+  verifica(ps.length === 4 && testoDi(ps[0]) === LETTERA.domanda && classi(ps[0]).includes('storia-domanda'), 'la lettera: la domanda nuova', ps[0] && testoDi(ps[0]));
+  verifica(JSON.stringify(ps.slice(1).map(testoDi)) === JSON.stringify(LETTERA.paragrafi), 'la lettera: i tre paragrafi, parola per parola', ps.slice(1).map(testoDi));
+  const resto = tag.find(t => t.attr.id === 'storia-resto');
+  verifica(!!resto && !ps[1].antenati.includes(resto) && ps.slice(2).every(p => p.antenati.includes(resto)), 'sul telefono si leggono la domanda e il primo paragrafo; gli altri due stanno nel resto');
+  const continua = tag.find(t => 'data-storia-apri' in t.attr);
+  verifica(!!continua && continua.nome === 'button' && continua.attr.type === 'button' && testoDi(continua) === LETTERA.continua && continua.attr['aria-controls'] === 'storia-resto' && continua.attr['aria-expanded'] === 'false', `«${LETTERA.continua}» è un bottone vero, che dice che cosa apre`);
+  const firma = conClasse('firma')[0];
+  verifica(!!firma && !firma.antenati.includes(resto) && tag.indexOf(continua) < tag.indexOf(firma), 'la firma resta sempre visibile, sotto «Continua a leggere»');
+  verifica(/\[data-chiusa\]\s*\.storia-resto\s*\{\s*display:\s*none/.test(stretto) && /\.storia-continua\s*\{[^}]*display:\s*none/.test(cssPulito), 'il resto si chiude solo fino a 640 px e solo con lo script; senza script si legge tutta');
+  const dida = conClasse('storia-foto').flatMap(f => tag.filter(t => t.nome === 'figcaption' && t.antenati.includes(f)).map(testoDi));
+  verifica(JSON.stringify(dida) === JSON.stringify([LETTERA.didascalia]), 'la didascalia della foto resta com\'era, con il 2026', dida);
+
+  // Fino a 640 px: niente testo sotto i 12 px, le etichette piccole a 12, il piè di pagina con aree da 40 px.
+  const corpi = [...stretto.matchAll(/font-size:\s*([\d.]+)px/g)].map(m => +m[1]);
+  verifica(corpi.length > 0 && corpi.every(c => c >= 12), `nel blocco «fino a 640 px» nessun corpo sotto i 12 px (${Math.min(...corpi)} il più piccolo)`);
+  const etichette = ['.fm-anno', '.fm-tag', '.fm-tag-piccolo', '.fm-occhiello', '.piano-richiesta'];
+  const alzate = etichette.filter(e => [...stretto.matchAll(/([^{}]+)\{([^{}]*)\}/g)].some(m => m[1].split(',').map(x => x.trim()).includes(e) && /font-size:\s*12px/.test(m[2])));
+  verifica(alzate.length === etichette.length, 'le etichette del fascicolo e «Attivazione su richiesta» a 12 px (erano 10,5 e 11)', alzate);
+  verifica(/\.piede-colonna a\s*\{[^}]*min-height:\s*40px/.test(stretto) && /\.piede-basso a\s*\{[^}]*min-height:\s*40px/.test(stretto), 'nel piè di pagina ogni collegamento si tocca su un\'area alta almeno 40 px');
+}
+
+console.log('\n12. Le statistiche di Vercel');
 {
   const html = HTML.replace(/<!--[\s\S]*?-->/g, '');
   const testa = html.slice(0, html.indexOf('</head>'));
