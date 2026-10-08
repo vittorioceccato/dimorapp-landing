@@ -740,12 +740,15 @@ console.log('\n12. Le statistiche di Vercel');
   const vercel = (HTML.match(/_vercel/g) || []).length;
   verifica(vercel === 1 && HTML.includes(`"${DALLA_PIATTAFORMA}"`), `nell'HTML nessun altro riferimento a /_vercel/ (${vercel})`);
   verifica(!/_vercel/.test(CSS) && !/_vercel/.test(JS_CODICE), 'nessun /_vercel/ nel foglio di stile e nello script');
-  // Gli eventi: solo i cinque nomi, ognuno usato, i clic letti da un ascoltatore solo.
+  // Gli eventi: solo i cinque nomi, i clic letti da un ascoltatore solo. Un sesto nome è rosso; uno dei cinque
+  // senza più un pulsante no (8/10: main ha tolto «Guarda come funziona», e clic_guarda_come_funziona resta
+  // nell'elenco senza un elemento che lo mandi). Quelli senza elemento si scrivono nel nome della verifica.
   const conEvento = tag.filter(t => 'data-evento' in t.attr);
   const nomiHtml = [...new Set(conEvento.map(t => t.attr['data-evento']))];
   const nomiJs = [...new Set([...JS_CODICE.matchAll(/'((?:lista|clic)_[a-z_]+)'/g)].map(m => m[1]))];
   const usati = [...new Set([...nomiHtml, ...nomiJs])].sort();
-  verifica(usati.every(x => EVENTI.includes(x)) && EVENTI.every(x => usati.includes(x)), `gli eventi sono solo i cinque previsti (${usati.join(', ')})`, usati);
+  const senzaElemento = EVENTI.filter(x => !usati.includes(x));
+  verifica(usati.length > 0 && usati.every(x => EVENTI.includes(x)), `gli eventi sono solo fra i cinque previsti (${usati.join(', ')}${senzaElemento.length ? '; senza elemento: ' + senzaElemento.join(', ') : ''})`, usati);
   verifica(conEvento.every(t => t.attr['data-posizione']), `ogni elemento con un evento ha la sua posizione (${conEvento.length})`, conEvento.filter(t => !t.attr['data-posizione']).map(t => t.attr['data-evento']));
   verifica((JS_CODICE.match(/closest\('\[data-evento\]'\)/g) || []).length === 1 && (JS_CODICE.match(/'event'/g) || []).length === 1, "un ascoltatore solo per i clic, un punto solo che manda gli eventi");
   verifica(/statistica\('beforeSend'/.test(JS_CODICE), "gli indirizzi si ripuliscono prima dell'invio (beforeSend)");
