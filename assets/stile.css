@@ -283,6 +283,7 @@ h1 { margin: 14px 0 0; font-size: 36px; line-height: 1.08; font-weight: 800; let
 .btn-inizia { align-self: stretch; }
 @media (min-width: 640px) {
   .btn-inizia { align-self: flex-start; }
+  .lancio-modulo .btn-inizia { align-self: center; }
 }
 @media (min-width: 641px) {
   .eroe { padding: 44px 0 60px; }
