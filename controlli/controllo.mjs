@@ -40,12 +40,12 @@ const JS = leggi('assets/pagina.js');
 // che ha «//» dentro le stringhe solo negli indirizzi «https://».
 const JS_CODICE = JS.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\\])\/\/.*$/gm, '$1');
 
-/* ---------- La tabella: prezzi, immobili, letture, spazio, regalo, pacchetti (regia, 6/10) ----------
+/* ---------- La tabella: prezzi, immobili, letture, spazio, regalo, pacchetti (regia, 6/10; letture e regalo dei piani raddoppiati il 12/10) ----------
    Il risparmio dell'annuale non sta qui: si ricava dai prezzi scritti nelle schede. */
 const PIANI = {
-  'Dimora':      { anno: '59 €',  mese: '6,90 €',  immobili: 3,  letture: 10, gb: 5,  regalo: 10 },
-  'Dimora Plus': { anno: '119 €', mese: '12,90 €', immobili: 10, letture: 20, gb: 10, regalo: 20 },
-  'Dimora Max':  { anno: '219 €', mese: '22,90 €', immobili: 25, letture: 40, gb: 20, regalo: 40 },
+  'Dimora':      { anno: '59 €',  mese: '6,90 €',  immobili: 3,  letture: 20, gb: 5,  regalo: 20 },
+  'Dimora Plus': { anno: '119 €', mese: '12,90 €', immobili: 10, letture: 40, gb: 10, regalo: 40 },
+  'Dimora Max':  { anno: '219 €', mese: '22,90 €', immobili: 25, letture: 80, gb: 20, regalo: 80 },
 };
 const PROVA = { giorni: 30, letture: 20, gb: 1 };
 const PACCHETTI = [{ letture: 10, prezzo: '4,90 €' }, { letture: 20, prezzo: '7,90 €' }, { letture: 100, prezzo: '34,90 €' }];
@@ -68,22 +68,22 @@ const TESTI = {
   // Le schede, piano per piano: dotazione, riga del risparmio, descrizione, regalo dell'annuale.
   schede: {
     'Dimora': {
-      dotazione: ['Fino a 3 immobili', '10 letture AI al mese', '5 GB di archivio'],
+      dotazione: ['Fino a 3 immobili', '20 letture AI al mese', '5 GB di archivio'],
       risparmio: "Con l'annuale risparmi 23,80 €.",
       desc: 'Per la tua casa o pochi immobili, anche in affitto.',
-      regalo: 'In regalo con il primo annuale: 10 letture AI in più, da usare quando vuoi entro 12 mesi.',
-    },
-    'Dimora Plus': {
-      dotazione: ['Fino a 10 immobili', '20 letture AI al mese', '10 GB di archivio'],
-      risparmio: "Con l'annuale risparmi 35,80 €.",
-      desc: 'Per gestire più immobili, con affitti e incassi sotto controllo.',
       regalo: 'In regalo con il primo annuale: 20 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
+    'Dimora Plus': {
+      dotazione: ['Fino a 10 immobili', '40 letture AI al mese', '10 GB di archivio'],
+      risparmio: "Con l'annuale risparmi 35,80 €.",
+      desc: 'Per gestire più immobili, con affitti e incassi sotto controllo.',
+      regalo: 'In regalo con il primo annuale: 40 letture AI in più, da usare quando vuoi entro 12 mesi.',
+    },
     'Dimora Max': {
-      dotazione: ['Fino a 25 immobili', '40 letture AI al mese', '20 GB di archivio'],
+      dotazione: ['Fino a 25 immobili', '80 letture AI al mese', '20 GB di archivio'],
       risparmio: "Con l'annuale risparmi 55,80 €.",
       desc: 'Per chi gestisce un patrimonio immobiliare più ampio.',
-      regalo: 'In regalo con il primo annuale: 40 letture AI in più, da usare quando vuoi entro 12 mesi.',
+      regalo: 'In regalo con il primo annuale: 80 letture AI in più, da usare quando vuoi entro 12 mesi.',
     },
   },
   periodoAnno: "l'anno, in un'unica soluzione",
