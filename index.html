@@ -27,6 +27,32 @@
 <meta name="twitter:image" content="https://dimorapp.com/dimora-og.png">
 <link rel="preload" href="assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/stile.css">
+<!-- Dati strutturati per i motori di ricerca: chi siamo e che cos’è l’app. Niente prezzi, offerte o valutazioni.
+     La descrizione è la stessa della meta description: il controllo le confronta. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://dimorapp.com/#organizzazione",
+      "name": "Dimora",
+      "url": "https://dimorapp.com",
+      "logo": "https://dimorapp.com/favicon.svg"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Dimora",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "url": "https://app.dimorapp.com",
+      "description": "Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze, tu controlli e confermi. Documenti, spese, contratti e incassi in un unico posto.",
+      "inLanguage": "it",
+      "publisher": { "@id": "https://dimorapp.com/#organizzazione" }
+    }
+  ]
+}
+</script>
 </head>
 <!--
   LO STATO DELLA PAGINA E LA DATA DEL LANCIO STANNO QUI, E SOLO QUI.

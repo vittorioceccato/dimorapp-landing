@@ -25,6 +25,9 @@
 //      quel percorso esatto, nessun altro /_vercel/ e solo i cinque eventi previsti; ogni collegamento
 //      verso il login e ogni modulo della lista d'attesa con la sua etichetta, nessuna coppia
 //      evento e posizione ripetuta.
+//  13. la base per i motori di ricerca (14/10): robots.txt e sitemap.xml alla radice e pubblicati, la sitemap
+//      con le sole pagine vere, un solo JSON-LD nella testata che si legge come JSON, con Organization e
+//      SoftwareApplication, la descrizione uguale alla meta description, e nessun prezzo, offerta o valutazione.
 // Esce con 1 al primo controllo fallito, dopo averli stampati tutti.
 
 import fs from 'node:fs';
@@ -742,8 +745,10 @@ console.log('\n12. Le statistiche di Vercel');
   const dopoPagina = pagina.length === 1 && dalla.length === 1 && dalla[0].pos >= pagina[0].fine ? html.slice(pagina[0].fine, dalla[0].pos) : null;
   verifica(pagina.length === 1 && dalla.length === 1 && dalla[0].pos > testa.length && dopoPagina !== null && /^\s*$/.test(dopoPagina), `lo script delle statistiche è nel corpo, subito dopo assets/pagina.js`, { pagina: pagina.length, inTesta: dalla.length === 1 && dalla[0].pos < testa.length, inMezzo: dopoPagina && dopoPagina.slice(0, 80) });
   verifica(dalla.length === 1 && 'defer' in dalla[0].attr, `lo script carica proprio ${DALLA_PIATTAFORMA}, con defer`);
-  const inLinea = script.filter(s => !s.attr.src);
-  verifica(inLinea.length === 1, 'nessun altro script scritto nella pagina oltre alla coda', inLinea.map(s => s.corpo.slice(0, 60)));
+  // 14/10: i dati strutturati (application/ld+json) sono dati, non codice: il browser non li esegue.
+  // Si contano a parte, nella sezione 13; qui restano vietati tutti gli altri script scritti nella pagina.
+  const inLinea = script.filter(s => !s.attr.src && s.attr.type !== 'application/ld+json');
+  verifica(inLinea.length === 1, 'nessun altro script eseguibile scritto nella pagina oltre alla coda', inLinea.map(s => s.corpo.slice(0, 60)));
   const vercel = (HTML.match(/_vercel/g) || []).length;
   verifica(vercel === 1 && HTML.includes(`"${DALLA_PIATTAFORMA}"`), `nell'HTML nessun altro riferimento a /_vercel/ (${vercel})`);
   verifica(!/_vercel/.test(CSS) && !/_vercel/.test(JS_CODICE), 'nessun /_vercel/ nel foglio di stile e nello script');
@@ -774,6 +779,71 @@ console.log('\n12. Le statistiche di Vercel');
   ];
   const doppie = [...new Set(coppie.filter((c, i) => coppie.indexOf(c) !== i))];
   verifica(doppie.length === 0, `nessuna coppia evento e posizione ripetuta (${coppie.length} coppie)`, doppie);
+}
+
+console.log('\n13. La base per i motori di ricerca');
+{
+  const esiste = (f) => fs.existsSync(path.join(RADICE, f));
+  // robots.txt
+  const robots = esiste('robots.txt') ? leggi('robots.txt') : '';
+  const righe = robots.split(/\r?\n/).map(r => r.trim()).filter(r => r && !r.startsWith('#'));
+  const campi = righe.map(r => { const i = r.indexOf(':'); return i > 0 ? [r.slice(0, i).trim().toLowerCase(), r.slice(i + 1).trim()] : ['', '']; });
+  verifica(righe.length > 0 && campi.every(c => ['user-agent', 'allow', 'disallow', 'sitemap'].includes(c[0])), `robots.txt c'è e ogni riga è una direttiva nota (${righe.length} righe)`, righe);
+  verifica(campi.length > 0 && campi[0][0] === 'user-agent' && campi[0][1] === '*', 'robots.txt comincia con «User-agent: *»');
+  verifica(campi.some(c => c[0] === 'allow' && c[1] === '/') && !campi.some(c => c[0] === 'disallow' && c[1] === '/'), 'robots.txt lascia leggere tutto il sito');
+  const smRobots = campi.filter(c => c[0] === 'sitemap').map(c => c[1]);
+  verifica(smRobots.length === 1 && smRobots[0] === CANONICO + 'sitemap.xml', "robots.txt indica la sitemap, con l'indirizzo assoluto", smRobots);
+  // sitemap.xml
+  const sm = esiste('sitemap.xml') ? leggi('sitemap.xml') : '';
+  verifica(sm.startsWith('<?xml version="1.0" encoding="UTF-8"?>') && sm.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && sm.trim().endsWith('</urlset>'), "sitemap.xml c'è, con la dichiarazione XML e un <urlset> dello schema delle sitemap");
+  const aperti = [...sm.matchAll(/<([a-z]+)[ >]/g)].map(m => m[1]), chiusi = [...sm.matchAll(/<\/([a-z]+)>/g)].map(m => m[1]);
+  verifica(aperti.length > 0 && [...aperti].sort().join() === [...chiusi].sort().join() && aperti.every(n => ['urlset', 'url', 'loc', 'lastmod'].includes(n)), 'sitemap.xml: ogni elemento è chiuso e sono solo urlset, url, loc e lastmod', aperti);
+  const voci = [...sm.matchAll(/<url>\s*<loc>([^<]*)<\/loc>\s*<lastmod>([^<]*)<\/lastmod>\s*<\/url>/g)].map(m => ({ loc: m[1], lastmod: m[2] }));
+  verifica(voci.length > 0 && voci.length === (sm.match(/<url>/g) || []).length, `ogni voce della sitemap ha indirizzo e data (${voci.length})`);
+  // Le pagine vere: i file .html alla radice del repository. Una pagina nuova non in sitemap è rossa, e viceversa.
+  const pagine = fs.readdirSync(RADICE).filter(f => f.endsWith('.html')).map(f => f === 'index.html' ? CANONICO : CANONICO + f).sort();
+  verifica(voci.map(v => v.loc).sort().join() === pagine.join(), `la sitemap elenca tutte e sole le pagine del sito (${pagine.join(', ')})`, voci.map(v => v.loc));
+  verifica(voci.every(v => v.loc.startsWith(CANONICO) && !v.loc.includes('?') && !v.loc.includes('#')), 'gli indirizzi della sitemap sono assoluti, su https://dimorapp.com/, senza parametri');
+  const canonico = tag.find(t => t.nome === 'link' && t.attr.rel === 'canonical');
+  verifica(!!canonico && voci.some(v => v.loc === canonico.attr.href), 'la pagina principale è in sitemap col suo indirizzo canonico');
+  const dataVera = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d + 'T00:00:00Z')) && new Date(d + 'T00:00:00Z').toISOString().slice(0, 10) === d;
+  verifica(voci.every(v => dataVera(v.lastmod)), 'ogni data della sitemap è una data vera, AAAA-MM-GG', voci.map(v => v.lastmod));
+  // I due file devono essere pubblicati: .vercelignore non li esclude.
+  const ignorati = esiste('.vercelignore') ? leggi('.vercelignore').split(/\r?\n/).map(r => r.trim()).filter(Boolean) : [];
+  verifica(!ignorati.some(r => r.includes('robots') || r.includes('sitemap') || r.startsWith('*') || r.endsWith('.txt') || r.endsWith('.xml')), '.vercelignore non esclude robots.txt né sitemap.xml', ignorati);
+  // Il JSON-LD
+  const html = HTML.replace(/<!--[\s\S]*?-->/g, '');
+  const testa = html.slice(0, html.indexOf('</head>'));
+  const ld = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].map(m => ({ attr: attributi(m[1]), corpo: m[2], pos: m.index })).filter(s => s.attr.type === 'application/ld+json');
+  verifica(ld.length === 1 && ld[0].pos < testa.length, `un solo JSON-LD, nella testata (${ld.length})`);
+  let dati = null;
+  try { dati = JSON.parse(ld[0].corpo); } catch { /* resta null */ }
+  verifica(dati !== null && dati['@context'] === 'https://schema.org' && Array.isArray(dati['@graph']), 'il JSON-LD si legge come JSON, con il contesto di schema.org e un @graph');
+  const nodi = dati && Array.isArray(dati['@graph']) ? dati['@graph'] : [];
+  verifica(nodi.map(n => n['@type']).join() === 'Organization,SoftwareApplication', "nel JSON-LD ci sono Organization e SoftwareApplication, e nient'altro", nodi.map(n => n['@type']));
+  const org = nodi.find(n => n['@type'] === 'Organization') || {}, app = nodi.find(n => n['@type'] === 'SoftwareApplication') || {};
+  verifica(org.name === 'Dimora' && org.url === 'https://dimorapp.com', 'Organization: nome «Dimora», indirizzo https://dimorapp.com', org);
+  const logo = typeof org.logo === 'string' && org.logo.startsWith(CANONICO) ? org.logo.slice(CANONICO.length) : null;
+  verifica(!!logo && esiste(logo) && tag.some(t => (t.attr.href || t.attr.src) === logo), `il logo è un indirizzo assoluto di un file che c'è e che la pagina usa già (${logo})`, org.logo);
+  verifica(app.name === 'Dimora' && app.applicationCategory === 'BusinessApplication' && app.operatingSystem === 'Web' && app.url === 'https://app.dimorapp.com' && app.inLanguage === 'it', "SoftwareApplication: nome, categoria, sistema, indirizzo dell'app e lingua", app);
+  const meta = tag.find(t => t.nome === 'meta' && t.attr.name === 'description');
+  verifica(!!meta && app.description === meta.attr.content, 'la descrizione del JSON-LD è uguale alla meta description');
+  // Niente prezzi, offerte, valutazioni o recensioni, a qualunque profondità: i pagamenti non sono attivi.
+  const chiavi = [], valoriTipo = [];
+  const giro = (v) => {
+    if (Array.isArray(v)) { v.forEach(giro); return; }
+    if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) { chiavi.push(k); if (k === '@type') valoriTipo.push(String(x)); giro(x); }
+  };
+  giro(dati);
+  const CHIAVI_VIETATE = ['offers', 'price', 'pricecurrency', 'pricespecification', 'aggregaterating', 'review', 'reviews', 'ratingvalue'];
+  const TIPI_VIETATI = ['Offer', 'AggregateOffer', 'Review', 'AggregateRating', 'Rating'];
+  const vietati = [...chiavi.filter(k => CHIAVI_VIETATE.includes(k.toLowerCase())), ...valoriTipo.filter(t => TIPI_VIETATI.includes(t))];
+  verifica(dati !== null && vietati.length === 0, 'nel JSON-LD nessun prezzo, offerta, valutazione o recensione', vietati);
+  // La pagina dichiara la lingua, e ogni immagine ha il suo alt (vuoto solo per quelle decorative).
+  const radice = tag.find(t => t.nome === 'html');
+  verifica(!!radice && radice.attr.lang === 'it', '<html lang="it">');
+  const img = tag.filter(t => t.nome === 'img');
+  verifica(img.length > 0 && img.every(t => 'alt' in t.attr), `ogni immagine ha l'attributo alt (${img.length}, ${img.filter(t => t.attr.alt).length} con un testo)`);
 }
 
 console.log(`\n${passati} passati, ${falliti} falliti`);
