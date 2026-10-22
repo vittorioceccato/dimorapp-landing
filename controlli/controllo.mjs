@@ -217,7 +217,8 @@ const PER_CHI_RISPOSTA = "Per chi gestisce direttamente i propri immobili: la ca
 const RISPOSTE_DI_SEMPRE = {
   'Quali documenti legge?': "Più di 130 tipi di documenti della casa: bollette, contratti d'affitto, preventivi e bilanci del condominio, F24, polizze, rogiti, conferme di prenotazione e molti altri, in foto, PDF, Word, Excel o CSV. Se un documento non lo riconosce, lo archivi lo stesso e compili a mano.",
   'Quanto può essere lungo un documento?': 'Nella beta Dimora legge fino a 30 pagine scansionate o fotografate per documento; un PDF con il testo anche di più. Se il documento è più lungo, prima della lettura ti avvisa che alcune pagine potrebbero restare fuori, e alla fine ti dice quante ne ha inviate in lettura.',
-  'Serve installare qualcosa?': "No. Dimora funziona dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. Entri con la tua mail, senza password.",
+  // 22/10: gli store tornano (decisione di Vitto), detti «presto».
+  'Serve installare qualcosa?': "No. Dimora funziona già dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. Presto anche su App Store e Google Play. Entri con la tua mail, senza password.",
   'Posso portare via i miei dati?': "Sì. Dalle Impostazioni scarichi i tuoi dati in un file, quando vuoi. Ogni documento lo scarichi dalla sua pagina, e quelli del fascicolo per il commercialista anche tutti insieme, in uno ZIP. Se decidi di andartene, elimini l'account.",
 };
 
@@ -860,20 +861,28 @@ console.log('\n13. La base per i motori di ricerca');
 console.log('\n14. Le frasi vere (22/10)');
 {
   // Le frasi di prima: promettevano cose che l'app non fa, o meno di quello che fa.
-  for (const via of ['60 tipi', '30, 7 e 1', 'maschera', 'App Store', 'Google Play', 'stima indicativa dalla tua aliquota',
+  // Gli store sono tornati (22/10, decisione di Vitto): via resta solo la frase di prima.
+  for (const via of ['60 tipi', '30, 7 e 1', 'maschera', "L'app per App Store e Google Play è in arrivo", 'stima indicativa dalla tua aliquota',
     'Francoforte', "fuori dall'Europa", 'non li vendiamo', 'cancella dopo 30 giorni']) {
     verifica(!HTML.includes(via), `nella pagina non c'è più «${via}»`);
   }
   // «30 giorni» resta solo per la prova gratuita, mai riferito ai dati.
   const trenta = visibile.filter(v => /30 giorni/.test(v.testo)).map(v => spazi(v.testo)).filter(t => !/gratis|gratuita|prova|Al lancio|letture con l'AI/i.test(t));
   verifica(trenta.length === 0, '«30 giorni» compare solo per la prova gratuita', trenta);
-  // «in arrivo» fra i testi visibili: restano solo il testo alternativo della schermata (descrive l'immagine)
-  // e la scritta della beta, che con data-stato="aperta" non si vede.
+  // «in arrivo» fra i testi visibili: solo nei due segni degli store. Fuori restano il testo alternativo della
+  // schermata (descrive l'immagine) e la scritta della beta, che con data-stato="aperta" non si vede.
   const aperta = tag.find(t => t.nome === 'body')?.attr['data-stato'] === 'aperta';
   const inArrivo = visibile.filter(v => /in arrivo/i.test(v.testo))
     .filter(v => !dellaSchermata(v) && !(aperta && v.antenati.some(a => classi(a).includes('v-arrivo'))))
+    .filter(v => !v.antenati.some(a => classi(a).includes('negozi')))
     .map(v => spazi(v.testo));
-  verifica(aperta && inArrivo.length === 0, '«in arrivo» non compare fra i testi visibili (la beta è aperta)', inArrivo);
+  verifica(aperta && inArrivo.length === 0, '«in arrivo» fra i testi visibili solo nei due segni degli store (la beta è aperta)', inArrivo);
+  // I due segni, con il loro contenitore dentro il riquadro del telefono, come prima.
+  const negozi = tag.filter(t => classi(t).includes('negozi'));
+  const segni = negozi.length === 1 ? tag.filter(t => t.nome === 'span' && t.antenati.includes(negozi[0])).map(testoDi) : [];
+  verifica(negozi.length === 1 && negozi[0].antenati.some(a => classi(a).includes('telefono'))
+    && JSON.stringify(segni) === JSON.stringify(['App Store · in arrivo', 'Google Play · in arrivo']),
+    'nel riquadro del telefono i due segni «App Store · in arrivo» e «Google Play · in arrivo»', segni);
   // Le frasi nuove, parola per parola, quante volte devono esserci.
   const nuove = [
     ["IMU, condominio, polizze, rinnovi: le tiene in ordine e ogni lunedì ti manda una mail con le scadenze della settimana. Se una scadenza ti preme, chiedi un promemoria in più. L'IMU la stima con le aliquote ufficiali del tuo Comune.", 1],
@@ -884,6 +893,8 @@ console.log('\n14. Le frasi vere (22/10)');
     ["L'AI legge i tuoi documenti per aiutarti a mettere in ordine dati e scadenze. Non vengono usati per addestrare modelli.", 1],
     [TESTI.sicuroRisposta[1], 1],
     ['apre la scheda giusta', 1],
+    ['Dimora è ottimizzata per lo schermo del telefono: fotografi il documento e lo carichi dal browser, senza installare nulla. Presto anche su App Store e Google Play.', 1],
+    ['Presto anche su App Store e Google Play.', 2],
   ];
   for (const [frase, volte] of nuove) {
     const n = testoVero.split(frase).length - 1;
