@@ -112,7 +112,7 @@ const TESTI = {
   guidaTitolo: 'Ti presento Dimorino',
   guidaTesto: "È la tua guida dentro Dimora: ti segue passo passo e ti aiuta con documenti, scadenze e tutto quello che riguarda la casa. Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.",
   sicuroDomanda: 'I miei documenti sono al sicuro?',
-  sicuroRisposta: "Restano nel tuo archivio, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, e non vengono usati per addestrare modelli. I dettagli sono nell'informativa sulla privacy.",
+  sicuroRisposta: "Restano nel tuo archivio a Francoforte, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, fuori dall'Europa, e il fornitore li cancella dopo 30 giorni; non li usa per addestrare i suoi modelli. I dettagli sono nell'informativa sulla privacy.",
   annuale: 'Annuale (risparmi fino al {N}%)',
   mensile: 'Mensile',
 };
@@ -129,7 +129,7 @@ const APERTURA = {
     'Ogni immobile ha la sua scheda: documenti, spese, scadenze',
     'Contratti, incassi e pagamenti in ritardo',
     'Promemoria via mail per le tue scadenze',
-    'Legge foto, PDF, Word ed Excel: più di 60 tipi di documenti',
+    'Legge foto, PDF, Word ed Excel: più di 130 tipi di documenti',
   ],
   // Le tre schermate: file, misure vere in pixel, testo alternativo (quello dell'anteprima approvata).
   schermate: [
@@ -210,9 +210,9 @@ const DOMANDE = [
 const PER_CHI_RISPOSTA = "Per chi gestisce direttamente i propri immobili: la casa in cui vive, le seconde case, quelle che affitta. Per capire se ti è utile c'è la prova gratuita.";
 // Le risposte che non cambiano (oltre a quella sui documenti al sicuro).
 const RISPOSTE_DI_SEMPRE = {
-  'Quali documenti legge?': "Più di 60 tipi di documenti della casa: bollette, contratti d'affitto, preventivi e bilanci del condominio, F24, polizze, rogiti, conferme di prenotazione e molti altri, in foto, PDF, Word, Excel o CSV. Se un documento non lo riconosce, lo archivi lo stesso e compili a mano.",
+  'Quali documenti legge?': "Più di 130 tipi di documenti della casa: bollette, contratti d'affitto, preventivi e bilanci del condominio, F24, polizze, rogiti, conferme di prenotazione e molti altri, in foto, PDF, Word, Excel o CSV. Se un documento non lo riconosce, lo archivi lo stesso e compili a mano.",
   'Quanto può essere lungo un documento?': 'Nella beta Dimora legge fino a 30 pagine scansionate o fotografate per documento; un PDF con il testo anche di più. Se il documento è più lungo, prima della lettura ti avvisa che alcune pagine potrebbero restare fuori, e alla fine ti dice quante ne ha inviate in lettura.',
-  'Serve installare qualcosa?': "No. Dimora funziona dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. L'app per App Store e Google Play è in arrivo. Entri con la tua mail, senza password.",
+  'Serve installare qualcosa?': "No. Dimora funziona dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. Entri con la tua mail, senza password.",
   'Posso portare via i miei dati?': "Sì. Dalle Impostazioni scarichi i tuoi dati in un file, quando vuoi. Ogni documento lo scarichi dalla sua pagina, e quelli del fascicolo per il commercialista anche tutti insieme, in uno ZIP. Se decidi di andartene, elimini l'account.",
 };
 
@@ -844,6 +844,36 @@ console.log('\n13. La base per i motori di ricerca');
   verifica(!!radice && radice.attr.lang === 'it', '<html lang="it">');
   const img = tag.filter(t => t.nome === 'img');
   verifica(img.length > 0 && img.every(t => 'alt' in t.attr), `ogni immagine ha l'attributo alt (${img.length}, ${img.filter(t => t.attr.alt).length} con un testo)`);
+}
+
+console.log('\n14. Le frasi vere (22/10)');
+{
+  // Le frasi di prima: promettevano cose che l'app non fa, o meno di quello che fa.
+  for (const via of ['60 tipi', '30, 7 e 1', 'maschera', 'App Store', 'Google Play', 'stima indicativa dalla tua aliquota']) {
+    verifica(!HTML.includes(via), `nella pagina non c'è più «${via}»`);
+  }
+  // «in arrivo» fra i testi visibili: restano solo il testo alternativo della schermata (descrive l'immagine)
+  // e la scritta della beta, che con data-stato="aperta" non si vede.
+  const aperta = tag.find(t => t.nome === 'body')?.attr['data-stato'] === 'aperta';
+  const inArrivo = visibile.filter(v => /in arrivo/i.test(v.testo))
+    .filter(v => !dellaSchermata(v) && !(aperta && v.antenati.some(a => classi(a).includes('v-arrivo'))))
+    .map(v => spazi(v.testo));
+  verifica(aperta && inArrivo.length === 0, '«in arrivo» non compare fra i testi visibili (la beta è aperta)', inArrivo);
+  // Le frasi nuove, parola per parola, quante volte devono esserci.
+  const nuove = [
+    ["IMU, condominio, polizze, rinnovi: le tiene in ordine e ogni lunedì ti manda una mail con le scadenze della settimana. Se una scadenza ti preme, chiedi un promemoria in più. L'IMU la stima con le aliquote ufficiali del tuo Comune.", 1],
+    ['più di 130 tipi', 2],
+    ['Più di 130 tipi', 1],
+    ["I tuoi documenti e i tuoi dati sono archiviati in Europa, a Francoforte, protetti dal tuo accesso. Per leggerli, l'intelligenza artificiale li elabora fuori dall'Europa, e il fornitore li cancella dopo 30 giorni.", 1],
+    ["L'AI legge il documento solo per compilare i tuoi campi. Il fornitore dell'intelligenza artificiale non usa i tuoi documenti per addestrare i suoi modelli, e noi non li vendiamo.", 1],
+    ["Restano nel tuo archivio a Francoforte, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, fuori dall'Europa, e il fornitore li cancella dopo 30 giorni; non li usa per addestrare i suoi modelli. I dettagli sono nell'informativa sulla privacy.", 1],
+    ['apre la scheda giusta', 1],
+  ];
+  for (const [frase, volte] of nuove) {
+    const n = testoVero.split(frase).length - 1;
+    verifica(n === volte, `la frase nuova c'è ${volte} ${volte === 1 ? 'volta' : 'volte'} (${n}): «${frase.slice(0, 60)}…»`);
+  }
+  verifica(nuove.every(([f]) => !/[—–]/.test(f)), 'nelle frasi nuove nessun trattino lungo');
 }
 
 console.log(`\n${passati} passati, ${falliti} falliti`);
