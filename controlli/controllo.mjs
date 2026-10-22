@@ -112,7 +112,12 @@ const TESTI = {
   guidaTitolo: 'Ti presento Dimorino',
   guidaTesto: "È la tua guida dentro Dimora: ti segue passo passo e ti aiuta con documenti, scadenze e tutto quello che riguarda la casa. Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.",
   sicuroDomanda: 'I miei documenti sono al sicuro?',
-  sicuroRisposta: "Restano nel tuo archivio a Francoforte, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, fuori dall'Europa, e il fornitore li cancella dopo 30 giorni; non li usa per addestrare i suoi modelli. I dettagli sono nell'informativa sulla privacy.",
+  // 22/10, testi della regia approvati da Vitto: tre paragrafi, l'ultimo col collegamento all'informativa.
+  sicuroRisposta: [
+    "I tuoi documenti sono conservati in un archivio privato e cifrato, accessibile dal tuo account. Puoi scaricarli o eliminarli quando vuoi.",
+    "La lettura AI ti aiuta a organizzare dati e scadenze, senza usare i documenti per addestrare modelli. Se preferisci, puoi archiviarli anche senza lettura automatica.",
+  ],
+  sicuroUltimo: `<p>Per conoscere come trattiamo e proteggiamo i tuoi dati, leggi l'<a href="https://app.dimorapp.com/privacy">informativa sulla privacy</a>.</p>`,
   annuale: 'Annuale (risparmi fino al {N}%)',
   mensile: 'Mensile',
 };
@@ -522,9 +527,15 @@ console.log('\n9. Le domande frequenti');
   const segni = domande.map(d => tag.filter(t => t.antenati.includes(d) && classi(t).includes('domanda-segno')));
   verifica(segni.every(s => s.length === 1 && s[0].attr['aria-hidden'] === 'true' && !testoDi(s[0])), 'ogni riga ha il suo «+», solo disegnato (aria-hidden)');
   const risposte = domande.map(d => tag.filter(t => t.nome === 'p' && t.antenati.includes(d)).map(testoDi));
-  verifica(risposte.every(r => r.length === 1 && r[0]), 'ogni domanda ha la sua risposta');
-  const sicura = risposte[DOMANDE.indexOf(TESTI.sicuroDomanda)];
-  verifica(sicura?.[0] === TESTI.sicuroRisposta, `«${TESTI.sicuroDomanda}»: la risposta di sempre`, sicura);
+  const iSicura = DOMANDE.indexOf(TESTI.sicuroDomanda);
+  verifica(risposte.every((r, i) => r.length === (i === iSicura ? 3 : 1) && r.every(Boolean)), `ogni domanda ha la sua risposta (in tre paragrafi «${TESTI.sicuroDomanda}»)`);
+  const sicura = risposte[iSicura];
+  verifica(sicura?.[0] === TESTI.sicuroRisposta[0] && sicura?.[1] === TESTI.sicuroRisposta[1], `«${TESTI.sicuroDomanda}»: i primi due paragrafi, parola per parola`, sicura);
+  // Il terzo paragrafo col collegamento: si confronta il sorgente, perché il testo letto mette uno spazio prima e dopo il collegamento.
+  const ultimo = tag.filter(t => t.nome === 'p' && t.antenati.includes(domande[iSicura]))[2];
+  const linkUltimo = ultimo ? tag.filter(t => t.nome === 'a' && t.antenati.includes(ultimo)) : [];
+  verifica(HTML.split(TESTI.sicuroUltimo).length === 2 && linkUltimo.length === 1 && linkUltimo[0].attr.href === 'https://app.dimorapp.com/privacy' && testoDi(linkUltimo[0]) === 'informativa sulla privacy',
+    `«${TESTI.sicuroDomanda}»: il terzo paragrafo parola per parola, con «informativa sulla privacy» che porta all'informativa`, ultimo && testoDi(ultimo));
   // Le risposte nuove (6/10), parola per parola.
   const nuove = [
     ['Che cosa succede alla fine della prova?', TESTI.fineProva],
@@ -849,9 +860,13 @@ console.log('\n13. La base per i motori di ricerca');
 console.log('\n14. Le frasi vere (22/10)');
 {
   // Le frasi di prima: promettevano cose che l'app non fa, o meno di quello che fa.
-  for (const via of ['60 tipi', '30, 7 e 1', 'maschera', 'App Store', 'Google Play', 'stima indicativa dalla tua aliquota']) {
+  for (const via of ['60 tipi', '30, 7 e 1', 'maschera', 'App Store', 'Google Play', 'stima indicativa dalla tua aliquota',
+    'Francoforte', "fuori dall'Europa", 'non li vendiamo', 'cancella dopo 30 giorni']) {
     verifica(!HTML.includes(via), `nella pagina non c'è più «${via}»`);
   }
+  // «30 giorni» resta solo per la prova gratuita, mai riferito ai dati.
+  const trenta = visibile.filter(v => /30 giorni/.test(v.testo)).map(v => spazi(v.testo)).filter(t => !/gratis|gratuita|prova|Al lancio|letture con l'AI/i.test(t));
+  verifica(trenta.length === 0, '«30 giorni» compare solo per la prova gratuita', trenta);
   // «in arrivo» fra i testi visibili: restano solo il testo alternativo della schermata (descrive l'immagine)
   // e la scritta della beta, che con data-stato="aperta" non si vede.
   const aperta = tag.find(t => t.nome === 'body')?.attr['data-stato'] === 'aperta';
@@ -864,9 +879,10 @@ console.log('\n14. Le frasi vere (22/10)');
     ["IMU, condominio, polizze, rinnovi: le tiene in ordine e ogni lunedì ti manda una mail con le scadenze della settimana. Se una scadenza ti preme, chiedi un promemoria in più. L'IMU la stima con le aliquote ufficiali del tuo Comune.", 1],
     ['più di 130 tipi', 2],
     ['Più di 130 tipi', 1],
-    ["I tuoi documenti e i tuoi dati sono archiviati in Europa, a Francoforte, protetti dal tuo accesso. Per leggerli, l'intelligenza artificiale li elabora fuori dall'Europa, e il fornitore li cancella dopo 30 giorni.", 1],
-    ["L'AI legge il documento solo per compilare i tuoi campi. Il fornitore dell'intelligenza artificiale non usa i tuoi documenti per addestrare i suoi modelli, e noi non li vendiamo.", 1],
-    ["Restano nel tuo archivio a Francoforte, protetto dal tuo accesso. L'AI li legge solo per compilare i campi, fuori dall'Europa, e il fornitore li cancella dopo 30 giorni; non li usa per addestrare i suoi modelli. I dettagli sono nell'informativa sulla privacy.", 1],
+    // Nel riquadro «Dove stanno» e nel primo paragrafo della domanda: due volte.
+    [TESTI.sicuroRisposta[0], 2],
+    ["L'AI legge i tuoi documenti per aiutarti a mettere in ordine dati e scadenze. Non vengono usati per addestrare modelli.", 1],
+    [TESTI.sicuroRisposta[1], 1],
     ['apre la scheda giusta', 1],
   ];
   for (const [frase, volte] of nuove) {
