@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <!-- Dimora, la landing (25/10/2026): la casa e il suo box, per il passo «Dal rogito alla visura». Lo stesso tratto
+       dei disegni delle sezioni; le etichette sono di esempio (categorie catastali, dati inventati). -->
+  <rect width="800" height="500" fill="#F6EEDC"/>
+  <g fill="none" stroke="#27302A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M80 390h640"/>
+    <path d="M190 210l120-92 120 92"/>
+    <rect x="212" y="204" width="196" height="186"/>
+    <rect x="240" y="240" width="40" height="42"/>
+    <rect x="340" y="240" width="40" height="42"/>
+    <path d="M470 390V262l106-36 106 36v128"/>
+    <path d="M506 390v-86h140v86"/>
+    <path d="M506 332h140M506 360h140"/>
+    <path d="M412 300c22-24 44-24 60 0" stroke-dasharray="6 9"/>
+  </g>
+  <path d="M288 390v-50a22 22 0 0 1 44 0v50z" fill="#CE7F33" stroke="#27302A" stroke-width="4" stroke-linejoin="round"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#27302A">
+    <rect x="200" y="420" width="220" height="44" rx="22" fill="#FFFDF8" stroke="#E0D2B6" stroke-width="2"/>
+    <text x="310" y="449" text-anchor="middle">Casa · A/2</text>
+    <rect x="466" y="420" width="220" height="44" rx="22" fill="#FFFDF8" stroke="#E0D2B6" stroke-width="2"/>
+    <text x="576" y="449" text-anchor="middle">Box · C/6</text>
+  </g>
+</svg>

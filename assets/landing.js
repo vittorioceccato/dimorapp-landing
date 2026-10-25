@@ -122,6 +122,37 @@
     });
   });
 
+  /* ---------- Il numero dei documenti: conta quando arriva sullo schermo ----------
+     Senza script (e con «meno animazioni») il numero è già al suo valore. Chi usa un lettore di schermo sente il
+     valore finale, non il conto; lo spazio della cifra resta quello del valore finale. */
+  dopo('numero', function () {
+    if (!vivo || !('IntersectionObserver' in window)) return;
+    document.querySelectorAll('[data-conta]').forEach(function (el) {
+      var fine = +el.getAttribute('data-conta');
+      var tutto = el.closest('[data-numero]') || el;
+      var fermo = document.createElement('span');
+      fermo.className = 'nascosto';
+      fermo.textContent = tutto.textContent.replace(/\s+/g, ' ').trim();
+      tutto.insertBefore(fermo, tutto.firstChild);
+      Array.prototype.forEach.call(tutto.children, function (c) { if (c !== fermo) c.setAttribute('aria-hidden', 'true'); });
+      el.style.minWidth = el.getBoundingClientRect().width + 'px';
+      el.textContent = '0';
+      var osserva = new IntersectionObserver(function (voci) {
+        if (!voci[0].isIntersecting) return;
+        osserva.disconnect();
+        var inizio = null;
+        function passo(t) {
+          if (inizio === null) inizio = t;
+          var x = limita((t - inizio) / 1300);
+          el.textContent = String(Math.round(fine * (1 - Math.pow(1 - x, 3))));
+          if (x < 1) requestAnimationFrame(passo);
+        }
+        requestAnimationFrame(passo);
+      }, { threshold: 0.6 });
+      osserva.observe(el);
+    });
+  });
+
   /* ---------- I disegni delle sezioni: si tracciano quando arrivano sullo schermo ---------- */
   dopo('disegni', function () {
     if (!vivo || !('IntersectionObserver' in window)) return;

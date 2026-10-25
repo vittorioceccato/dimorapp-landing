@@ -84,7 +84,7 @@ export const STORIE = [
         'Un documento alla volta, anche da più file: fotografi le pagine una per una o aggiungi le pagine che mancano, e Dimora le mette insieme in un documento solo.',
         'Se carichi insieme file diversi, per esempio un PDF e una foto, Dimora ti chiede se sono lo stesso documento prima di leggerli.',
         "Se un file l'avevi già caricato, Dimora te lo dice subito: se è ancora da confermare lo riprendi o lo sostituisci, se è già archiviato lo apri. E se un pagamento sembra uguale a uno che c'è già, te lo chiede prima di contarlo due volte.",
-        "Dimora capisce di che documento si tratta, fra più di cento tipi (contratto, rogito, visura, bolletta, preventivo, polizza…), e lo mette nell'area giusta della casa giusta.",
+        "Dimora capisce di che documento si tratta, fra più di 120 tipi (contratto, rogito, visura, bolletta, preventivo, polizza…), e lo mette nell'area giusta della casa giusta.",
       ],
       alComando: "Prima di salvare vedi sempre che cosa ha capito Dimora: il tipo, la casa, le cifre. Lo cambi con un tocco. E se un documento non vuoi farlo leggere, lo archivi così com'è.",
       fonti: [],
@@ -95,7 +95,7 @@ export const STORIE = [
   {
     id: 'pacchetto-commercialista',
     uscita: '2026-10-20',
-    titolo: 'Al commercialista, un pacchetto pronto.',
+    titolo: 'Al commercialista o al CAF, un pacchetto pronto.',
     testo: 'Per ogni casa e ogni anno, i documenti utili per la dichiarazione e un riepilogo in PDF e in tabella, pronti da mandare. Dimora ti dice anche quali non trova.',
     carta: true,
     articolo: {
@@ -122,8 +122,8 @@ export const STORIE = [
   {
     id: 'bonus-casa',
     uscita: '2026-10-14',
-    titolo: 'I bonus della casa: cosa controllare.',
-    testo: 'Quando carichi un preventivo, una fattura o un bonifico, Dimora ti dice cosa controllare per ristrutturazione, ecobonus, bonus mobili e interessi del mutuo. Decide il commercialista.',
+    titolo: 'I bonus della casa, prima di pagare.',
+    testo: "Quando carichi un preventivo, una fattura o un bonifico, Dimora riconosce i lavori che possono avere un'agevolazione (ristrutturazione, ecobonus, bonus mobili, interessi del mutuo) e ti dice che cosa serve per non perderla: il bonifico giusto, la ricevuta ENEA, i documenti da portare al commercialista o al CAF.",
     carta: true,
     articolo: {
       rigaSotto: 'Dal preventivo al bonifico, Dimora ti dice cosa serve per non perdere la detrazione.',
@@ -151,6 +151,7 @@ export const STORIE = [
     id: 'canone-a-meta',
     uscita: '2026-10-22',
     titolo: 'Il canone, anche quando arriva a metà.',
+    pubblica: false, // 25/10, secondo giro di Vitto: «in un'app per gli affitti è scontata». Né sezione, né articolo.
     testo: "Se l'inquilino paga solo una parte, la segni e Dimora tiene il conto di quello che manca.",
     carta: true,
     articolo: {
@@ -189,34 +190,59 @@ export const PARTI = {
 // La sezione delle novità nella landing (NOVITA_TESTI_V2: N26, N27 e l'etichetta delle carte; «Ottobre 2026» sopra
 // le carte, dal comando della regia del 25/10).
 export const NOVITA_LANDING = {
-  titolo: 'Ogni mese, qualcosa in meno a cui pensare',
-  testo: 'Ogni mese il team di Dimora aggiunge qualcosa di nuovo. Ecco le novità di ottobre.',
-  mese: 'Ottobre 2026',
-  etichetta: 'Nuovo · ottobre 2026',
+  titolo: 'Gli ultimi aggiornamenti',
+  testo: 'Dimora è in continuo aggiornamento: lavoriamo per toglierti sempre più cose a cui pensare.',
+  etichetta: 'Nuovo · ottobre 2026', // solo nelle pagine degli articoli
 };
 
-// «Ci stiamo lavorando» (NOVITA_TESTI_V2: N40, I1-I3), senza date e senza pulsanti.
+// «In arrivo» (25/10, secondo giro di Vitto): cose che fanno dire «mi serve». Senza date e senza pulsanti.
 export const IN_ARRIVO = {
-  titolo: 'Ci stiamo lavorando',
+  titolo: 'In arrivo',
   voci: [
-    { titolo: 'Dimora, più semplice da usare.', testo: 'Una veste nuova e schermate più chiare, a partire dalla scheda della casa e dalle scadenze.' },
-    { titolo: 'Il condominio, diviso fra le tue unità.', testo: 'Le rate del preventivo divise fra casa, box e cantine, ognuna con la sua quota.' },
-    { titolo: 'Dal preventivo ai lavori.', testo: 'Il preventivo, la scelta, la fattura e il bonifico dei lavori, collegati in un filo solo.' },
+    { titolo: "L'aumento ISTAT del canone, calcolato.", testo: "Ogni anno Dimora calcola l'adeguamento del tuo affitto e te lo ricorda." },
+    { titolo: 'Il canone concordato, senza dubbi.', testo: 'Se affitti a canone concordato, Dimora ti dice quali agevolazioni ti spettano e che cosa serve per non perderle.' },
+    { titolo: 'Quando cambiano le regole, te lo diciamo noi.', testo: 'Con la legge di bilancio Dimora ti dice che cosa cambia per ognuna delle tue case.' },
+    { titolo: 'Dal preventivo ai lavori, in un filo solo.', testo: 'Preventivo, scelta, fattura e bonifico dello stesso lavoro, collegati.' },
   ],
 };
 
-// Un passo del racconto che non è una storia delle novità: le bollette, nella sezione della seconda casa. Il testo è
-// quello della landing di prima («Segui casa tua»); il titolo è nuovo, da approvare. Non ha un video: nella finestra
-// si vede la schermata della lettura di una bolletta (dati inventati).
-export const BOLLETTE = {
-  id: 'bollette',
-  titolo: 'Bollette e utenze, sotto controllo.',
-  testo: 'Bollette, rate del condominio, polizze, mutuo e lavori. Carichi il documento, Dimora prepara le scadenze e a fine anno sai quanto ti è costata.',
-  immagine: '/assets/img/app-bolletta-computer.webp',
+// Quanti tipi di documenti la lettura riconosce: la decina sotto il numero vero. Il numero vero (25/10/2026, app a
+// 880d50e): 124 righe del catalogo su 136 in `lib/sottotipi-documento.ts` (RIGHE_CATALOGO; le 12 con `lettura: 'dopo'`
+// la lettura non le riconosce ancora). Lo stesso numero in tutta la pagina e negli articoli.
+export const TIPI_DOCUMENTI = 120;
+
+// I passi dei racconti che non sono storie delle novità: una schermata ferma (o un disegno), nessun articolo.
+export const PASSI = {
+  contratto: {
+    titolo: 'Il contratto, letto per te.',
+    // I tipi e le scadenze verificati nel codice dell'app (lib/locazione.ts, lib/templates.ts, 25/10).
+    testo: "Carichi il contratto d'affitto: Dimora riconosce il tipo di contratto (4+4, 3+2 a canone concordato, transitorio, studenti, commerciale 6+6 e 9+9), compila inquilino, canone, durata, deposito e regime fiscale, e prepara le scadenze che contano: disdetta, scadenza del contratto, registrazione, cedolare.",
+    immagine: '/assets/img/app-affitto-computer.webp',
+  },
+  'affitto-chiaro': {
+    titolo: "L'affitto in chiaro, dalla scheda della casa.",
+    testo: 'Date del contratto, entro quando dare la disdetta, regime e deposito, tutto in una carta sola.',
+    immagine: '/assets/img/app-affitto-computer.webp',
+  },
+  canoni: {
+    titolo: 'I canoni, sempre sotto gli occhi.',
+    testo: 'Segni gli incassi con un tocco e vedi subito quali mesi mancano.',
+    immagine: '/assets/img/app-computer.webp',
+  },
+  'rogito-visura': {
+    titolo: 'Dal rogito alla visura, i dati della casa compilati per te.',
+    // Frase per frase contro il codice dell'app (25/10): «quote» tolto, le quote del rogito non vanno nella scheda.
+    testo: "Carichi il rogito, il contratto di mutuo o la visura catastale: Dimora legge rendite, categorie e dati del mutuo e li mette nella scheda della casa. Riconosce box e cantine, li lega alla loro abitazione, e per l'IMU sa che con la prima casa è esente una sola pertinenza per categoria: se ne hai due, te lo dice e calcola il giusto.",
+    immagine: '/assets/img/casa-e-box.svg',
+  },
+  bollette: {
+    titolo: 'Bollette e utenze, sotto controllo.',
+    testo: 'Bollette, rate del condominio, polizze, mutuo e lavori. Carichi il documento, Dimora prepara le scadenze e a fine anno sai quanto ti è costata.',
+    immagine: '/assets/img/app-bolletta-computer.webp',
+  },
 };
 
-// Un dato vero sotto la storia, con la fonte piccola (comando della regia del 25/10; gli importi scritti come
-// nell'app). Le fonti sono quelle degli articoli.
+// Un dato vero sotto la storia, con la fonte piccola. Le fonti sono quelle degli articoli.
 export const DATI = {
   'imu-calcolata': {
     testo: "€ 977 l'anno, in media, per una seconda casa nei capoluoghi",
@@ -230,14 +256,34 @@ export const DATI = {
   },
 };
 
-// I tre racconti della pagina, ognuno con la sua finestra ferma.
+// I tre racconti della pagina, ognuno con la sua finestra. Un passo è una storia delle novità ({ storia }, col suo
+// video e il suo articolo; `testo` lo cambia dentro la sezione) o un passo fermo ({ passo }).
 export const RACCONTI = {
-  COME: ['carichi-al-resto'],
-  AFFITTO: ['canone-a-meta', 'pacchetto-commercialista'],
-  SECONDA: ['imu-calcolata', 'rate-condominio', 'bollette', 'bonus-casa'],
+  COME: [{ storia: 'carichi-al-resto' }],
+  AFFITTO: [
+    { passo: 'contratto' },
+    { passo: 'affitto-chiaro' },
+    { passo: 'canoni' },
+    { storia: 'pacchetto-commercialista', testo: 'Per la dichiarazione dei redditi, i documenti di ogni casa e di ogni anno, con il riepilogo, pronti da mandare.' },
+  ],
+  IMMOBILI: [
+    { passo: 'rogito-visura' },
+    { storia: 'imu-calcolata', testo: 'Per la seconda casa, i box e le cantine, con le aliquote del tuo Comune.' },
+    { storia: 'rate-condominio' },
+    { passo: 'bollette' },
+    { storia: 'bonus-casa' },
+  ],
 };
-// L'ordine delle carte delle novità: la storia principale (l'IMU), poi S2, S3, S4, S5 e S6.
-export const ORDINE_CARTE = ['imu-calcolata', 'pacchetto-commercialista', 'bonus-casa', 'rate-condominio', 'canone-a-meta', 'carichi-al-resto'];
+
+// Gli ultimi aggiornamenti, dal più recente, senza date. Il primo non ha ancora un articolo né un video.
+export const AGGIORNAMENTI = [
+  { titolo: "Il contratto d'affitto, in chiaro.", testo: 'Dalla scheda della casa vedi quando scade il contratto, entro quando dare la disdetta, il regime e il deposito.', immagine: '/assets/img/app-affitto-computer.webp' },
+  { storia: 'pacchetto-commercialista' },
+  { storia: 'carichi-al-resto' },
+  { storia: 'imu-calcolata' },
+  { storia: 'bonus-casa' },
+  { storia: 'rate-condominio' },
+];
 
 export const ORIGINE = 'https://dimorapp.com';
 export const ISCRIZIONE = 'https://app.dimorapp.com/login';
