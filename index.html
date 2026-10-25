@@ -10,8 +10,8 @@
   // Le animazioni si accendono qui, prima che la pagina si disegni, e solo senza «meno animazioni».
   try { if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('vivo'); } catch (e) {}
 </script>
-<title>Dimora: IMU, scadenze e documenti delle tue case, in un posto solo</title>
-<meta name="description" content="Dimora calcola l'IMU della seconda casa, ti ricorda le rate del condominio e le scadenze dell'affitto, e tiene in ordine i documenti di casa. Prova gratis 30 giorni.">
+<title>Dimora: gestione di immobili e affitti, IMU e scadenze della casa</title>
+<meta name="description" content="Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze. Affitti, IMU della seconda casa, condominio e bollette in un unico posto.">
 <link rel="canonical" href="https://dimorapp.com/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="theme-color" content="#FAF3E3">
@@ -19,16 +19,16 @@
 <meta property="og:site_name" content="Dimora">
 <meta property="og:locale" content="it_IT">
 <meta property="og:url" content="https://dimorapp.com/">
-<meta property="og:title" content="Dimora: IMU, scadenze e documenti delle tue case, in un posto solo">
-<meta property="og:description" content="Dimora calcola l'IMU della seconda casa, ti ricorda le rate del condominio e le scadenze dell'affitto, e tiene in ordine i documenti di casa. Prova gratis 30 giorni.">
+<meta property="og:title" content="Dimora: gestione di immobili e affitti, IMU e scadenze della casa">
+<meta property="og:description" content="Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze. Affitti, IMU della seconda casa, condominio e bollette in un unico posto.">
 <meta property="og:image" content="https://dimorapp.com/dimora-og-2026-10.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:alt" content="Dimorino, la casetta di Dimora, accanto al titolo: Le tue case e i tuoi affitti, sotto controllo. Da una foto.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Dimora: IMU, scadenze e documenti delle tue case, in un posto solo">
-<meta name="twitter:description" content="Dimora calcola l'IMU della seconda casa, ti ricorda le rate del condominio e le scadenze dell'affitto, e tiene in ordine i documenti di casa. Prova gratis 30 giorni.">
+<meta name="twitter:title" content="Dimora: gestione di immobili e affitti, IMU e scadenze della casa">
+<meta name="twitter:description" content="Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze. Affitti, IMU della seconda casa, condominio e bollette in un unico posto.">
 <meta name="twitter:image" content="https://dimorapp.com/dimora-og-2026-10.jpg">
 <link rel="preload" href="/assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/fraunces-600-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -53,7 +53,7 @@
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "url": "https://app.dimorapp.com",
-      "description": "Dimora calcola l'IMU della seconda casa, ti ricorda le rate del condominio e le scadenze dell'affitto, e tiene in ordine i documenti di casa. Prova gratis 30 giorni.",
+      "description": "Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze. Affitti, IMU della seconda casa, condominio e bollette in un unico posto.",
       "inLanguage": "it",
       "publisher": { "@id": "https://dimorapp.com/#organizzazione" }
     }
@@ -73,9 +73,10 @@
     </a>
     <nav class="nav-larga" aria-label="Sezioni">
       <a href="/#come">Come funziona</a>
+      <a href="/#affitti">Se affitti</a>
+      <a href="/#seconda-casa">Seconda casa</a>
       <a href="/#novita">Novità</a>
       <a href="/#prezzi">Prezzi</a>
-      <a href="/#domande">Domande</a>
     </nav>
     <div class="testata-azioni">
       <a class="collegamento-testata solo-largo" href="https://app.dimorapp.com/login" data-evento="clic_accedi" data-posizione="intestazione">Accedi</a>
@@ -84,6 +85,8 @@
         <summary class="menu-bottone" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg></summary>
         <nav class="menu-pannello" aria-label="Sezioni">
           <a href="/#come">Come funziona</a>
+          <a href="/#affitti">Se affitti</a>
+          <a href="/#seconda-casa">Seconda casa</a>
           <a href="/#novita">Novità</a>
           <a href="/#prezzi">Prezzi</a>
           <a href="/#domande">Domande</a>
@@ -97,199 +100,119 @@
 
 <main id="contenuto">
 
-<!-- L'APERTURA. Il titolo entra riga per riga; la casa (il disegno «casa» della veste, così com'è) si traccia da sola,
-     e il tocco ambra della porta arriva per ultimo. Senza script e con «meno animazioni» è già tutto disegnato. -->
+<!-- 1. L'APERTURA, come la landing di prima, nella veste nuova. Le due schermate sono l'app vera nella veste nuova,
+     con dati inventati (strumenti/fotografa-app.mjs). Il titolo entra riga per riga. -->
 <section class="apertura">
   <div class="contenitore apertura-griglia">
     <div class="apertura-testo">
-      <h1 class="titolo-apertura"><span class="riga"><span>Ogni casa ha le sue carte.</span></span> <span class="riga"><span>Dimora le legge</span></span> <span class="riga"><span>e ti ricorda le scadenze.</span></span></h1>
-      <p class="apertura-sotto">Carichi un documento e Dimora prepara le scadenze: l'IMU della seconda casa, le rate del condominio, il canone dell'affitto. Tu controlli e confermi.</p>
+      <p class="occhiello">Gestione di immobili e affitti</p>
+      <h1 class="titolo-apertura"><span class="riga"><span>Le tue case</span></span> <span class="riga"><span>e i tuoi affitti,</span></span> <span class="riga"><span>sotto controllo.</span></span></h1>
+      <p class="apertura-sotto">Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze, tu controlli e confermi. Documenti, spese, contratti e incassi in un unico posto.</p>
       <div class="apertura-azioni">
-        <a class="btn btn-principale btn-grande" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="apertura">Prova gratis</a>
+        <a class="btn btn-principale btn-grande" href="https://app.dimorapp.com/login" data-evento="clic_inizia_prova" data-posizione="apertura">Inizia la prova gratuita</a>
         <p class="apertura-nota">30 giorni, 20 letture con l'AI, senza carta.</p>
       </div>
     </div>
-    <div class="apertura-disegno" data-casa>
-      <div class="casa-riquadro">
-        <div class="casa-avvisi" aria-hidden="true">
-          <span class="avviso-casa"><i></i>Bolletta luce · 26 ott</span>
-          <span class="avviso-casa"><i></i>Saldo IMU · 16 dic</span>
-          <span class="avviso-casa"><i></i>Rata condominio · 1 dic</span>
+    <div class="apertura-visivo">
+      <div class="dispositivi">
+        <div class="portatile">
+          <div class="portatile-schermo"><img src="/assets/img/app-computer.webp" alt="Dimora dal computer: le scadenze delle case, con le rate del condominio, il saldo IMU della casa al mare e la TARI." width="1280" height="800" decoding="async" fetchpriority="high"></div>
+          <div class="portatile-base" aria-hidden="true"></div>
         </div>
-        <svg class="casa-grande" viewBox="0 0 220 110" fill="none" stroke="#27302A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path pathLength="1" style="--i:0" d="M10 100h200"></path><path pathLength="1" style="--i:1" d="M72 50l34-26 34 26"></path><rect pathLength="1" style="--i:2" x="78" y="48" width="56" height="52"></rect><rect pathLength="1" style="--i:3" x="134" y="58" width="40" height="42"></rect><rect pathLength="1" style="--i:4" x="86" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:4.4" x="115" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:5" x="141" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.3" x="158" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.6" x="141" y="80" width="9" height="8"></rect><rect pathLength="1" style="--i:5.9" x="158" y="80" width="9" height="8"></rect><path pathLength="1" style="--i:6.4" d="M40 100V52q0-8 8-8h6"></path><circle pathLength="1" style="--i:7" cx="57" cy="47" r="3"></circle><path class="casa-porta" pathLength="1" style="--i:7.6" d="M100 100V86a6 6 0 0 1 12 0v14z" fill="#CE7F33"></path></svg>
+        <div class="telefono">
+          <span class="telefono-isola" aria-hidden="true"></span>
+          <div class="telefono-schermo"><img src="/assets/img/app-telefono.webp" alt="Dimora dal telefono: una bolletta appena letta, con fornitore, importo e scadenza da confermare." width="780" height="1688" decoding="async"></div>
+        </div>
+        <div class="foto-carta">
+          <img src="/assets/img/foto-bolletta.webp" alt="La foto di una bolletta della luce: totale da pagare 96,48 euro entro il 26 ottobre 2026." width="412" height="621" decoding="async">
+        </div>
+        <img class="dimorino-apertura" src="/assets/img/dimorino-lettura.webp" alt="" width="382" height="336" decoding="async">
       </div>
+      <p class="legame"><span class="bollino" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7H8l1.5-2h5L16 7h2.5A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg></span><span>Fai una foto o carica un PDF. <br>Dimora compila per te.</span></p>
+      <p class="didascalia"><span><b>Dal computer</b> hai tutti gli immobili sotto gli occhi.</span> <span><b>Dal telefono</b> fotografi il documento e lo confermi.</span></p>
     </div>
   </div>
-</section>
-
-<!-- COME FUNZIONA (testi di oggi). Scorrendo, il foglio entra nella casa e ne escono le scadenze: è un'illustrazione,
-     con dati di esempio, e i lettori di schermo la saltano. -->
-<section class="sezione" id="come">
-  <div class="contenitore come-griglia">
-    <div class="come-testo">
-      <h2 class="titolo-sezione" data-parole>Fotografi il documento. Dimora si ricorda il resto.</h2>
-      <p class="sezione-sotto">Dal documento alla scadenza, in tre passi.</p>
-      <ol class="passi" data-passi>
-        <li class="passo"><span class="passo-num" aria-hidden="true">1</span><div><h3>Carichi</h3><p>Una foto, più foto dello stesso documento, un PDF, un Word, un Excel o un CSV. Anche scansioni storte o foto fatte col telefono.</p></div></li>
-        <li class="passo"><span class="passo-num" aria-hidden="true">2</span><div><h3>Dimora legge</h3><p>Con l'AI capisce di che documento si tratta, apre la scheda giusta e compila i campi, indicando cosa è sicuro e cosa controllare.</p></div></li>
-        <li class="passo"><span class="passo-num" aria-hidden="true">3</span><div><h3>Confermi</h3><p>Controlli, correggi quello che vuoi e confermi: solo allora i dati entrano nelle tue schede. Da lì Dimora ti ricorda via mail le scadenze registrate.</p></div></li>
-      </ol>
-      <p class="come-nota"><b>Preferisci fare a mano?</b> Da «Aggiungi» inserisci tutto senza AI: archiviare senza AI non consuma letture.</p>
-    </div>
-    <div class="scena" data-scena aria-hidden="true">
-      <div class="scena-foglio">
-        <span class="foglio-testa">Preventivo condominio 2026</span>
-        <span class="foglio-riga"></span><span class="foglio-riga corta"></span><span class="foglio-riga"></span><span class="foglio-riga corta"></span><span class="foglio-riga"></span>
-      </div>
-      <div class="scena-casa">
-        <svg viewBox="0 0 48 48" fill="none" stroke="#27302A" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 25L24 13l14 12"></path><rect x="14" y="23" width="20" height="17"></rect><path d="M21 40v-7a3 3 0 0 1 6 0v7z" fill="#CE7F33"></path><path d="M4 40h40"></path></svg>
-      </div>
-      <div class="scena-scadenze">
-        <span class="scadenze-titolo">Scadenze</span>
-        <span class="scadenza"><span class="scadenza-data">1 dic</span><span class="scadenza-nome">Rata condominio 3 di 4</span><span class="scadenza-importo">€ 312,00</span></span>
-        <span class="scadenza"><span class="scadenza-data">16 dic</span><span class="scadenza-nome">Saldo IMU, casa al mare</span><span class="scadenza-importo">€ 828,67</span></span>
-        <span class="scadenza"><span class="scadenza-data">1 mar</span><span class="scadenza-nome">Rata condominio 4 di 4</span><span class="scadenza-importo">€ 312,00</span></span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- IL RACCONTO. Una finestra del computer resta ferma e dentro passano i mini video delle storie (registrati
-     dall'app vera, ramo novita a0f300e); a lato, per ogni storia, titolo e testo breve. Al telefono la finestra sta
-     in alto e i testi scorrono sotto. Gira un video alla volta, solo quello della storia sullo schermo, muto e in loop.
-     Senza script e con «meno animazioni» ogni storia mostra la sua immagine ferma accanto al testo. -->
-<section class="sezione racconto" id="racconto" data-racconto>
   <div class="contenitore">
-    <div class="sezione-testa">
-      <h2 class="titolo-sezione" data-parole>Dimora, al lavoro</h2>
-      <p class="sezione-sotto">Sei momenti dell'app vera, uno dopo l'altro.</p>
+    <ul class="vantaggi">
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Ogni immobile ha la sua scheda: documenti, spese, scadenze</span></li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Contratti, incassi e pagamenti in ritardo</span></li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Promemoria via mail per le tue scadenze</span></li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17l9-10"/></svg><span>Legge foto, PDF, Word ed Excel: più di 130 tipi di documenti</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 2. COME FUNZIONA, il cuore (testi della landing di prima: Come funziona e Che cosa fa per te). Il disegno «casa»
+     si traccia quando la sezione arriva; il foglio scende nella casa e ne escono le scadenze (dati di esempio). -->
+<section class="sezione" id="come">
+  <div class="contenitore">
+    <div class="testa-disegno">
+      <div class="sezione-testa">
+        <h2 class="titolo-sezione" data-parole>Fotografi il documento. Dimora si ricorda il resto.</h2>
+        <p class="sezione-sotto">Dal documento alla scadenza, in tre passi.</p>
+      </div>
+      <div class="disegno-sezione" data-disegno aria-hidden="true">
+        <svg viewBox="0 0 220 110" fill="none" stroke="#27302A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path pathLength="1" style="--i:0" d="M10 100h200"></path><path pathLength="1" style="--i:1" d="M72 50l34-26 34 26"></path><rect pathLength="1" style="--i:2" x="78" y="48" width="56" height="52"></rect><rect pathLength="1" style="--i:3" x="134" y="58" width="40" height="42"></rect><rect pathLength="1" style="--i:4" x="86" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:4.4" x="115" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:5" x="141" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.3" x="158" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.6" x="141" y="80" width="9" height="8"></rect><rect pathLength="1" style="--i:5.9" x="158" y="80" width="9" height="8"></rect><path pathLength="1" style="--i:6.4" d="M40 100V52q0-8 8-8h6"></path><circle pathLength="1" style="--i:7" cx="57" cy="47" r="3"></circle><path class="porta" pathLength="1" style="--i:7.6" d="M100 100V86a6 6 0 0 1 12 0v14z" fill="#CE7F33"></path></svg>
+      </div>
     </div>
-    <div class="racconto-griglia">
-      <div class="racconto-storie">
-<!--RACCONTO-->
-        <article class="storia" data-storia="imu-calcolata">
-          <figure class="storia-locandina"><img src="/assets/novita/imu-calcolata.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
-          <h3 class="storia-titolo">L'IMU, calcolata.</h3>
-          <p>Dimora trova le aliquote del tuo Comune e calcola acconto e saldo. Tiene conto di box, cantine e della tua quota, e calcola il saldo su quello che hai già versato. Tu controlli e paghi.</p>
-          <a class="collegamento" href="/novita/imu-calcolata">Leggi l'articolo</a>
-        </article>
-        <article class="storia" data-storia="rate-condominio">
-          <figure class="storia-locandina"><img src="/assets/novita/rate-condominio.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
-          <h3 class="storia-titolo">Le rate del condominio, in ordine.</h3>
-          <p>Carichi il preventivo: Dimora trova le tue rate e le mette nelle scadenze.</p>
-          <a class="collegamento" href="/novita/rate-condominio">Leggi l'articolo</a>
-        </article>
+    <div class="come-griglia">
+      <div class="come-testo">
+        <ol class="passi" data-passi>
+          <li class="passo"><span class="passo-num" aria-hidden="true">1</span><div><h3>Carichi</h3><p>Una foto, più foto dello stesso documento, un PDF, un Word, un Excel o un CSV. Anche scansioni storte o foto fatte col telefono.</p></div></li>
+          <li class="passo"><span class="passo-num" aria-hidden="true">2</span><div><h3>Dimora legge</h3><p>Con l'AI capisce di che documento si tratta, apre la scheda giusta e compila i campi, indicando cosa è sicuro e cosa controllare.</p></div></li>
+          <li class="passo"><span class="passo-num" aria-hidden="true">3</span><div><h3>Confermi</h3><p>Controlli, correggi quello che vuoi e confermi: solo allora i dati entrano nelle tue schede. Da lì Dimora ti ricorda via mail le scadenze registrate.</p></div></li>
+        </ol>
+        <p class="come-nota"><b>Preferisci fare a mano?</b> Da «Aggiungi» inserisci tutto senza AI: archiviare senza AI non consuma letture.</p>
+      </div>
+      <div class="scena" data-scena aria-hidden="true">
+        <div class="scena-foglio">
+          <span class="foglio-testa">Preventivo condominio 2026</span>
+          <span class="foglio-riga"></span><span class="foglio-riga corta"></span><span class="foglio-riga"></span><span class="foglio-riga corta"></span><span class="foglio-riga"></span>
+        </div>
+        <div class="scena-casa">
+          <svg viewBox="0 0 48 48" fill="none" stroke="#27302A" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 25L24 13l14 12"></path><rect x="14" y="23" width="20" height="17"></rect><path d="M21 40v-7a3 3 0 0 1 6 0v7z" fill="#CE7F33"></path><path d="M4 40h40"></path></svg>
+        </div>
+        <div class="scena-scadenze">
+          <span class="scadenze-titolo">Scadenze</span>
+          <span class="scadenza"><span class="scadenza-data">1 dic</span><span class="scadenza-nome">Rata condominio 3 di 4</span><span class="scadenza-importo">€ 312</span></span>
+          <span class="scadenza"><span class="scadenza-data">16 dic</span><span class="scadenza-nome">Saldo IMU, casa al mare</span><span class="scadenza-importo">€ 828,67</span></span>
+          <span class="scadenza"><span class="scadenza-data">1 mar</span><span class="scadenza-nome">Rata condominio 4 di 4</span><span class="scadenza-importo">€ 312</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="racconto racconto-singolo" data-racconto>
+      <div class="racconto-griglia">
+        <div class="racconto-storie">
+<!--RACCONTO-COME-->
         <article class="storia" data-storia="carichi-al-resto">
           <figure class="storia-locandina"><img src="/assets/novita/carichi-al-resto.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
           <h3 class="storia-titolo">Carichi, al resto pensa Dimora.</h3>
           <p>Fotografi le pagine una per una o carichi un PDF: Dimora ricostruisce il documento, capisce che cos'è e ti avvisa se l'avevi già caricato.</p>
           <a class="collegamento" href="/novita/carichi-al-resto">Leggi l'articolo</a>
         </article>
-        <article class="storia" data-storia="pacchetto-commercialista">
-          <figure class="storia-locandina"><img src="/assets/novita/pacchetto-commercialista.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
-          <h3 class="storia-titolo">Al commercialista, un pacchetto pronto.</h3>
-          <p>Per ogni casa e ogni anno, i documenti utili per la dichiarazione e un riepilogo in PDF e in tabella, pronti da mandare. Dimora ti dice anche quali non trova.</p>
-          <a class="collegamento" href="/novita/pacchetto-commercialista">Leggi l'articolo</a>
-        </article>
-        <article class="storia" data-storia="bonus-casa">
-          <figure class="storia-locandina"><img src="/assets/novita/bonus-casa.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
-          <h3 class="storia-titolo">I bonus della casa: cosa controllare.</h3>
-          <p>Quando carichi un preventivo, una fattura o un bonifico, Dimora ti dice cosa controllare per ristrutturazione, ecobonus, bonus mobili e interessi del mutuo. Decide il commercialista.</p>
-          <a class="collegamento" href="/novita/bonus-casa">Leggi l'articolo</a>
-        </article>
-        <article class="storia" data-storia="canone-a-meta">
-          <figure class="storia-locandina"><img src="/assets/novita/canone-a-meta.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
-          <h3 class="storia-titolo">Il canone, anche quando arriva a metà.</h3>
-          <p>Se l'inquilino paga solo una parte, la segni e Dimora tiene il conto di quello che manca.</p>
-          <a class="collegamento" href="/novita/canone-a-meta">Leggi l'articolo</a>
-        </article>
-<!--/RACCONTO-->
-      </div>
-      <div class="racconto-schermo" aria-hidden="true">
-        <div class="finestra" data-finestra>
-          <div class="finestra-barra"><span class="finestra-punti"><i></i><i></i><i></i></span><span class="finestra-indirizzo">app.dimorapp.com</span></div>
-          <div class="finestra-schermo" data-schermo></div>
-          <div class="finestra-avanzamento" data-avanzamento></div>
+<!--/RACCONTO-COME-->
         </div>
+        <div class="racconto-schermo" aria-hidden="true"><div class="finestra" data-finestra><div class="finestra-barra"><span class="finestra-punti"><i></i><i></i><i></i></span><span class="finestra-indirizzo">app.dimorapp.com</span></div><div class="finestra-schermo" data-schermo></div><div class="finestra-avanzamento" data-avanzamento></div></div></div>
+      </div>
+    </div>
+
+    <div class="funzioni">
+      <h3 class="titolo-blocco" data-parole>Tre cose in meno a cui pensare</h3>
+      <p class="sezione-sotto">Compilare, ricordare le scadenze, rimettere insieme le carte per il commercialista. E ogni casa resta in ordine.</p>
+      <div class="griglia-funzioni">
+        <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 12h8"/></svg></span><h4>Niente da compilare</h4><p>Riconosce più di 130 tipi di documenti della casa, dal rogito alla bolletta, e compila i campi indicando cosa controllare. Legge anche scansioni fino a 30 pagine.</p></div>
+        <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M3 10h18"/></svg></span><h4>Le scadenze te le ricorda Dimora</h4><p>IMU, condominio, polizze, rinnovi: le tiene in ordine e ogni lunedì ti manda una mail con le scadenze della settimana. Se una scadenza ti preme, chiedi un promemoria in più. L'IMU la stima con le aliquote ufficiali del tuo Comune.</p></div>
+        <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 13h8"/></svg></span><h4>Tutto pronto per il commercialista</h4><p>Spese e documenti dell'anno, pronti da consegnare: riepilogo in CSV e PDF, originali in un file ZIP.</p></div>
+        <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg></span><h4>Ogni casa ha la sua scheda</h4><p>Prima casa, seconde case, box e immobili commerciali: ognuno con i suoi documenti, i suoi costi e le sue scadenze.</p></div>
+        <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16"/><path d="m7 15 4-4 3 3 5-6"/></svg></span><h4>Costi e rendimento, casa per casa</h4><p>Mutuo, spese e manutenzioni, anno per anno. Se affitti, vedi anche la resa netta del tuo portafoglio.</p></div>
+        <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h1"/><path d="M14 7h1"/><path d="M9 11h1"/><path d="M14 11h1"/><path d="M10 21v-4h4v4"/></svg></span><h4>Condominio: la tua quota</h4><p>Dal preventivo del condominio legge le rate della tua unità e le mette fra le scadenze. Il consuntivo lo trovi in archivio.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- I NUMERI. Contano quando entrano nello schermo; senza script e con «meno animazioni» sono già al loro valore.
-     Le cifre e le fonti sono quelle degli articoli. -->
-<section class="numeri" id="numeri">
-  <div class="contenitore">
-    <h2 class="titolo-sezione su-scuro" data-parole>Non sono conti da fare a mente</h2>
-    <ul class="numeri-elenco">
-      <li><span class="numero"><span data-conta="977">977</span> €</span><span class="numero-cosa">l'IMU media di una seconda casa nei capoluoghi, ogni anno</span></li>
-      <li><span class="numero"><span data-conta="7894">7.894</span></span><span class="numero-cosa">Comuni, e ognuno decide le sue aliquote</span></li>
-      <li><span class="numero"><small>oltre</small> <span data-conta="45">45</span>&nbsp;milioni</span><span class="numero-cosa">di persone in Italia vivono in condominio</span></li>
-    </ul>
-    <p class="numeri-fonti">Fonti: <a href="https://www.uil.it/documents/Uil_%20su_Imu_saldodicembre2025.pdf">UIL, studio sul saldo IMU 2025</a>; <a href="https://www.istat.it/it/archivio/6789">ISTAT, Comuni al 21 febbraio 2026</a>; <a href="https://www.italpress.com/vivere-in-condominio-arriva-la-guida-del-notariato/">Notariato con ANACI, «Vivere in condominio»</a>.</p>
-  </div>
-</section>
-
-<!-- LE NOVITÀ DI OTTOBRE (NOVITA_TESTI_V2: N26, N27, carte S1-S4; S6 «per la carta e la landing»). -->
-<section class="sezione" id="novita">
-  <div class="contenitore">
-    <div class="sezione-testa">
-      <h2 class="titolo-sezione" data-parole>Ogni mese, qualcosa in meno a cui pensare</h2>
-      <p class="sezione-sotto">Ogni mese il team di Dimora aggiunge qualcosa di nuovo. Ecco le novità di ottobre.</p>
-    </div>
-    <div class="carte">
-<!--CARTE-->
-      <article class="carta">
-        <img class="carta-immagine" src="/assets/novita/imu-calcolata.webp" alt="" width="960" height="600" loading="lazy" decoding="async">
-        <div class="carta-corpo">
-          <span class="etichetta">Nuovo · ottobre 2026</span>
-          <h3 class="carta-titolo"><a href="/novita/imu-calcolata">L'IMU, calcolata.</a></h3>
-          <p>Dimora trova le aliquote del tuo Comune e calcola acconto e saldo. Tiene conto di box, cantine e della tua quota, e calcola il saldo su quello che hai già versato. Tu controlli e paghi.</p>
-          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
-        </div>
-      </article>
-      <article class="carta">
-        <img class="carta-immagine" src="/assets/novita/pacchetto-commercialista.webp" alt="" width="960" height="600" loading="lazy" decoding="async">
-        <div class="carta-corpo">
-          <span class="etichetta">Nuovo · ottobre 2026</span>
-          <h3 class="carta-titolo"><a href="/novita/pacchetto-commercialista">Al commercialista, un pacchetto pronto.</a></h3>
-          <p>Per ogni casa e ogni anno, i documenti utili per la dichiarazione e un riepilogo in PDF e in tabella, pronti da mandare. Dimora ti dice anche quali non trova.</p>
-          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
-        </div>
-      </article>
-      <article class="carta">
-        <img class="carta-immagine" src="/assets/novita/bonus-casa.webp" alt="" width="960" height="600" loading="lazy" decoding="async">
-        <div class="carta-corpo">
-          <span class="etichetta">Nuovo · ottobre 2026</span>
-          <h3 class="carta-titolo"><a href="/novita/bonus-casa">I bonus della casa: cosa controllare.</a></h3>
-          <p>Quando carichi un preventivo, una fattura o un bonifico, Dimora ti dice cosa controllare per ristrutturazione, ecobonus, bonus mobili e interessi del mutuo. Decide il commercialista.</p>
-          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
-        </div>
-      </article>
-      <article class="carta">
-        <img class="carta-immagine" src="/assets/novita/rate-condominio.webp" alt="" width="960" height="600" loading="lazy" decoding="async">
-        <div class="carta-corpo">
-          <span class="etichetta">Nuovo · ottobre 2026</span>
-          <h3 class="carta-titolo"><a href="/novita/rate-condominio">Le rate del condominio, in ordine.</a></h3>
-          <p>Carichi il preventivo: Dimora trova le tue rate e le mette nelle scadenze.</p>
-          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
-        </div>
-      </article>
-      <article class="carta">
-        <img class="carta-immagine" src="/assets/novita/carichi-al-resto.webp" alt="" width="960" height="600" loading="lazy" decoding="async">
-        <div class="carta-corpo">
-          <span class="etichetta">Nuovo · ottobre 2026</span>
-          <h3 class="carta-titolo"><a href="/novita/carichi-al-resto">Carichi, al resto pensa Dimora.</a></h3>
-          <p>Fotografi le pagine una per una o carichi un PDF: Dimora ricostruisce il documento, capisce che cos'è e ti avvisa se l'avevi già caricato.</p>
-          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
-        </div>
-      </article>
-<!--/CARTE-->
-    </div>
-  </div>
-</section>
-
-<!-- LA LETTERA (testi di oggi). -->
+<!-- 3. LA LETTERA (testi di oggi): la storia da cui nasce Dimora. -->
 <section class="sezione lettera" id="storia">
   <div class="contenitore lettera-griglia">
     <figure class="lettera-foto">
@@ -306,7 +229,218 @@
   </div>
 </section>
 
-<!-- PREZZI (testi di oggi, corretti il 22/10). -->
+<!-- 4. SE AFFITTI UNA CASA (testi della landing di prima: Per chi affitta e Per il commercialista), con la finestra
+     ferma e i video S5 e S2. Il disegno «appartamento» si traccia quando la sezione arriva. -->
+<section class="sezione affitti" id="affitti">
+  <div class="contenitore">
+    <div class="testa-disegno">
+      <div class="sezione-testa">
+        <h2 class="titolo-sezione" data-parole>Se affitti una casa</h2>
+        <p class="sezione-sotto">Contratti, incassi, ritardi e scadenze fiscali, contratto per contratto. E vedi quanto rendono i tuoi affitti.</p>
+      </div>
+      <div class="disegno-sezione" data-disegno aria-hidden="true">
+        <svg viewBox="0 0 220 110" fill="none" stroke="#27302A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path pathLength="1" style="--i:0" d="M10 100h200"></path><rect pathLength="1" style="--i:1" x="72" y="28" width="74" height="72"></rect><path pathLength="1" style="--i:1.6" d="M68 28h82"></path><rect pathLength="1" style="--i:2.2" x="48" y="54" width="24" height="46"></rect><rect pathLength="1" style="--i:2.8" x="54" y="62" width="10" height="8"></rect><rect pathLength="1" style="--i:3.1" x="54" y="78" width="10" height="8"></rect><rect pathLength="1" style="--i:3.6" x="80" y="36" width="12" height="11"></rect><rect pathLength="1" style="--i:3.9" x="103" y="36" width="12" height="11"></rect><rect pathLength="1" style="--i:4.2" x="126" y="36" width="12" height="11"></rect><rect pathLength="1" style="--i:4.5" x="80" y="56" width="12" height="11"></rect><rect pathLength="1" style="--i:4.8" x="103" y="56" width="12" height="11"></rect><rect pathLength="1" style="--i:5.1" x="126" y="56" width="12" height="11"></rect><rect pathLength="1" style="--i:5.4" x="80" y="78" width="12" height="7"></rect><rect pathLength="1" style="--i:5.7" x="126" y="78" width="12" height="7"></rect><circle pathLength="1" style="--i:6.2" cx="174" cy="66" r="11"></circle><path pathLength="1" style="--i:6.6" d="M174 77v23"></path><path class="porta" pathLength="1" style="--i:7.2" d="M103 100v-11a6 6 0 0 1 12 0v11z" fill="#CE7F33"></path></svg>
+      </div>
+    </div>
+
+    <div class="racconto" data-racconto>
+      <div class="racconto-griglia">
+        <div class="racconto-storie">
+<!--RACCONTO-AFFITTO-->
+        <article class="storia" data-storia="canone-a-meta">
+          <figure class="storia-locandina"><img src="/assets/novita/canone-a-meta.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">Il canone, anche quando arriva a metà.</h3>
+          <p>Se l'inquilino paga solo una parte, la segni e Dimora tiene il conto di quello che manca.</p>
+          <a class="collegamento" href="/novita/canone-a-meta">Leggi l'articolo</a>
+        </article>
+        <article class="storia" data-storia="pacchetto-commercialista">
+          <figure class="storia-locandina"><img src="/assets/novita/pacchetto-commercialista.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">Al commercialista, un pacchetto pronto.</h3>
+          <p>Per ogni casa e ogni anno, i documenti utili per la dichiarazione e un riepilogo in PDF e in tabella, pronti da mandare. Dimora ti dice anche quali non trova.</p>
+          <a class="collegamento" href="/novita/pacchetto-commercialista">Leggi l'articolo</a>
+        </article>
+<!--/RACCONTO-AFFITTO-->
+        </div>
+        <div class="racconto-schermo" aria-hidden="true"><div class="finestra" data-finestra><div class="finestra-barra"><span class="finestra-punti"><i></i><i></i><i></i></span><span class="finestra-indirizzo">app.dimorapp.com</span></div><div class="finestra-schermo" data-schermo></div><div class="finestra-avanzamento" data-avanzamento></div></div></div>
+      </div>
+    </div>
+
+    <h3 class="titolo-blocco" data-parole>L'affitto, dal contratto alla disdetta</h3>
+    <div class="griglia-funzioni">
+      <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg></span><h4>Carichi il contratto, Dimora prepara il resto</h4><p>Legge inquilino, canone, date, tipo e deposito, e prepara le rate del canone, la scadenza e la finestra di disdetta. Residenziale 4+4, 3+2, transitorio e studenti; commerciale 6+6 e 9+9.</p></div>
+      <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6"/><path d="M9 12h6"/></svg></span><h4>Canoni, incassi e ricevute</h4><p>Ogni mese il canone atteso, chi è in ritardo e da quanti giorni. Segni l'incasso e generi la ricevuta in PDF.</p></div>
+      <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17"/><path d="M14 12v1"/></svg></span><h4>Anche a stanze</h4><p>Una casa, più stanze, un contratto per stanza. Ogni inquilino ha il suo canone e le sue scadenze, e la casa resta una sola.</p></div>
+      <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 6.5A6 6 0 1 0 17 17.5"/><path d="M4 10h9"/><path d="M4 14h9"/></svg></span><h4>Spese e quota dell'inquilino</h4><p>Una spesa può avere una parte a carico dell'inquilino, in percentuale o in euro, anche divisa fra più inquilini. Vedi chi ti deve cosa e segni il rimborso.</p></div>
+      <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg></span><h4>Le scadenze fiscali dell'affitto</h4><p>Cedolare secca o registro, con le scadenze fiscali generate in automatico. Dove serve, ti dice di verificare col commercialista.</p></div>
+      <div class="funzione"><span class="funzione-icona"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14-5l-2 2"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14 5l2-2"/><path d="M20 20v-4h-4"/></svg></span><h4>Rinnovi e disdette</h4><p>Rinnovo, cambio inquilino con lo storico, finestra di disdetta con il preavviso giusto per tipo di contratto.</p></div>
+    </div>
+    <p class="nota-sezione">Gestisce anche affitti brevi e occasionali, con i soggiorni e il calendario dell'occupazione.</p>
+
+    <div class="commercialista">
+      <div>
+        <h3 class="titolo-blocco" data-parole>La spesa, la fattura e il bonifico, già insieme</h3>
+        <p class="sezione-sotto">Segni la spesa da portare al commercialista e ci colleghi i suoi documenti. A fine anno Dimora prepara la consegna.</p>
+      </div>
+      <ol class="passi passi-piccoli">
+        <li class="passo"><span class="passo-num" aria-hidden="true">1</span><div><p>Segni la spesa: lavori in casa, lavori condominiali o interessi del mutuo.</p></div></li>
+        <li class="passo"><span class="passo-num" aria-hidden="true">2</span><div><p>Colleghi fattura e bonifico, già archiviati o da caricare.</p></div></li>
+        <li class="passo"><span class="passo-num" aria-hidden="true">3</span><div><p>Consegni tutto: riepilogo in CSV e PDF, originali in un file ZIP.</p></div></li>
+      </ol>
+      <p class="nota-sezione">Il trattamento fiscale lo valuta il professionista.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5. SE HAI UNA SECONDA CASA: IMU, condominio, bollette, bonus, con la finestra ferma e i video S1, S4, S3. Il testo
+     sotto il titolo è quello di «Segui più case» della landing di prima. Il disegno «casa al mare» si traccia quando
+     la sezione arriva. -->
+<section class="sezione seconda-casa" id="seconda-casa">
+  <div class="contenitore">
+    <div class="testa-disegno">
+      <div class="sezione-testa">
+        <h2 class="titolo-sezione" data-parole>Se hai una seconda casa</h2>
+        <p class="sezione-sotto">La tua, quella al mare, quella dei tuoi genitori. IMU, rate di due condomini, bollette doppie: ogni casa ha la sua scheda, e Dimora ti ricorda le scadenze di tutte.</p>
+      </div>
+      <div class="disegno-sezione" data-disegno aria-hidden="true">
+        <svg viewBox="0 0 220 110" fill="none" stroke="#27302A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path pathLength="1" style="--i:0" d="M10 100h200"></path><path pathLength="1" style="--i:1" d="M24 64q18-20 36 0z"></path><path pathLength="1" style="--i:1.5" d="M42 64v36"></path><path pathLength="1" style="--i:2.2" d="M72 62l36-26 36 26"></path><rect pathLength="1" style="--i:2.9" x="80" y="58" width="56" height="42"></rect><rect pathLength="1" style="--i:3.7" x="115" y="68" width="14" height="11"></rect><path pathLength="1" style="--i:4.1" d="M122 68v11"></path><circle pathLength="1" style="--i:4.8" cx="180" cy="30" r="9"></circle><path pathLength="1" style="--i:5.5" d="M150 92q5-6 10 0t10 0t10 0t10 0t10 0"></path><path pathLength="1" style="--i:6" d="M150 82q5-6 10 0t10 0t10 0t10 0t10 0"></path><rect class="porta" pathLength="1" style="--i:6.8" x="94" y="76" width="13" height="24" fill="#CE7F33"></rect></svg>
+      </div>
+    </div>
+
+    <div class="racconto" data-racconto>
+      <div class="racconto-griglia">
+        <div class="racconto-storie">
+<!--RACCONTO-SECONDA-->
+        <article class="storia" data-storia="imu-calcolata">
+          <figure class="storia-locandina"><img src="/assets/novita/imu-calcolata.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">L'IMU, calcolata.</h3>
+          <p>Dimora trova le aliquote del tuo Comune e calcola acconto e saldo. Tiene conto di box, cantine e della tua quota, e calcola il saldo su quello che hai già versato. Tu controlli e paghi.</p>
+          <p class="storia-dato"><span class="storia-dato-testo">€ 977 l'anno, in media, per una seconda casa nei capoluoghi</span> <span class="storia-dato-fonte">Fonte: <a href="https://www.uil.it/documents/Uil_%20su_Imu_saldodicembre2025.pdf" rel="noopener">UIL, «Studio su saldo IMU 2025»</a></span></p>
+          <a class="collegamento" href="/novita/imu-calcolata">Leggi l'articolo</a>
+        </article>
+        <article class="storia" data-storia="rate-condominio">
+          <figure class="storia-locandina"><img src="/assets/novita/rate-condominio.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">Le rate del condominio, in ordine.</h3>
+          <p>Carichi il preventivo: Dimora trova le tue rate e le mette nelle scadenze.</p>
+          <p class="storia-dato"><span class="storia-dato-testo">Oltre 45 milioni di persone vivono in condominio</span> <span class="storia-dato-fonte">Fonte: <a href="https://www.italpress.com/vivere-in-condominio-arriva-la-guida-del-notariato/" rel="noopener">Notariato con ANACI, guida «Vivere in condominio»</a></span></p>
+          <a class="collegamento" href="/novita/rate-condominio">Leggi l'articolo</a>
+        </article>
+        <article class="storia" data-storia="bollette" data-immagine="/assets/img/app-bolletta-computer.webp">
+          <figure class="storia-locandina"><img src="/assets/img/app-bolletta-computer.webp" alt="" width="1280" height="800" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">Bollette e utenze, sotto controllo.</h3>
+          <p>Bollette, rate del condominio, polizze, mutuo e lavori. Carichi il documento, Dimora prepara le scadenze e a fine anno sai quanto ti è costata.</p>
+        </article>
+        <article class="storia" data-storia="bonus-casa">
+          <figure class="storia-locandina"><img src="/assets/novita/bonus-casa.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">I bonus della casa: cosa controllare.</h3>
+          <p>Quando carichi un preventivo, una fattura o un bonifico, Dimora ti dice cosa controllare per ristrutturazione, ecobonus, bonus mobili e interessi del mutuo. Decide il commercialista.</p>
+          <a class="collegamento" href="/novita/bonus-casa">Leggi l'articolo</a>
+        </article>
+<!--/RACCONTO-SECONDA-->
+        </div>
+        <div class="racconto-schermo" aria-hidden="true"><div class="finestra" data-finestra><div class="finestra-barra"><span class="finestra-punti"><i></i><i></i><i></i></span><span class="finestra-indirizzo">app.dimorapp.com</span></div><div class="finestra-schermo" data-schermo></div><div class="finestra-avanzamento" data-avanzamento></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. LE NOVITÀ, la prova che l'app cresce (NOVITA_TESTI_V2: N26, N27; carte S1-S6, ognuna col suo video piccolo che
+     parte quando la carta è sullo schermo; «Ci stiamo lavorando» con I1-I3, senza pulsanti). -->
+<section class="sezione novita" id="novita">
+  <div class="contenitore">
+    <div class="sezione-testa">
+      <h2 class="titolo-sezione" data-parole>Ogni mese, qualcosa in meno a cui pensare</h2>
+      <p class="sezione-sotto">Ogni mese il team di Dimora aggiunge qualcosa di nuovo. Ecco le novità di ottobre.</p>
+    </div>
+    <h3 class="titolo-mese">Ottobre 2026</h3>
+    <div class="carte">
+<!--CARTE-->
+      <article class="carta">
+        <div class="carta-media" data-video-carta="/assets/novita/imu-calcolata.mp4"><img class="carta-immagine" src="/assets/novita/imu-calcolata.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
+        <div class="carta-corpo">
+          <span class="etichetta">Nuovo · ottobre 2026</span>
+          <h3 class="carta-titolo"><a href="/novita/imu-calcolata">L'IMU, calcolata.</a></h3>
+          <p>Dimora trova le aliquote del tuo Comune e calcola acconto e saldo. Tiene conto di box, cantine e della tua quota, e calcola il saldo su quello che hai già versato. Tu controlli e paghi.</p>
+          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
+        </div>
+      </article>
+      <article class="carta">
+        <div class="carta-media" data-video-carta="/assets/novita/pacchetto-commercialista.mp4"><img class="carta-immagine" src="/assets/novita/pacchetto-commercialista.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
+        <div class="carta-corpo">
+          <span class="etichetta">Nuovo · ottobre 2026</span>
+          <h3 class="carta-titolo"><a href="/novita/pacchetto-commercialista">Al commercialista, un pacchetto pronto.</a></h3>
+          <p>Per ogni casa e ogni anno, i documenti utili per la dichiarazione e un riepilogo in PDF e in tabella, pronti da mandare. Dimora ti dice anche quali non trova.</p>
+          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
+        </div>
+      </article>
+      <article class="carta">
+        <div class="carta-media" data-video-carta="/assets/novita/bonus-casa.mp4"><img class="carta-immagine" src="/assets/novita/bonus-casa.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
+        <div class="carta-corpo">
+          <span class="etichetta">Nuovo · ottobre 2026</span>
+          <h3 class="carta-titolo"><a href="/novita/bonus-casa">I bonus della casa: cosa controllare.</a></h3>
+          <p>Quando carichi un preventivo, una fattura o un bonifico, Dimora ti dice cosa controllare per ristrutturazione, ecobonus, bonus mobili e interessi del mutuo. Decide il commercialista.</p>
+          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
+        </div>
+      </article>
+      <article class="carta">
+        <div class="carta-media" data-video-carta="/assets/novita/rate-condominio.mp4"><img class="carta-immagine" src="/assets/novita/rate-condominio.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
+        <div class="carta-corpo">
+          <span class="etichetta">Nuovo · ottobre 2026</span>
+          <h3 class="carta-titolo"><a href="/novita/rate-condominio">Le rate del condominio, in ordine.</a></h3>
+          <p>Carichi il preventivo: Dimora trova le tue rate e le mette nelle scadenze.</p>
+          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
+        </div>
+      </article>
+      <article class="carta">
+        <div class="carta-media" data-video-carta="/assets/novita/canone-a-meta.mp4"><img class="carta-immagine" src="/assets/novita/canone-a-meta.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
+        <div class="carta-corpo">
+          <span class="etichetta">Nuovo · ottobre 2026</span>
+          <h3 class="carta-titolo"><a href="/novita/canone-a-meta">Il canone, anche quando arriva a metà.</a></h3>
+          <p>Se l'inquilino paga solo una parte, la segni e Dimora tiene il conto di quello che manca.</p>
+          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
+        </div>
+      </article>
+      <article class="carta">
+        <div class="carta-media" data-video-carta="/assets/novita/carichi-al-resto.mp4"><img class="carta-immagine" src="/assets/novita/carichi-al-resto.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
+        <div class="carta-corpo">
+          <span class="etichetta">Nuovo · ottobre 2026</span>
+          <h3 class="carta-titolo"><a href="/novita/carichi-al-resto">Carichi, al resto pensa Dimora.</a></h3>
+          <p>Fotografi le pagine una per una o carichi un PDF: Dimora ricostruisce il documento, capisce che cos'è e ti avvisa se l'avevi già caricato.</p>
+          <span class="carta-leggi" aria-hidden="true">Leggi l'articolo</span>
+        </div>
+      </article>
+<!--/CARTE-->
+    </div>
+<!--IN-ARRIVO-->
+    <div class="in-arrivo">
+      <h3 class="titolo-mese">Ci stiamo lavorando</h3>
+      <ul class="in-arrivo-elenco">
+        <li><span class="in-arrivo-titolo">Dimora, più semplice da usare.</span> <span class="in-arrivo-testo">Una veste nuova e schermate più chiare, a partire dalla scheda della casa e dalle scadenze.</span></li>
+        <li><span class="in-arrivo-titolo">Il condominio, diviso fra le tue unità.</span> <span class="in-arrivo-testo">Le rate del preventivo divise fra casa, box e cantine, ognuna con la sua quota.</span></li>
+        <li><span class="in-arrivo-titolo">Dal preventivo ai lavori.</span> <span class="in-arrivo-testo">Il preventivo, la scelta, la fattura e il bonifico dei lavori, collegati in un filo solo.</span></li>
+      </ul>
+    </div>
+<!--/IN-ARRIVO-->
+  </div>
+</section>
+
+<!-- 7. IL TELEFONO E GLI STORE (il riquadro della landing di prima; store «in arrivo», decisione di Vitto del 25/10). -->
+<section class="telefono-sezione">
+  <div class="contenitore">
+    <div class="riquadro-telefono">
+      <span class="riquadro-telefono-icona"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg></span>
+      <div class="riquadro-telefono-testi">
+        <h2 class="titolo-blocco">Pensata anche per il telefono</h2>
+        <p>Dimora è ottimizzata per lo schermo del telefono: fotografi il documento e lo carichi dal browser, senza installare nulla. Presto anche su App Store e Google Play.</p>
+      </div>
+      <div class="negozi">
+        <span>App Store · in arrivo</span>
+        <span>Google Play · in arrivo</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8a. PREZZI (testi di oggi, corretti il 22/10). -->
 <section class="sezione prezzi" id="prezzi" data-prezzi>
   <div class="contenitore">
     <div class="sezione-testa">
@@ -366,7 +500,7 @@
   </div>
 </section>
 
-<!-- SICUREZZA E DATI (testi di oggi). -->
+<!-- 8b. SICUREZZA E DATI (testi di oggi). -->
 <section class="sezione sicurezza" id="sicurezza">
   <div class="contenitore">
     <div class="sezione-testa">
@@ -382,7 +516,7 @@
   </div>
 </section>
 
-<!-- DOMANDE FREQUENTI (testi di oggi, nel loro ordine). -->
+<!-- 8c. DOMANDE FREQUENTI (testi di oggi, nel loro ordine). -->
 <section class="sezione" id="domande">
   <div class="contenitore contenitore-stretto">
     <div class="sezione-testa">
@@ -403,7 +537,7 @@
   </div>
 </section>
 
-<!-- LA CHIUSURA (testi di oggi). -->
+<!-- 8d. LA CHIUSURA (testi di oggi). -->
 <section class="finale" id="inizia">
   <div class="contenitore">
     <div class="finale-riquadro">
@@ -426,7 +560,7 @@
       <span class="marchio"><span class="marchio-segno" aria-hidden="true"><svg viewBox="1 24 98 54" width="26" height="14"><circle cx="14" cy="51" r="10" fill="currentColor"/><rect x="11.5" y="59" width="5" height="16" rx="2" fill="currentColor"/><circle cx="86" cy="51" r="10" fill="currentColor"/><rect x="83.5" y="59" width="5" height="16" rx="2" fill="currentColor"/><polygon points="28,49 50,27 72,49" fill="currentColor"/><rect x="33" y="48" width="34" height="27" rx="2.5" fill="currentColor"/><path d="M45 68 L45 61.5 A5 5 0 0 1 55 61.5 L55 68 Z" fill="#CE7F33"/></svg></span><span class="marchio-nome">Dimora</span></span>
       <p>Contatti: <a href="mailto:assistenza@dimorapp.com">assistenza@dimorapp.com</a></p>
     </div>
-    <nav class="piede-colonna" aria-label="Prodotto"><span class="piede-titolo">Prodotto</span><a href="/#come">Come funziona</a><a href="/#novita">Novità</a><a href="/#prezzi">Prezzi</a><a href="/#domande">Domande</a></nav>
+    <nav class="piede-colonna" aria-label="Prodotto"><span class="piede-titolo">Prodotto</span><a href="/#come">Come funziona</a><a href="/#affitti">Se affitti una casa</a><a href="/#seconda-casa">Se hai una seconda casa</a><a href="/#novita">Novità</a><a href="/#prezzi">Prezzi</a><a href="/#domande">Domande</a></nav>
     <nav class="piede-colonna" aria-label="Novità di ottobre"><span class="piede-titolo">Novità di ottobre</span>
 <!--PIEDE-NOVITA-->
       <a href="/novita/imu-calcolata">L'IMU, calcolata.</a>

@@ -22,7 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STORIE, PARTI, NOVITA_LANDING, ORIGINE, ISCRIZIONE, indirizzoArticolo } from '../strumenti/storie.mjs';
+import { STORIE, PARTI, NOVITA_LANDING, IN_ARRIVO, BOLLETTE, DATI, RACCONTI, ORDINE_CARTE, ORIGINE, ISCRIZIONE, indirizzoArticolo } from '../strumenti/storie.mjs';
 
 const RADICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const leggi = (f) => fs.readFileSync(path.join(RADICE, f), 'utf8');
@@ -83,26 +83,76 @@ for (const [p, h] of Object.entries(PAGINE)) {
   verifica([...colori].every((c) => ammessi.has(c)), `${p}: nell'HTML solo i colori dei disegni delle case`, [...colori].filter((c) => !ammessi.has(c)).join(' '));
   verifica(!/\sstyle="[^"]*(color|background)/.test(h), `${p}: nessuno stile in linea con colori`);
 }
-// Il disegno della casa in apertura è il sorgente «casa» della regia, così com'è (aggiunti solo pathLength e l'ordine del tratto).
-for (const d of ['M40 100V52q0-8 8-8h6', 'M72 50l34-26 34 26', 'M100 100V86a6 6 0 0 1 12 0v14z', 'M10 100h200']) verifica(HTML.includes(`d="${d}"`), `la casa dell'apertura ha il tratto ${d}`);
-verifica(/x="78" y="48" width="56" height="52"/.test(HTML) && /x="134" y="58" width="40" height="42"/.test(HTML), "la casa dell'apertura ha i suoi due corpi");
-verifica(/class="casa-porta"[^>]*fill="#CE7F33"/.test(HTML), 'la porta ha il tocco ambra');
+// I disegni delle sezioni: la casa (Come funziona: il sorgente «casa» della regia, così com'è), l'appartamento (Se
+// affitti) e la casa al mare (Seconda casa). Ognuno col suo tocco ambra, che si traccia per ultimo.
+const disegnoDi = (id) => { const a = HTML.indexOf(`id="${id}"`); const b = HTML.indexOf('</section>', a); const t = HTML.slice(a, b); const i = t.indexOf('data-disegno'); return i < 0 ? '' : t.slice(i, t.indexOf('</svg>', i)); };
+const casa = disegnoDi('come');
+for (const d of ['M40 100V52q0-8 8-8h6', 'M72 50l34-26 34 26', 'M100 100V86a6 6 0 0 1 12 0v14z', 'M10 100h200']) verifica(casa.includes(`d="${d}"`), `la casa di Come funziona ha il tratto ${d}`);
+verifica(/x="78" y="48" width="56" height="52"/.test(casa) && /x="134" y="58" width="40" height="42"/.test(casa), 'la casa di Come funziona ha i suoi due corpi');
+for (const id of ['come', 'affitti', 'seconda-casa']) {
+  const d = disegnoDi(id);
+  verifica(d.length > 0, `${id}: c'è il disegno della sezione`);
+  verifica(/class="porta"[^>]*fill="#CE7F33"/.test(d), `${id}: il disegno ha il tocco ambra`);
+  const i = [...d.matchAll(/--i:([\d.]+)/g)].map((m) => +m[1]);
+  const porta = +((/class="porta"[^>]*--i:([\d.]+)/.exec(d) || [])[1] ?? -1);
+  verifica(i.length > 3 && porta === Math.max(...i), `${id}: il tocco ambra si traccia per ultimo`);
+}
 
 /* ---------- 3. Le storie ---------- */
 sezione('3. Le storie');
-const racconto = HTML.slice(HTML.indexOf('<!--RACCONTO-->'), HTML.indexOf('<!--/RACCONTO-->'));
-const idRacconto = attributi(racconto, 'data-storia');
-verifica(JSON.stringify(idRacconto) === JSON.stringify(['imu-calcolata', 'rate-condominio', 'carichi-al-resto', 'pacchetto-commercialista', 'bonus-casa', 'canone-a-meta']), 'il racconto: IMU, condominio, caricamento, commercialista, bonus, canone', idRacconto.join(', '));
+// L'ordine della pagina (comando della regia del 25/10): apertura, come funziona, lettera, se affitti, seconda casa,
+// novità, telefono, prezzi, sicurezza, domande, chiusura. La sezione dei numeri a sé non c'è più.
+const ordinePagina = ['come', 'storia', 'affitti', 'seconda-casa', 'novita', 'prezzi', 'sicurezza', 'domande', 'inizia'].map((id) => HTML.indexOf(`id="${id}"`));
+verifica(ordinePagina.every((x, i) => x > 0 && (i === 0 || x > ordinePagina[i - 1])), "l'ordine delle sezioni", ordinePagina.join(' '));
+verifica(HTML.indexOf('class="telefono-sezione"') > HTML.indexOf('id="novita"') && HTML.indexOf('class="telefono-sezione"') < HTML.indexOf('id="prezzi"'), 'il riquadro del telefono fra le novità e i prezzi');
+verifica(!HTML.includes('id="numeri"') && !testo(HTML).includes('Non sono conti da fare a mente'), "la sezione dei numeri non c'è più");
+const racconti = {
+  COME: HTML.slice(HTML.indexOf('<!--RACCONTO-COME-->'), HTML.indexOf('<!--/RACCONTO-COME-->')),
+  AFFITTO: HTML.slice(HTML.indexOf('<!--RACCONTO-AFFITTO-->'), HTML.indexOf('<!--/RACCONTO-AFFITTO-->')),
+  SECONDA: HTML.slice(HTML.indexOf('<!--RACCONTO-SECONDA-->'), HTML.indexOf('<!--/RACCONTO-SECONDA-->')),
+};
+const racconto = Object.values(racconti).join('\n');
+for (const [nome, r] of Object.entries(racconti)) {
+  verifica(JSON.stringify(attributi(r, 'data-storia')) === JSON.stringify(RACCONTI[nome]), `il racconto ${nome}: ${RACCONTI[nome].join(', ')}`, attributi(r, 'data-storia').join(', '));
+}
+verifica(HTML.indexOf('<!--RACCONTO-COME-->') > HTML.indexOf('id="come"') && HTML.indexOf('<!--RACCONTO-AFFITTO-->') > HTML.indexOf('id="affitti"') && HTML.indexOf('<!--RACCONTO-SECONDA-->') > HTML.indexOf('id="seconda-casa"'), 'ogni racconto sta nella sua sezione');
 const testoRacconto = testo(racconto);
 for (const s of STORIE) {
+  if (!Object.values(RACCONTI).flat().includes(s.id)) continue;
   verifica(testoRacconto.includes(s.titolo) && testoRacconto.includes(s.testo), `racconto: «${s.titolo}» col suo testo breve`);
   verifica(racconto.includes(`href="${indirizzoArticolo(s.id)}"`), `racconto: «${s.titolo}» porta al suo articolo`);
 }
+verifica(testoRacconto.includes(BOLLETTE.titolo) && testoRacconto.includes(BOLLETTE.testo) && racconto.includes(`data-immagine="${BOLLETTE.immagine}"`) && esiste(BOLLETTE.immagine.slice(1)), 'il passo delle bollette, con la sua schermata');
+for (const [id, d] of Object.entries(DATI)) {
+  const blocco = racconti.SECONDA.slice(racconti.SECONDA.indexOf(`data-storia="${id}"`));
+  const storia = blocco.slice(0, blocco.indexOf('</article>'));
+  verifica(testo(storia).includes(d.testo) && storia.includes(`href="${d.indirizzo.replace(/&/g, '&amp;')}"`) && testo(storia).includes(d.fonte), `seconda casa: il dato «${d.testo.slice(0, 30)}…» con la sua fonte`);
+}
+verifica(Object.values(DATI)[0].testo.startsWith('€ 977'), "gli importi come nell'app: «€ 977»");
+const testoPagina = testo(HTML);
+const scenaHtml = HTML.slice(HTML.indexOf('data-scena'), HTML.indexOf('</section>', HTML.indexOf('data-scena')));
+const importiScena = [...scenaHtml.matchAll(/class="scadenza-importo">([^<]+)</g)].map((m) => m[1]);
+verifica(importiScena.length === 3 && importiScena.every((x) => /^€ \d+(,\d\d)?$/.test(x)) && ['€ 312', '€ 828,67'].every((x) => importiScena.includes(x)), "le scadenze di esempio: importi come nell'app («€ 312», «€ 828,67»)");
+// L'apertura: come la landing di prima, nella veste nuova (le schermate dell'app con dati inventati).
+const apertura = HTML.slice(HTML.indexOf('class="apertura"'), HTML.indexOf('id="come"'));
+for (const t of ['Gestione di immobili e affitti', 'Le tue case e i tuoi affitti, sotto controllo.', 'Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze, tu controlli e confermi. Documenti, spese, contratti e incassi in un unico posto.', 'Inizia la prova gratuita', 'Dal computer hai tutti gli immobili sotto gli occhi.', 'Dal telefono fotografi il documento e lo confermi.', 'Fai una foto o carica un PDF. Dimora compila per te.']) verifica(testo(apertura).includes(t), `apertura: «${t.slice(0, 40)}»`);
+verifica(!testo(apertura).includes('Da una foto.'), 'apertura: il titolo senza «Da una foto.»');
+for (const f of ['app-computer.webp', 'app-telefono.webp', 'foto-bolletta.webp', 'dimorino-lettura.webp']) verifica(apertura.includes(`src="/assets/img/${f}"`) && esiste(`assets/img/${f}`), `apertura: ${f}`);
+// Il telefono e gli store: il riquadro della landing di prima, gli store «in arrivo».
+const telefono = testo(HTML.slice(HTML.indexOf('class="telefono-sezione"'), HTML.indexOf('id="prezzi"')));
+for (const t of ['Pensata anche per il telefono', 'App Store · in arrivo', 'Google Play · in arrivo', 'Presto anche su App Store e Google Play.']) verifica(telefono.includes(t), `telefono: «${t}»`);
+verifica(testoPagina.includes('Presto anche su App Store e Google Play. Entri con la tua mail'), 'le domande dicono ancora «Presto anche su App Store e Google Play»');
+// «Ci stiamo lavorando»: I1-I3, senza pulsanti.
+const inArrivo = HTML.slice(HTML.indexOf('<!--IN-ARRIVO-->'), HTML.indexOf('<!--/IN-ARRIVO-->'));
+verifica(testo(inArrivo).includes(IN_ARRIVO.titolo) && IN_ARRIVO.voci.every((v) => testo(inArrivo).includes(v.titolo) && testo(inArrivo).includes(v.testo)), '«Ci stiamo lavorando» con I1, I2, I3');
+verifica(!/<a |<button/.test(inArrivo), '«Ci stiamo lavorando» senza pulsanti');
+verifica(testoPagina.includes(NOVITA_LANDING.mese), 'le novità dicono «Ottobre 2026»');
 const carte = HTML.slice(HTML.indexOf('<!--CARTE-->'), HTML.indexOf('<!--/CARTE-->'));
 const testoCarte = testo(carte);
 const conCarta = STORIE.filter((s) => s.carta);
 verifica((carte.match(/class="carta"/g) || []).length === conCarta.length, `le carte di ottobre sono ${conCarta.length}`);
-for (const s of conCarta) verifica(testoCarte.includes(s.titolo) && testoCarte.includes(s.testo) && carte.includes(`href="${indirizzoArticolo(s.id)}"`), `carta: «${s.titolo}»`);
+for (const s of conCarta) verifica(testoCarte.includes(s.titolo) && testoCarte.includes(s.testo) && carte.includes(`href="${indirizzoArticolo(s.id)}"`) && carte.includes(`data-video-carta="/assets/novita/${s.id}.mp4"`), `carta: «${s.titolo}», col suo video`);
+verifica(JSON.stringify(attributi(carte, 'data-video-carta').map((u) => u.replace(/^\/assets\/novita\/|\.mp4$/g, ''))) === JSON.stringify(ORDINE_CARTE), `le carte nel loro ordine (S5 compresa): ${ORDINE_CARTE.join(', ')}`);
 verifica(testoCarte.split(NOVITA_LANDING.etichetta).length - 1 === conCarta.length, 'ogni carta dice «Nuovo · ottobre 2026»');
 verifica(testo(HTML).includes(NOVITA_LANDING.titolo) && testo(HTML).includes(NOVITA_LANDING.testo), 'la sezione delle novità ha N26 e N27');
 for (const s of STORIE) {
@@ -238,13 +288,13 @@ const regoleAnimate = (cssSenzaCommenti.replace(/@keyframes[^{]+\{(?:[^{}]*\{[^{
 const fuoriVivo = regoleAnimate.filter((r) => !/^\.vivo\b/.test(r) && !/animation: none/.test(r));
 verifica(fuoriVivo.length === 0, 'ogni animazione sta dietro «vivo»', fuoriVivo.map((r) => r.slice(0, 60)).join(' | '));
 verifica(CSS.includes('.racconto[data-pronto] .storia-locandina { display: none; }'), 'il racconto nasconde le immagini delle storie solo quando lo script ha preparato la finestra');
-verifica((racconto.match(/class="storia-locandina"/g) || []).length === STORIE.length, 'senza script ogni storia ha la sua immagine ferma');
-verifica(/data-conta="977">977</.test(HTML) && /data-conta="7894">7\.894</.test(HTML) && /data-conta="45">45</.test(HTML), 'senza script i numeri sono già al loro valore');
+verifica((racconto.match(/class="storia-locandina"/g) || []).length === Object.values(RACCONTI).flat().length, 'senza script ogni passo dei racconti ha la sua immagine ferma');
+verifica(CSS.includes('.vivo .disegno-sezione svg > * { stroke-dasharray: 1; stroke-dashoffset: 1; }') && !/\n\.disegno-sezione svg > \* \{[^}]*dashoffset/.test(CSS), 'senza script (o con «meno animazioni») i disegni sono già tracciati');
 verifica(!/<video/.test(HTML), 'nella landing nessun video senza lo script (li crea lui, senza indirizzo finché non servono)');
-verifica(JS.includes('if (i === attiva && inVista && !risparmio)') && JS.includes('s.video.pause()'), 'gira solo il video della storia sullo schermo, e solo con il racconto in vista');
+verifica(JS.includes('if (c === scelto && !risparmio)') && JS.includes('c.video.pause()') && JS.includes('return i === attiva && inVista ? 2 : 0;'), 'gira un video solo alla volta: quello della storia sullo schermo col racconto in vista, o della carta più visibile');
 verifica(JS.includes("v.preload = 'none'"), 'i video del racconto non si scaricano prima del loro turno');
 verifica(!/cursor:\s*(none|url)/.test(CSS), 'nessun cursore personalizzato');
-verifica(CSS.includes('.vivo .casa-grande [pathLength]') && /\.vivo \.casa-grande \.casa-porta \{ animation: traccia[^}]*porta/.test(CSS), 'la casa si traccia e la porta ambra arriva per ultima');
+verifica(CSS.includes('.vivo .disegno-sezione[data-visto] svg > *') && /\.vivo \.disegno-sezione\[data-visto\] \.porta \{ animation: traccia[^}]*porta/.test(CSS) && JS.includes("document.querySelectorAll('[data-disegno]')"), 'i disegni si tracciano quando la sezione arriva, il tocco ambra per ultimo');
 
 console.log(`\n${passati} controlli passati, ${falliti} falliti.`);
 process.exit(falliti ? 1 : 0);

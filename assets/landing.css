@@ -3,7 +3,7 @@
 
   Le animazioni si accendono con la classe «vivo» sull'<html>, che la testa della pagina mette solo se il sistema
   non chiede «meno animazioni». Senza quella classe (e senza script) la pagina è ferma e completa: la casa è già
-  disegnata, ogni storia ha la sua immagine, i numeri sono già al loro valore. Le parti che hanno bisogno dello script
+  disegnata, ogni storia ha la sua immagine, i disegni delle sezioni sono già tracciati. Le parti che hanno bisogno dello script
   (la finestra del racconto, le parole dei titoli) si accendono solo quando lo script le ha preparate.
 */
 
@@ -93,7 +93,7 @@ button { font: inherit; color: inherit; }
 }
 .menu-pannello a { display: flex; align-items: center; min-height: var(--altezza-tocco); padding: 0 12px; border-radius: 10px; text-decoration: none; font-weight: 600; }
 .menu-pannello a:hover { background: var(--c-fondo-tenue); }
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   .nav-larga { display: flex; }
   .solo-largo { display: inline-flex; }
   .menu { display: none; }
@@ -106,6 +106,11 @@ button { font: inherit; color: inherit; }
 }
 .su-scuro { color: var(--c-su-scuro); }
 .sezione { padding: var(--spazio-sezione) 0; }
+/* Le sezioni sotto la prima schermata il browser le impagina quando ci si avvicina: la pagina si apre prima. */
+.lettera, .affitti, .seconda-casa, .novita, .telefono-sezione, .prezzi, .sicurezza, #domande, .finale, .piede { content-visibility: auto; contain-intrinsic-size: auto 1000px; }
+/* Per un salto a una sezione (il menu, «Tutte le novità») lo script toglie questa scorciatoia: le altezze devono essere
+   quelle vere, o il salto arriva nel posto sbagliato (misurato). */
+.cv-pieno :is(.lettera, .affitti, .seconda-casa, .novita, .telefono-sezione, .prezzi, .sicurezza, #domande, .finale, .piede) { content-visibility: visible; }
 .sezione-testa { max-width: 720px; margin-bottom: clamp(32px, 6vw, 56px); }
 .sezione-sotto { margin-top: 14px; font-size: var(--text-sezione); color: var(--c-secondario); max-width: 38em; }
 .etichetta {
@@ -113,84 +118,98 @@ button { font: inherit; color: inherit; }
   background: var(--c-stato-fondo); color: var(--c-stato-testo); font-size: var(--text-minimo); font-weight: 600;
 }
 
-/* ── L'apertura ── */
-.apertura { padding: 20px 0 clamp(64px, 10vw, 112px); }
-.apertura-griglia { display: grid; gap: 28px; }
-.apertura-disegno { order: -1; }
+/* ── L'apertura: il computer, il telefono, la foto della bolletta e Dimorino ── */
+.apertura { padding: 20px 0 clamp(56px, 9vw, 96px); }
+.apertura-griglia { display: grid; gap: 36px; }
+.occhiello { font-size: var(--text-piccolo); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--c-principale); margin-bottom: 14px; }
 .titolo-apertura {
   font-family: var(--font-titoli); font-weight: 600; letter-spacing: var(--spaziatura-titoli);
-  font-size: var(--t-apertura); line-height: 1.05;
+  font-size: var(--t-apertura); line-height: 1.06;
 }
-.titolo-apertura .riga { display: block; overflow: hidden; padding-bottom: .06em; margin-bottom: -.06em; text-wrap: balance; }
+.titolo-apertura .riga { display: block; overflow: hidden; padding-bottom: .06em; margin-bottom: -.06em; }
 .titolo-apertura .riga > span { display: inline-block; }
-.apertura-sotto { margin-top: 20px; font-size: clamp(17px, 2.2vw, 19px); color: var(--c-secondario); max-width: 32em; }
-.apertura-azioni { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.apertura-sotto { margin-top: 18px; font-size: clamp(17px, 2.1vw, 19px); color: var(--c-secondario); max-width: 32em; }
+.apertura-azioni { margin-top: 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
 .apertura-nota { font-size: var(--text-piccolo); color: var(--c-etichetta); }
-.casa-riquadro {
-  position: relative;
-  background: var(--c-fondo-tenue); border-radius: var(--radius-veste);
-  padding: 64px 10px 8px;
-  transform: translateY(calc(var(--p-apertura, 0) * -28px));
-}
-.casa-grande { width: 100%; height: auto; overflow: visible; }
-/* Le scadenze della casa: compaiono dopo la porta. Un'illustrazione con date di esempio. */
-.casa-avvisi { position: absolute; inset: 0; pointer-events: none; }
-.avviso-casa {
-  position: absolute; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
-  padding: 5px 11px; border-radius: 999px; background: var(--c-scheda); border: 1px solid var(--c-riga); box-shadow: var(--ombra-scheda);
-  font-size: var(--text-minimo); font-weight: 600; color: var(--c-testo);
-}
-.avviso-casa i { width: 7px; height: 7px; border-radius: 50%; background: var(--c-accento); }
-.avviso-casa:nth-child(1) { left: 12px; top: 14px; }
-.avviso-casa:nth-child(2) { right: 12px; top: 14px; }
-.avviso-casa:nth-child(3) { display: none; }
-@media (max-width: 63.99rem) { .casa-grande { stroke-width: 2; } }
-@media (min-width: 40rem) {
-  .casa-riquadro { padding: 110px 24px 12px; }
-  .avviso-casa:nth-child(1) { left: 7%; top: 22px; }
-  .avviso-casa:nth-child(2) { right: 7%; top: 52px; }
-  .avviso-casa:nth-child(3) { display: inline-flex; left: 26%; top: 86px; }
-}
-@media (min-width: 64rem) {
-  .apertura { padding-top: 48px; }
-  .apertura-griglia { grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr); align-items: center; gap: 48px; }
-  .apertura-disegno { order: 0; }
-  .casa-riquadro { padding: 150px 28px 16px; }
-  .avviso-casa:nth-child(1) { left: 6%; top: 32px; }
-  .avviso-casa:nth-child(2) { right: 6%; top: 70px; }
-  .avviso-casa:nth-child(3) { left: 22%; top: 112px; }
-}
-.vivo .avviso-casa { opacity: 0; animation: arriva .6s cubic-bezier(.2, .7, .2, 1) forwards; }
-.vivo .avviso-casa:nth-child(1) { animation-delay: 2.5s; }
-.vivo .avviso-casa:nth-child(2) { animation-delay: 2.8s; }
-.vivo .avviso-casa:nth-child(3) { animation-delay: 3.1s; }
-@keyframes arriva { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
 
-/* La sequenza d'apertura: il titolo riga per riga, poi la casa tratto per tratto, la porta ambra per ultima. */
+/* I due schermi: il computer dietro, il telefono davanti a destra, la foto della bolletta davanti a sinistra. */
+.dispositivi { position: relative; padding: 4% 0 14%; }
+.portatile { width: 86%; margin: 0 auto 0 6%; transform: translateY(calc(var(--p-apertura, 0) * -16px)); }
+.portatile-schermo {
+  border: 7px solid var(--c-testo); border-bottom-width: 9px; border-radius: 14px 14px 4px 4px; overflow: hidden;
+  background: var(--c-fondo); box-shadow: var(--ombra-finestra);
+}
+.portatile-schermo img { width: 100%; aspect-ratio: 8 / 5; object-fit: cover; object-position: top left; }
+.portatile-base { height: 11px; margin: 0 -5%; border-radius: 0 0 14px 14px; background: var(--c-riga); box-shadow: var(--ombra-scheda); }
+.telefono {
+  position: absolute; right: 0; bottom: 0; width: 27%; padding: 5px; border-radius: 22px; background: var(--c-testo);
+  box-shadow: var(--ombra-finestra); transform: translateY(calc(var(--p-apertura, 0) * -40px));
+}
+.telefono-schermo { border-radius: 17px; overflow: hidden; background: var(--c-fondo); }
+.telefono-schermo img { width: 100%; aspect-ratio: 390 / 844; object-fit: cover; object-position: top; }
+.telefono-isola { position: absolute; top: 9px; left: 50%; width: 26%; height: 7px; margin-left: -13%; border-radius: 4px; background: var(--c-testo); z-index: 1; }
+.foto-carta {
+  position: absolute; left: 0; bottom: 4%; width: 23%; padding: 4px; background: var(--c-scheda); border-radius: 6px;
+  box-shadow: var(--ombra-finestra); transform: rotate(-6deg) translateY(calc(var(--p-apertura, 0) * -28px));
+}
+.foto-carta img { border-radius: 3px; width: 100%; }
+.dimorino-apertura { position: absolute; right: 22%; top: -2%; width: 17%; height: auto; }
+.legame { display: flex; align-items: center; gap: 12px; margin-top: 6px; font-weight: 700; font-size: var(--text-piccolo); line-height: 1.35; }
+.bollino { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--c-accento); color: var(--c-su-scuro); }
+.didascalia { margin-top: 14px; display: grid; gap: 4px; font-size: var(--text-piccolo); color: var(--c-secondario); }
+.didascalia b { color: var(--c-testo); }
+.vantaggi { margin-top: clamp(36px, 6vw, 56px); display: grid; gap: 12px 28px; padding-top: 24px; border-top: 1px solid var(--c-riga); }
+.vantaggi li { display: flex; gap: 10px; align-items: flex-start; font-weight: 600; font-size: var(--text-piccolo); }
+.vantaggi svg { flex: none; margin-top: 2px; color: var(--c-principale); }
+@media (min-width: 40rem) { .vantaggi { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 64rem) {
+  .apertura { padding-top: 44px; }
+  .apertura-griglia { grid-template-columns: minmax(0, .86fr) minmax(0, 1.14fr); align-items: center; gap: 48px; }
+  .vantaggi { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* La sequenza d'apertura: il titolo riga per riga, poi il computer, il telefono, la foto, il legame. */
 .vivo .titolo-apertura .riga > span { transform: translateY(105%); animation: sale .8s cubic-bezier(.2, .7, .2, 1) forwards; }
 .vivo .titolo-apertura .riga:nth-child(2) > span { animation-delay: .12s; }
 .vivo .titolo-apertura .riga:nth-child(3) > span { animation-delay: .24s; }
-.vivo .apertura-sotto, .vivo .apertura-azioni { opacity: 0; animation: compare .7s ease .45s forwards; }
+.vivo .occhiello, .vivo .apertura-sotto, .vivo .apertura-azioni, .vivo .legame, .vivo .didascalia, .vivo .vantaggi { opacity: 0; animation: compare .7s ease .45s forwards; }
 .vivo .apertura-azioni { animation-delay: .6s; }
-.vivo .casa-grande [pathLength] {
-  stroke-dasharray: 1; stroke-dashoffset: 1;
-  animation: traccia .9s cubic-bezier(.5, 0, .2, 1) both;
-  animation-delay: calc(.35s + var(--i) * .16s);
-}
-.vivo .casa-grande .casa-porta { animation: traccia .6s cubic-bezier(.5, 0, .2, 1) both, porta .8s ease both; animation-delay: calc(.35s + var(--i) * .16s), calc(.75s + var(--i) * .16s); }
+.vivo .portatile-schermo, .vivo .portatile-base { opacity: 0; animation: compare .9s cubic-bezier(.2, .7, .2, 1) .3s forwards; }
+.vivo .telefono { animation: entra-telefono 1s cubic-bezier(.2, .7, .2, 1) .7s both; }
+.vivo .foto-carta img { animation: entra-foto .9s cubic-bezier(.2, .7, .2, 1) 1s both; }
+.vivo .dimorino-apertura { animation: arriva .7s cubic-bezier(.2, .7, .2, 1) 1.4s both; }
+.vivo .legame { animation-delay: 1.5s; }
+.vivo .didascalia { animation-delay: 1.65s; }
+.vivo .vantaggi { animation-delay: 1.2s; }
+@keyframes entra-telefono { from { opacity: 0; translate: 0 36px; } to { opacity: 1; translate: 0 0; } }
+@keyframes entra-foto { from { opacity: 0; transform: translateY(-24px) rotate(-8deg); } to { opacity: 1; transform: none; } }
+@keyframes arriva { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
 @keyframes sale { to { transform: none; } }
 @keyframes compare { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes traccia { to { stroke-dashoffset: 0; } }
 @keyframes porta { from { fill-opacity: 0; } to { fill-opacity: 1; } }
 
+/* ── I disegni delle sezioni: la casa, l'appartamento, la casa al mare. Si tracciano quando la sezione arriva
+   sullo schermo, il tocco ambra per ultimo. Senza «vivo» sono già disegnati. I selettori guardano i figli dello svg e
+   non [pathLength]: Chrome non ricalcolava lo stile quando data-visto arriva sul contenitore e la regola cerca un
+   attributo SVG col maiuscolo (misurato). ── */
+.testa-disegno { display: grid; gap: 8px 40px; align-items: end; margin-bottom: clamp(32px, 6vw, 56px); }
+.testa-disegno .sezione-testa { margin-bottom: 0; }
+.disegno-sezione { width: min(220px, 60vw); order: -1; }
+.disegno-sezione svg { width: 100%; height: auto; overflow: visible; }
+@media (min-width: 48rem) {
+  .testa-disegno { grid-template-columns: minmax(0, 1fr) auto; }
+  .disegno-sezione { order: 0; width: 240px; }
+}
+.vivo .disegno-sezione svg > * { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.vivo .disegno-sezione .porta { fill-opacity: 0; }
+.vivo .disegno-sezione[data-visto] svg > * { animation: traccia .9s cubic-bezier(.5, 0, .2, 1) forwards; animation-delay: calc(var(--i) * .14s); }
+.vivo .disegno-sezione[data-visto] .porta { animation: traccia .6s cubic-bezier(.5, 0, .2, 1) forwards, porta .8s ease forwards; animation-delay: calc(var(--i) * .14s), calc(.4s + var(--i) * .14s); }
+
 /* ── Come funziona ── */
-.come-griglia { display: grid; gap: 0 56px; }
-.come-testo { display: contents; }
-.come-testo > .titolo-sezione { order: 1; }
-.come-testo > .sezione-sotto { order: 2; margin-bottom: 28px; }
-.scena { order: 3; }
-.passi { order: 4; margin-top: 28px; display: grid; gap: 20px; }
-.come-nota { order: 5; margin-top: 24px; font-size: var(--text-piccolo); color: var(--c-secondario); }
+.come-griglia { display: grid; gap: 36px 56px; }
+.passi { display: grid; gap: 20px; }
+.come-nota { margin-top: 24px; font-size: var(--text-piccolo); color: var(--c-secondario); }
 .passo { display: flex; gap: 16px; }
 .passo-num {
   flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
@@ -199,15 +218,10 @@ button { font: inherit; color: inherit; }
 }
 .passo h3 { font-size: var(--text-sezione); font-weight: 700; line-height: 1.3; margin: 5px 0 4px; }
 .passo p { color: var(--c-secondario); }
+.passi-piccoli .passo p { color: var(--c-testo); margin-top: 6px; }
 .passo[data-attivo] .passo-num { background: var(--c-principale); border-color: var(--c-principale); color: var(--c-su-scuro); }
 @media (min-width: 64rem) {
-  .come-griglia { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); }
-  .come-testo > * { grid-column: 1; }
-  .come-testo > .titolo-sezione { grid-row: 1; }
-  .come-testo > .sezione-sotto { grid-row: 2; }
-  .passi { grid-row: 3; }
-  .come-nota { grid-row: 4; }
-  .scena { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
+  .come-griglia { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); align-items: center; }
 }
 
 /* La scena: il foglio scende nella casa, le scadenze ne escono. Le variabili le scrive lo script mentre si scorre;
@@ -249,6 +263,28 @@ button { font: inherit; color: inherit; }
 .scadenza-data { font-weight: 700; color: var(--c-principale); }
 .scadenza-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .scadenza-importo { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* I blocchi dentro le sezioni: un titolo, le funzioni a griglia, le note. */
+.titolo-blocco { font-family: var(--font-titoli); font-weight: 600; letter-spacing: var(--spaziatura-titoli); font-size: var(--t-storia); line-height: 1.15; text-wrap: balance; }
+.funzioni { margin-top: clamp(48px, 8vw, 88px); }
+.griglia-funzioni { margin-top: 28px; display: grid; gap: 16px; }
+.funzione { padding: 22px; background: var(--c-scheda); border: 1px solid var(--c-riga); border-radius: var(--radius-veste); box-shadow: var(--ombra-scheda); }
+.funzione-icona { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--c-stato-fondo); color: var(--c-principale); margin-bottom: 14px; }
+.funzione h4 { font-size: var(--text-sezione); font-weight: 700; line-height: 1.3; margin-bottom: 6px; }
+.funzione p { color: var(--c-secondario); font-size: var(--text-piccolo); }
+@media (min-width: 40rem) { .griglia-funzioni { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 64rem) { .griglia-funzioni { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.nota-sezione { margin-top: 20px; font-size: var(--text-piccolo); color: var(--c-secondario); }
+.affitti .titolo-blocco { margin-top: clamp(16px, 3vw, 32px); }
+.commercialista {
+  margin-top: clamp(48px, 8vw, 88px); padding: clamp(24px, 4vw, 40px); display: grid; gap: 24px 48px;
+  background: var(--c-fondo-tenue); border-radius: var(--radius-veste);
+}
+.commercialista .nota-sezione { margin-top: 0; }
+@media (min-width: 64rem) {
+  .commercialista { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .commercialista .nota-sezione { grid-column: 2; }
+}
 
 /* ── Il racconto ── */
 .racconto { padding-bottom: calc(var(--spazio-sezione) * .6); }
@@ -311,23 +347,14 @@ button { font: inherit; color: inherit; }
   .racconto[data-pronto] .storia { min-height: 48vh; }
   /* Al telefono la finestra prende quasi tutta la larghezza: i video hanno l'inquadratura che zooma, e non si tagliano. */
   .racconto[data-pronto] .racconto-schermo { padding-left: 6px; padding-right: 6px; }
+  /* Al tablet la finestra non prende più del 40% dell'altezza: sotto deve restare la storia da leggere. */
+  .racconto[data-pronto] .finestra { max-width: calc((100vh - 64px) * .4 * 1.6); margin: 0 auto; }
 }
 @media (min-width: 64rem) {
   .racconto[data-pronto] .racconto-griglia { grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 64px; align-items: start; }
   .racconto[data-pronto] .racconto-schermo { position: sticky; top: clamp(84px, calc(50vh - 250px), 200px); }
   .racconto[data-pronto] .storia { min-height: 78vh; }
 }
-
-/* ── I numeri ── */
-.numeri { background: var(--c-principale-ombra); color: var(--c-su-scuro); padding: var(--spazio-sezione) 0; }
-.numeri-elenco { margin-top: clamp(32px, 6vw, 56px); display: grid; gap: 32px; }
-.numeri-elenco li { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--c-su-scuro); padding-top: 18px; }
-.numero { font-weight: 800; font-size: clamp(40px, 5vw, 56px); line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.numero small { font-size: .4em; font-weight: 700; letter-spacing: 0; }
-.numero-cosa { font-size: var(--text-sezione); max-width: 20em; }
-.numeri-fonti { margin-top: 36px; font-size: var(--text-minimo); max-width: 60em; }
-.numeri-fonti a { color: var(--c-su-scuro); }
-@media (min-width: 64rem) { .numeri-elenco { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* ── Le carte delle novità ── */
 .carte { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px; }
@@ -344,15 +371,49 @@ button { font: inherit; color: inherit; }
 .carta-titolo a:focus-visible { outline: none; }
 .carta:has(a:focus-visible) { outline: 2px solid var(--c-principale); outline-offset: 3px; }
 .carta p { color: var(--c-secondario); font-size: var(--text-piccolo); }
-/* La storia principale del mese (la prima) occupa due colonne quando ce ne sono tre: le cinque carte fanno due righe piene. */
-@media (min-width: 64rem) {
-  #novita .carte { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  #novita .carta:first-child { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
-  #novita .carta:first-child .carta-immagine { height: 100%; aspect-ratio: auto; border-bottom: 0; border-right: 1px solid var(--c-riga); }
-  #novita .carta:first-child .carta-titolo { font-size: var(--t-storia); }
-  #novita .carta:first-child .carta-corpo { justify-content: center; padding: 28px; }
-}
+/* Sei carte: tre per riga dal computer, due righe piene. */
+@media (min-width: 64rem) { #novita .carte { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .carta-leggi { margin-top: auto; font-weight: 700; font-size: var(--text-piccolo); color: var(--c-principale); }
+
+/* Il dato vero sotto una storia, con la fonte piccola. */
+.storia-dato { display: grid; gap: 4px; margin: 4px 0 14px; padding: 12px 16px; border-left: 3px solid var(--c-accento); background: var(--c-scheda); border-radius: 0 10px 10px 0; }
+.storia .storia-dato { color: var(--c-testo); }
+.storia-dato-testo { font-weight: 700; font-size: var(--text-sezione); line-height: 1.35; }
+.storia-dato-fonte { font-size: var(--text-minimo); color: var(--c-etichetta); }
+.storia-dato-fonte a { color: var(--c-etichetta); text-underline-offset: 2px; }
+
+/* Il racconto con una storia sola (Come funziona): la finestra accanto al testo, senza scorrimento fermo. */
+.racconto-singolo { margin-top: clamp(48px, 8vw, 88px); padding-bottom: 0; }
+.racconto-singolo[data-pronto] .storia { min-height: 0; }
+.racconto-singolo[data-pronto] .racconto-schermo { position: static; margin: 0 0 20px; padding: 0; }
+.racconto-singolo .finestra-avanzamento { display: none; }
+@media (min-width: 64rem) {
+  .racconto-singolo[data-pronto] .racconto-griglia { align-items: center; }
+  .racconto-singolo[data-pronto] .racconto-schermo { margin: 0; }
+}
+
+/* ── Le novità ── */
+.titolo-mese { font-size: var(--text-sezione); font-weight: 700; color: var(--c-etichetta); margin-bottom: 16px; }
+.carta-media { position: relative; border-bottom: 1px solid var(--c-riga); }
+.carta-media .carta-immagine { border-bottom: 0; }
+.carta-media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top left; opacity: 0; transition: opacity .4s ease; }
+.carta-media video[data-gira] { opacity: 1; }
+.in-arrivo { margin-top: clamp(40px, 7vw, 64px); }
+.in-arrivo-elenco { display: grid; gap: 12px; }
+.in-arrivo-elenco li { display: grid; gap: 4px; padding: 18px 20px; border: 1px dashed var(--c-bordo-campo); border-radius: var(--radius-veste); }
+.in-arrivo-titolo { font-weight: 700; }
+.in-arrivo-testo { color: var(--c-secondario); font-size: var(--text-piccolo); }
+@media (min-width: 56rem) { .in-arrivo-elenco { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* ── Il telefono e gli store ── */
+.telefono-sezione { padding-bottom: var(--spazio-sezione); }
+.riquadro-telefono { display: grid; gap: 18px 28px; align-items: center; padding: clamp(24px, 4vw, 36px); background: var(--c-scheda); border: 1px solid var(--c-riga); border-radius: var(--radius-veste); box-shadow: var(--ombra-scheda); }
+.riquadro-telefono-icona { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 18px; background: var(--c-stato-fondo); color: var(--c-principale); }
+.riquadro-telefono-testi p { margin-top: 8px; color: var(--c-secondario); max-width: 40em; }
+.negozi { display: flex; flex-wrap: wrap; gap: 10px; }
+.negozi span { display: inline-flex; align-items: center; min-height: var(--altezza-tocco); padding: 0 16px; border-radius: 12px; border: 1px solid var(--c-riga); background: var(--c-fondo-tenue); font-weight: 600; font-size: var(--text-piccolo); color: var(--c-secondario); }
+@media (min-width: 56rem) { .riquadro-telefono { grid-template-columns: auto minmax(0, 1fr) auto; } .negozi { flex-direction: column; } }
+
 
 /* ── La lettera ── */
 .lettera { background: var(--c-fondo-tenue); }
@@ -477,6 +538,7 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .casa-riquadro, .racconto[data-pronto] .finestra { transform: none !important; }
+  .portatile, .telefono, .foto-carta, .racconto[data-pronto] .finestra { transform: none !important; }
+  .foto-carta { rotate: -6deg; }
   .parola { opacity: 1 !important; transform: none !important; }
 }

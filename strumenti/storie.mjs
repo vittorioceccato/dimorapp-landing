@@ -146,13 +146,13 @@ export const STORIE = [
     },
   },
   {
-    // Nell'app la storia è solo per chi affitta; nella landing è nel racconto ma non fra le carte di ottobre
-    // (NOVITA_TESTI_V2: carte S1-S4, più S6 «per la carta e la landing»).
+    // Nell'app la storia è solo per chi affitta; nella landing è nella sezione di chi affitta e fra le carte di ottobre
+    // (comando della regia del 25/10: le carte sono S1-S6).
     id: 'canone-a-meta',
     uscita: '2026-10-22',
     titolo: 'Il canone, anche quando arriva a metà.',
     testo: "Se l'inquilino paga solo una parte, la segni e Dimora tiene il conto di quello che manca.",
-    carta: false,
+    carta: true,
     articolo: {
       rigaSotto: "Se l'inquilino paga solo una parte, Dimora tiene il conto di quello che manca.",
       perche: [
@@ -186,12 +186,58 @@ export const PARTI = {
   azione: 'Prova Dimora gratis',
 };
 
-// La sezione delle novità nella landing (NOVITA_TESTI_V2: N26, N27 e l'etichetta delle carte).
+// La sezione delle novità nella landing (NOVITA_TESTI_V2: N26, N27 e l'etichetta delle carte; «Ottobre 2026» sopra
+// le carte, dal comando della regia del 25/10).
 export const NOVITA_LANDING = {
   titolo: 'Ogni mese, qualcosa in meno a cui pensare',
   testo: 'Ogni mese il team di Dimora aggiunge qualcosa di nuovo. Ecco le novità di ottobre.',
+  mese: 'Ottobre 2026',
   etichetta: 'Nuovo · ottobre 2026',
 };
+
+// «Ci stiamo lavorando» (NOVITA_TESTI_V2: N40, I1-I3), senza date e senza pulsanti.
+export const IN_ARRIVO = {
+  titolo: 'Ci stiamo lavorando',
+  voci: [
+    { titolo: 'Dimora, più semplice da usare.', testo: 'Una veste nuova e schermate più chiare, a partire dalla scheda della casa e dalle scadenze.' },
+    { titolo: 'Il condominio, diviso fra le tue unità.', testo: 'Le rate del preventivo divise fra casa, box e cantine, ognuna con la sua quota.' },
+    { titolo: 'Dal preventivo ai lavori.', testo: 'Il preventivo, la scelta, la fattura e il bonifico dei lavori, collegati in un filo solo.' },
+  ],
+};
+
+// Un passo del racconto che non è una storia delle novità: le bollette, nella sezione della seconda casa. Il testo è
+// quello della landing di prima («Segui casa tua»); il titolo è nuovo, da approvare. Non ha un video: nella finestra
+// si vede la schermata della lettura di una bolletta (dati inventati).
+export const BOLLETTE = {
+  id: 'bollette',
+  titolo: 'Bollette e utenze, sotto controllo.',
+  testo: 'Bollette, rate del condominio, polizze, mutuo e lavori. Carichi il documento, Dimora prepara le scadenze e a fine anno sai quanto ti è costata.',
+  immagine: '/assets/img/app-bolletta-computer.webp',
+};
+
+// Un dato vero sotto la storia, con la fonte piccola (comando della regia del 25/10; gli importi scritti come
+// nell'app). Le fonti sono quelle degli articoli.
+export const DATI = {
+  'imu-calcolata': {
+    testo: "€ 977 l'anno, in media, per una seconda casa nei capoluoghi",
+    fonte: 'UIL, «Studio su saldo IMU 2025»',
+    indirizzo: 'https://www.uil.it/documents/Uil_%20su_Imu_saldodicembre2025.pdf',
+  },
+  'rate-condominio': {
+    testo: 'Oltre 45 milioni di persone vivono in condominio',
+    fonte: 'Notariato con ANACI, guida «Vivere in condominio»',
+    indirizzo: 'https://www.italpress.com/vivere-in-condominio-arriva-la-guida-del-notariato/',
+  },
+};
+
+// I tre racconti della pagina, ognuno con la sua finestra ferma.
+export const RACCONTI = {
+  COME: ['carichi-al-resto'],
+  AFFITTO: ['canone-a-meta', 'pacchetto-commercialista'],
+  SECONDA: ['imu-calcolata', 'rate-condominio', 'bollette', 'bonus-casa'],
+};
+// L'ordine delle carte delle novità: la storia principale (l'IMU), poi S2, S3, S4, S5 e S6.
+export const ORDINE_CARTE = ['imu-calcolata', 'pacchetto-commercialista', 'bonus-casa', 'rate-condominio', 'canone-a-meta', 'carichi-al-resto'];
 
 export const ORIGINE = 'https://dimorapp.com';
 export const ISCRIZIONE = 'https://app.dimorapp.com/login';

@@ -3,8 +3,9 @@
 //     node strumenti/genera-articoli.mjs
 //
 // Dalla fonte unica strumenti/storie.mjs:
-//   · in index.html riempie i blocchi fra <!--RACCONTO--> e <!--/RACCONTO-->, <!--CARTE--> e <!--/CARTE-->,
-//     <!--PIEDE-NOVITA--> e <!--/PIEDE-NOVITA--> (il resto della pagina non lo tocca);
+//   · in index.html riempie i blocchi dei tre racconti (<!--RACCONTO-COME-->, <!--RACCONTO-AFFITTO-->,
+//     <!--RACCONTO-SECONDA-->), le carte delle novità (<!--CARTE-->), «Ci stiamo lavorando» (<!--IN-ARRIVO-->) e il piè
+//     di pagina delle novità (<!--PIEDE-NOVITA-->); il resto della pagina non lo tocca;
 //   · scrive novita/<id>.html per ogni storia, con la testata e il piè di pagina presi da index.html così come sono
 //     (fra <!--TESTATA--> e <!--/TESTATA-->, <!--PIEDE--> e <!--/PIEDE-->): un posto solo da cambiare.
 // La landing resta statica: i file scritti si committano. Si rilancia quando cambia una storia.
@@ -13,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STORIE, PARTI, NOVITA_LANDING, ORIGINE, ISCRIZIONE, indirizzoArticolo } from './storie.mjs';
+import { STORIE, PARTI, NOVITA_LANDING, IN_ARRIVO, BOLLETTE, DATI, RACCONTI, ORDINE_CARTE, ORIGINE, ISCRIZIONE, indirizzoArticolo } from './storie.mjs';
 
 const RADICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const percorso = (f) => path.join(RADICE, f);
@@ -43,15 +44,33 @@ function estrai(testo, nome) {
 }
 
 // ── Le parti di index.html ──
-const racconto = STORIE.map((s) => `        <article class="storia" data-storia="${s.id}">
+// Un passo del racconto: una storia delle novità (con il suo video, che landing.js crea solo quando serve) oppure il
+// passo delle bollette (una schermata ferma). Sotto le storie che lo hanno, un dato vero con la fonte piccola.
+function passo(id) {
+  if (id === BOLLETTE.id) {
+    return `        <article class="storia" data-storia="${BOLLETTE.id}" data-immagine="${BOLLETTE.immagine}">
+          <figure class="storia-locandina"><img src="${BOLLETTE.immagine}" alt="" width="1280" height="800" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">${esc(BOLLETTE.titolo)}</h3>
+          <p>${esc(BOLLETTE.testo)}</p>
+        </article>`;
+  }
+  const s = STORIE.find((x) => x.id === id);
+  if (!s) throw new Error(`Storia ${id} non trovata`);
+  const d = DATI[id];
+  const dato = d ? `
+          <p class="storia-dato"><span class="storia-dato-testo">${esc(d.testo)}</span> <span class="storia-dato-fonte">Fonte: <a href="${esc(d.indirizzo)}" rel="noopener">${esc(d.fonte)}</a></span></p>` : '';
+  return `        <article class="storia" data-storia="${s.id}">
           <figure class="storia-locandina"><img src="${locandina(s.id)}" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
           <h3 class="storia-titolo">${esc(s.titolo)}</h3>
-          <p>${esc(s.testo)}</p>
+          <p>${esc(s.testo)}</p>${dato}
           <a class="collegamento" href="${indirizzoArticolo(s.id)}">${esc(PARTI.leggi)}</a>
-        </article>`).join('\n');
+        </article>`;
+}
+const racconto = (ids) => ids.map(passo).join('\n');
 
+// Una carta delle novità: la locandina, e sopra il video piccolo che landing.js crea quando la carta è sullo schermo.
 const carta = (s, livello = 3) => `      <article class="carta">
-        <img class="carta-immagine" src="${locandina(s.id)}" alt="" width="960" height="600" loading="lazy" decoding="async">
+        <div class="carta-media" data-video-carta="${video(s.id)}"><img class="carta-immagine" src="${locandina(s.id)}" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
         <div class="carta-corpo">
           <span class="etichetta">${esc(NOVITA_LANDING.etichetta)}</span>
           <h${livello} class="carta-titolo"><a href="${indirizzoArticolo(s.id)}">${esc(s.titolo)}</a></h${livello}>
@@ -59,16 +78,23 @@ const carta = (s, livello = 3) => `      <article class="carta">
           <span class="carta-leggi" aria-hidden="true">${esc(PARTI.leggi)}</span>
         </div>
       </article>`;
-// Le carte di ottobre: prima la storia principale (l'IMU), poi le altre nell'ordine di NOVITA_TESTI_V2 (S2, S3, S4),
-// in fondo S6.
-const ORDINE_CARTE = ['imu-calcolata', 'pacchetto-commercialista', 'bonus-casa', 'rate-condominio', 'carichi-al-resto'];
 const carte = ORDINE_CARTE.map((id) => STORIE.find((s) => s.id === id)).filter((s) => s && s.carta).map((s) => carta(s)).join('\n');
+
+const inArrivo = `    <div class="in-arrivo">
+      <h3 class="titolo-mese">${esc(IN_ARRIVO.titolo)}</h3>
+      <ul class="in-arrivo-elenco">
+${IN_ARRIVO.voci.map((v) => `        <li><span class="in-arrivo-titolo">${esc(v.titolo)}</span> <span class="in-arrivo-testo">${esc(v.testo)}</span></li>`).join('\n')}
+      </ul>
+    </div>`;
 
 const piedeNovita = STORIE.map((s) => `      <a href="${indirizzoArticolo(s.id)}">${esc(s.titolo)}</a>`).join('\n');
 
 let indice = fs.readFileSync(percorso('index.html'), 'utf8');
-indice = sostituisci(indice, 'RACCONTO', racconto);
+indice = sostituisci(indice, 'RACCONTO-COME', racconto(RACCONTI.COME));
+indice = sostituisci(indice, 'RACCONTO-AFFITTO', racconto(RACCONTI.AFFITTO));
+indice = sostituisci(indice, 'RACCONTO-SECONDA', racconto(RACCONTI.SECONDA));
 indice = sostituisci(indice, 'CARTE', carte);
+indice = sostituisci(indice, 'IN-ARRIVO', inArrivo);
 indice = sostituisci(indice, 'PIEDE-NOVITA', piedeNovita);
 fs.writeFileSync(percorso('index.html'), indice);
 
@@ -220,4 +246,4 @@ ${STORIE.map((s) => `  <url>
 `;
 fs.writeFileSync(percorso('sitemap.xml'), mappa);
 
-console.log(`Scritti: index.html (racconto ${STORIE.length}, carte ${carte.split('<article').length - 1}), ${STORIE.length} articoli, sitemap.xml`);
+console.log(`Scritti: index.html (racconti ${RACCONTI.COME.length}+${RACCONTI.AFFITTO.length}+${RACCONTI.SECONDA.length}, carte ${carte.split('<article').length - 1}), ${STORIE.length} articoli, sitemap.xml`);
