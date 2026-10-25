@@ -4,9 +4,9 @@
 //
 // Dalla fonte unica strumenti/storie.mjs:
 //   · in index.html riempie i blocchi dei tre racconti (<!--RACCONTO-COME-->, <!--RACCONTO-AFFITTO-->,
-//     <!--RACCONTO-IMMOBILI-->), gli ultimi aggiornamenti (<!--AGGIORNAMENTI-->), «In arrivo» (<!--IN-ARRIVO-->) e il
+//     <!--RACCONTO-IMMOBILI-->), il blocco delle novità (<!--NOVITA-->), «In arrivo» (<!--IN-ARRIVO-->) e il
 //     piè di pagina delle novità (<!--PIEDE-NOVITA-->); il resto della pagina non lo tocca;
-//   · scrive novita/<id>.html per ogni storia, con la testata e il piè di pagina presi da index.html così come sono
+//   · scrive novita.html (/novita, tutte le novità) e novita/<id>.html per ogni storia, con la testata e il piè di pagina presi da index.html così come sono
 //     (fra <!--TESTATA--> e <!--/TESTATA-->, <!--PIEDE--> e <!--/PIEDE-->): un posto solo da cambiare.
 // La landing resta statica: i file scritti si committano. Si rilancia quando cambia una storia.
 // Nessuna dipendenza.
@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STORIE as TUTTE, PARTI, NOVITA_LANDING, IN_ARRIVO, PASSI, DATI, RACCONTI, AGGIORNAMENTI, ORIGINE, ISCRIZIONE, indirizzoArticolo } from './storie.mjs';
+import { STORIE as TUTTE, PARTI, NOVITA_LANDING, PAGINA_NOVITA, IN_ARRIVO, PASSI, DATI, RACCONTI, ORDINE_NOVITA, ORIGINE, ISCRIZIONE, indirizzoArticolo, INDIRIZZO_NOVITA } from './storie.mjs';
 
 // Le storie pubblicate (una storia con `pubblica: false` resta nella fonte, ma non ha né passo né articolo).
 const STORIE = TUTTE.filter((s) => s.pubblica !== false);
@@ -76,29 +76,18 @@ function passo(p) {
 }
 const racconto = (passi) => passi.map(passo).join('\n');
 
-// Gli ultimi aggiornamenti: una fila dal più recente, senza date. Ogni riga: il video piccolo (landing.js lo crea quando
-// la riga è sullo schermo) o la schermata ferma, il titolo, una riga e «Leggi l'articolo».
-function aggiornamento(a) {
-  const s = a.storia ? storia(a.storia) : null;
-  const titolo = s ? s.titolo : a.titolo;
-  const testo = s ? s.testo : a.testo;
-  const media = s
-    ? `<div class="aggiornamento-media" data-video-carta="${video(s.id)}"><img src="${locandina(s.id)}" alt="" width="960" height="600" loading="lazy" decoding="async"></div>`
-    : `<div class="aggiornamento-media"><img src="${a.immagine}" alt="" ${misure(a.immagine)} loading="lazy" decoding="async"></div>`;
-  const leggi = s ? `\n          <a class="collegamento" href="${indirizzoArticolo(s.id)}">${esc(PARTI.leggi)}</a>` : '';
-  return `      <li class="aggiornamento">
-        ${media}
-        <div class="aggiornamento-corpo">
-          <h3 class="aggiornamento-titolo">${esc(titolo)}</h3>
-          <p>${esc(testo)}</p>${leggi}
-        </div>
-      </li>`;
-}
-const aggiornamenti = `    <ol class="aggiornamenti">
-${AGGIORNAMENTI.map(aggiornamento).join('\n')}
-    </ol>`;
+// Le storie pubblicate nell'ordine delle novità (dalla più recente); una storia pubblicata fuori dall'ordine va in coda.
+const NOVITA = [...ORDINE_NOVITA.map(storia), ...STORIE.filter((x) => !ORDINE_NOVITA.includes(x.id))];
 
-// Una carta (nelle pagine degli articoli, «le altre novità»).
+// Il blocco delle novità: il titolo, la riga, la firma e il link a tutte le novità.
+const blocco = `    <div class="cresce">
+      <h2 class="titolo-sezione" data-parole>${esc(NOVITA_LANDING.titolo)}</h2>
+      <p class="sezione-sotto">${esc(NOVITA_LANDING.testo)}</p>
+      <p class="cresce-firma">${esc(NOVITA_LANDING.firma)}</p>
+      <a class="collegamento" href="${INDIRIZZO_NOVITA}">${esc(NOVITA_LANDING.tutte)}</a>
+    </div>`;
+
+// Una carta (in /novita e nelle pagine degli articoli, «le altre novità»).
 const carta = (s, livello = 3) => `      <article class="carta">
         <div class="carta-media" data-video-carta="${video(s.id)}"><img class="carta-immagine" src="${locandina(s.id)}" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
         <div class="carta-corpo">
@@ -116,13 +105,13 @@ ${IN_ARRIVO.voci.map((v) => `        <li><span class="in-arrivo-titolo">${esc(v.
       </ul>
     </div>`;
 
-const piedeNovita = AGGIORNAMENTI.filter((a) => a.storia).map((a) => storia(a.storia)).map((s) => `      <a href="${indirizzoArticolo(s.id)}">${esc(s.titolo)}</a>`).join('\n');
+const piedeNovita = [...NOVITA.map((x) => `      <a href="${indirizzoArticolo(x.id)}">${esc(x.titolo)}</a>`), `      <a href="${INDIRIZZO_NOVITA}">Tutte le novità</a>`].join('\n');
 
 let indice = fs.readFileSync(percorso('index.html'), 'utf8');
 indice = sostituisci(indice, 'RACCONTO-COME', racconto(RACCONTI.COME));
 indice = sostituisci(indice, 'RACCONTO-AFFITTO', racconto(RACCONTI.AFFITTO));
 indice = sostituisci(indice, 'RACCONTO-IMMOBILI', racconto(RACCONTI.IMMOBILI));
-indice = sostituisci(indice, 'AGGIORNAMENTI', aggiornamenti);
+indice = sostituisci(indice, 'NOVITA', blocco);
 indice = sostituisci(indice, 'IN-ARRIVO', inArrivo);
 indice = sostituisci(indice, 'PIEDE-NOVITA', piedeNovita);
 fs.writeFileSync(percorso('index.html'), indice);
@@ -153,7 +142,7 @@ function pagina(s) {
     const link = f.indirizzi.map((u) => `<a href="${esc(u)}" rel="noopener">${esc(dominio(u))}</a>`).join(', ');
     return `          <li>${esc(f.titolo)}${link ? ` (${link})` : ''}</li>`;
   }).join('\n');
-  const altre = STORIE.filter((x) => x.id !== s.id).map((x) => carta(x, 3).replace(/^ {6}/gm, '        ')).join('\n');
+  const altre = NOVITA.filter((x) => x.id !== s.id).map((x) => carta(x, 3).replace(/^ {6}/gm, '        ')).join('\n');
 
   return `<!doctype html>
 <html lang="it">
@@ -200,7 +189,7 @@ ${TESTATA}
 <main id="contenuto">
   <article class="articolo" data-articolo="${s.id}">
     <div class="contenitore contenitore-articolo">
-      <a class="indietro" href="/#novita"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Tutte le novità</a>
+      <a class="indietro" href="${INDIRIZZO_NOVITA}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Tutte le novità</a>
       <span class="etichetta">${esc(NOVITA_LANDING.etichetta)}</span>
       <h1 class="articolo-titolo">${esc(s.titolo)}</h1>
       <p class="articolo-sotto">${esc(a.rigaSotto)}</p>
@@ -210,7 +199,7 @@ ${TESTATA}
         <div class="finestra-barra"><span class="finestra-punti"><i></i><i></i><i></i></span><span class="finestra-indirizzo">app.dimorapp.com</span></div>
         <div class="finestra-schermo">
           <img class="schermo-locandina" src="${locandina(s.id)}" alt="" width="960" height="600" decoding="async" fetchpriority="high">
-          <video class="schermo-video" data-video-articolo data-src="${video(s.id)}" width="960" height="600" muted loop playsinline preload="none" disablepictureinpicture></video>
+          <video class="schermo-video" data-video-articolo data-src="${video(s.id)}" width="960" height="600" muted loop playsinline autoplay preload="none" disablepictureinpicture></video>
         </div>
       </figure>
     </div>
@@ -239,7 +228,7 @@ ${fonti}
 
   <section class="sezione altre-novita" aria-labelledby="altre-titolo">
     <div class="contenitore">
-      <h2 class="titolo-sezione" id="altre-titolo">${esc(NOVITA_LANDING.titolo)}</h2>
+      <h2 class="titolo-sezione" id="altre-titolo">${esc(PAGINA_NOVITA.altre)}</h2>
       <div class="carte">
 ${altre}
       </div>
@@ -256,7 +245,87 @@ ${PIEDE}
 `;
 }
 
+// ── La pagina di tutte le novità (/novita): la stessa testa e lo stesso piè di pagina della landing ──
+function paginaNovita() {
+  const canonico = ORIGINE + INDIRIZZO_NOVITA;
+  const titoloPagina = `${PAGINA_NOVITA.titolo} | Dimora`;
+  const immagine = ORIGINE + locandinaSocial(NOVITA[0].id);
+  const ld = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: PAGINA_NOVITA.titolo,
+    description: PAGINA_NOVITA.descrizione,
+    url: canonico,
+    inLanguage: 'it',
+    publisher: { '@type': 'Organization', '@id': `${ORIGINE}/#organizzazione`, name: 'Dimora' },
+    hasPart: NOVITA.map((x) => ({ '@type': 'Article', headline: x.titolo, url: ORIGINE + indirizzoArticolo(x.id), datePublished: x.uscita })),
+  };
+  return `<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  try { if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('vivo'); } catch (e) {}
+</script>
+<title>${esc(titoloPagina)}</title>
+<meta name="description" content="${esc(PAGINA_NOVITA.descrizione)}">
+<link rel="canonical" href="${canonico}">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="theme-color" content="#FAF3E3">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dimora">
+<meta property="og:locale" content="it_IT">
+<meta property="og:url" content="${canonico}">
+<meta property="og:title" content="${esc(PAGINA_NOVITA.titolo)}">
+<meta property="og:description" content="${esc(PAGINA_NOVITA.descrizione)}">
+<meta property="og:image" content="${immagine}">
+<meta property="og:image:width" content="960">
+<meta property="og:image:height" content="600">
+<meta property="og:image:type" content="image/jpeg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(PAGINA_NOVITA.titolo)}">
+<meta name="twitter:description" content="${esc(PAGINA_NOVITA.descrizione)}">
+<meta name="twitter:image" content="${immagine}">
+<link rel="preload" href="/assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/fraunces-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/veste.css">
+<link rel="stylesheet" href="/assets/landing.css">
+<script type="application/ld+json">
+${JSON.stringify(ld, null, 2)}
+</script>
+</head>
+<body class="pagina-articolo pagina-novita">
+<a class="salta" href="#contenuto">Vai al contenuto</a>
+
+${TESTATA}
+
+<main id="contenuto">
+  <section class="sezione elenco-novita" aria-labelledby="novita-titolo">
+    <div class="contenitore">
+      <div class="sezione-testa">
+        <h1 class="titolo-sezione" id="novita-titolo">${esc(PAGINA_NOVITA.titolo)}</h1>
+        <p class="sezione-sotto">${esc(PAGINA_NOVITA.sotto)}</p>
+      </div>
+      <div class="carte">
+${NOVITA.map((x) => carta(x, 2).replace(/^ {6}/gm, '        ')).join('\n')}
+      </div>
+    </div>
+  </section>
+</main>
+
+${PIEDE}
+
+<script src="/assets/landing.js" defer></script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
+`;
+}
+
 fs.mkdirSync(percorso('novita'), { recursive: true });
+fs.writeFileSync(percorso('novita.html'), paginaNovita());
 for (const s of STORIE) fs.writeFileSync(percorso(`novita/${s.id}.html`), pagina(s));
 
 // ── La mappa del sito: la landing e gli articoli ──
@@ -267,6 +336,10 @@ const mappa = `<?xml version="1.0" encoding="UTF-8"?>
     <loc>${ORIGINE}/</loc>
     <lastmod>${oggi}</lastmod>
   </url>
+  <url>
+    <loc>${ORIGINE}${INDIRIZZO_NOVITA}</loc>
+    <lastmod>${oggi}</lastmod>
+  </url>
 ${STORIE.map((s) => `  <url>
     <loc>${ORIGINE}${indirizzoArticolo(s.id)}</loc>
     <lastmod>${oggi}</lastmod>
@@ -275,4 +348,4 @@ ${STORIE.map((s) => `  <url>
 `;
 fs.writeFileSync(percorso('sitemap.xml'), mappa);
 
-console.log(`Scritti: index.html (racconti ${RACCONTI.COME.length}+${RACCONTI.AFFITTO.length}+${RACCONTI.IMMOBILI.length}, aggiornamenti ${AGGIORNAMENTI.length}), ${STORIE.length} articoli, sitemap.xml`);
+console.log(`Scritti: index.html (racconti ${RACCONTI.COME.length}+${RACCONTI.AFFITTO.length}+${RACCONTI.IMMOBILI.length}), novita.html (${NOVITA.length} novità), ${STORIE.length} articoli, sitemap.xml`);

@@ -6,7 +6,8 @@
 
   var radice = document.documentElement;
   var vivo = radice.classList.contains('vivo');
-  var risparmio = false;
+  var risparmio = false; // risparmio dati: i video partono solo col pulsante «▶»
+  var fermi = false;     // «meno animazioni» acceso a pagina aperta: nessun video
   try { risparmio = !!(navigator.connection && navigator.connection.saveData); } catch (e) { /* niente */ }
 
   function parte(nome, fn) {
@@ -153,36 +154,77 @@
     });
   });
 
-  /* ---------- I disegni delle sezioni: si tracciano quando arrivano sullo schermo ---------- */
+  /* ---------- I disegni delle sezioni: il tratto segue lo scorrimento ----------
+     Scendendo si disegnano, risalendo si cancellano (terzo giro di Vitto, 25/10). L'avanzamento viene dalla posizione
+     del disegno nello schermo: 0 quando entra dal basso, 1 quando il suo centro arriva a metà schermo. Ogni tratto ha il
+     suo turno (--i nello stile), il tocco ambra è l'ultimo. Lo script prende il disegno solo quando l'ha preparato
+     (data-segue): senza, è già tutto disegnato. */
+  var disegni = [];
   dopo('disegni', function () {
-    if (!vivo || !('IntersectionObserver' in window)) return;
-    var osserva = new IntersectionObserver(function (voci) {
-      voci.forEach(function (v) {
-        if (v.isIntersecting) { v.target.setAttribute('data-visto', ''); osserva.unobserve(v.target); }
+    if (!vivo) return;
+    document.querySelectorAll('[data-disegno]').forEach(function (d) {
+      var tratti = Array.prototype.slice.call(d.querySelectorAll('svg > *')).map(function (el) {
+        var m = /--i:\s*([\d.]+)/.exec(el.getAttribute('style') || '');
+        return { el: el, i: m ? +m[1] : 0, porta: el.classList.contains('porta') };
       });
-    }, { threshold: 0.5 });
-    document.querySelectorAll('[data-disegno]').forEach(function (d) { osserva.observe(d); });
+      var ultimo = tratti.reduce(function (x, t) { return Math.max(x, t.i); }, 0);
+      var prima = -1;
+      d.setAttribute('data-segue', '');
+      disegni.push(function (vh) {
+        var r = d.getBoundingClientRect();
+        if (r.bottom < -vh || r.top > vh * 2) return;
+        var p = Math.round(limita((vh - r.top) / (vh * 0.5 + r.height * 0.5)) * 1000) / 1000;
+        if (p === prima) return;
+        prima = p;
+        tratti.forEach(function (t) {
+          var x = limita(p * (ultimo + 1.6) - t.i);
+          t.el.style.strokeDashoffset = String(1 - x);
+          if (t.porta) t.el.style.fillOpacity = String(limita(x * 2 - 1));
+        });
+      });
+    });
   });
 
   /* ---------- Un video alla volta ----------
      Ogni video della pagina (le finestre dei racconti, le carte delle novità, l'articolo) si iscrive qui con un peso:
      quanto «vuole» girare adesso. Gira solo quello col peso più alto, gli altri si fermano. L'indirizzo del video si
-     scrive la prima volta che tocca a lui: nessun video si scarica prima. Con «risparmio dati» non ne gira nessuno. */
+     scrive la prima volta che tocca a lui: nessun video si scarica prima. Ogni video è muto, in linea e in autoplay;
+     il video resta trasparente finché non gira davvero, quindi sotto si vede sempre la sua immagine. Se il telefono
+     non lo fa partire (risparmio energetico dell'iPhone, risparmio dati di Android) resta l'immagine con un piccolo
+     pulsante «▶»: toccandolo il video parte. Mai un riquadro vuoto o nero. */
   var candidati = [];
   function iscrivi(c) {
-    c.video.addEventListener('playing', function () { c.video.setAttribute('data-gira', ''); });
+    c.video.addEventListener('playing', function () {
+      if (c.video.paused) return;
+      c.video.setAttribute('data-gira', '');
+      if (c.pulsante) c.pulsante.hidden = true;
+    });
     candidati.push(c);
+  }
+  function avvia(c) {
+    if (!c.video.getAttribute('src')) c.video.setAttribute('src', c.mp4);
+    var p = c.video.play();
+    if (p && p.catch) p.catch(function () { pulsante(c); });
+  }
+  // Il pulsante «▶» sull'immagine, solo quando la partenza è stata negata.
+  function pulsante(c) {
+    if (c.pulsante) { c.pulsante.hidden = false; return; }
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'video-avvia';
+    b.setAttribute('aria-hidden', 'true');
+    b.tabIndex = -1;
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>';
+    b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); c.voluto = true; avvia(c); });
+    c.pulsante = b;
+    c.video.parentNode.appendChild(b);
   }
   function aggiornaVideo() {
     var scelto = null, massimo = 0;
     candidati.forEach(function (c) { var p = c.peso(); if (p > massimo) { massimo = p; scelto = c; } });
     candidati.forEach(function (c) {
-      if (c === scelto && !risparmio) {
-        if (!c.video.getAttribute('src')) c.video.setAttribute('src', c.mp4);
-        if (c.video.paused) {
-          var p = c.video.play();
-          if (p && p.catch) p.catch(function () { /* l'autoplay può essere negato: resta l'immagine */ });
-        }
+      if (c === scelto && !fermi) {
+        if (c.video.paused) { if (risparmio && !c.voluto) pulsante(c); else avvia(c); }
       } else if (!c.video.paused) {
         c.video.pause();
       }
@@ -190,8 +232,8 @@
   }
   function nuovoVideo() {
     var v = document.createElement('video');
-    v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none';
-    v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('disablepictureinpicture', '');
+    v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true; v.preload = 'none';
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('autoplay', ''); v.setAttribute('disablepictureinpicture', '');
     v.setAttribute('aria-hidden', 'true');
     v.width = 960; v.height = 600;
     return v;
@@ -348,10 +390,14 @@
     if (apertura) parte('apertura', apertura);
     if (scena) parte('scena', function () { scena(vh); });
     racconti.forEach(function (r) { parte('racconto', function () { r(vh); }); });
+    if (disegni.length) parte('disegni', function () { disegni.forEach(function (f) { f(vh); }); });
   }
   function chiedi() { if (!inCoda) { inCoda = true; requestAnimationFrame(giro); } }
   window.addEventListener('scroll', chiedi, { passive: true });
   window.addEventListener('resize', chiedi);
+  // Le sezioni più in basso cambiano altezza quando il browser le impagina (content-visibility): i disegni che seguono
+  // lo scorrimento si rimettono al passo anche senza che la pagina scorra.
+  if ('ResizeObserver' in window) new ResizeObserver(chiedi).observe(document.body);
   giro();
   // Una parte per volta, ognuna nel suo momento libero: nessun compito lungo che blocchi la pagina.
   var quando = window.requestIdleCallback || function (f) { return setTimeout(f, 120); };
@@ -364,7 +410,7 @@
   /* Se il sistema passa a «meno animazioni» mentre la pagina è aperta: i video si fermano. */
   parte('meno animazioni', function () {
     var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var ferma = function () { if (mq.matches) { risparmio = true; document.querySelectorAll('video').forEach(function (v) { v.pause(); }); } };
+    var ferma = function () { if (mq.matches) { fermi = true; document.querySelectorAll('video').forEach(function (v) { v.pause(); }); } };
     if (mq.addEventListener) mq.addEventListener('change', ferma);
   });
 })();

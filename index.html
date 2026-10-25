@@ -75,7 +75,7 @@
       <a href="/#come">Come funziona</a>
       <a href="/#affitti">Se affitti</a>
       <a href="/#immobili">I tuoi immobili</a>
-      <a href="/#novita">Aggiornamenti</a>
+      <a href="/#novita">Novità</a>
       <a href="/#prezzi">Prezzi</a>
     </nav>
     <div class="testata-azioni">
@@ -87,7 +87,7 @@
           <a href="/#come">Come funziona</a>
           <a href="/#affitti">Se affitti</a>
           <a href="/#immobili">I tuoi immobili</a>
-          <a href="/#novita">Aggiornamenti</a>
+          <a href="/#novita">Novità</a>
           <a href="/#prezzi">Prezzi</a>
           <a href="/#domande">Domande</a>
           <a href="https://app.dimorapp.com/login" data-evento="clic_accedi" data-posizione="menu_telefono">Accedi</a>
@@ -114,17 +114,32 @@
       </div>
     </div>
     <div class="apertura-visivo">
-      <div class="dispositivi">
+      <!-- La sequenza in tre tempi (terzo giro di Vitto, 25/10): (a) la bolletta di carta; (b) il telefono la inquadra e
+           scatta, con un lampo; (c) sul telefono i campi compilati e nel portatile spunta la scadenza nuova, evidenziata un
+           attimo. Si ripete con una pausa. Senza «vivo» (e con «meno animazioni») si vede l'ultimo fotogramma, fermo. -->
+      <div class="dispositivi" data-sequenza>
         <div class="portatile">
-          <div class="portatile-schermo"><img src="/assets/img/app-computer.webp" alt="Dimora dal computer: le scadenze delle case, con le rate del condominio, il saldo IMU della casa al mare e la TARI." width="1280" height="800" decoding="async" fetchpriority="high"></div>
-          <div class="portatile-base" aria-hidden="true"></div>
+          <div class="portatile-schermo">
+            <img class="schermo-prima" src="/assets/img/app-computer-prima.webp" alt="" width="1280" height="800" decoding="async" fetchpriority="high">
+            <img class="schermo-dopo" src="/assets/img/app-computer.webp" alt="Dimora dal computer: le scadenze delle case, con la bolletta della luce appena aggiunta, le rate del condominio, il saldo IMU della casa al mare e la TARI." width="1280" height="800" decoding="async">
+            <span class="riga-nuova" aria-hidden="true"></span>
+          </div>
+          <svg class="portatile-base" viewBox="0 -9 1000 176" preserveAspectRatio="none" aria-hidden="true"><polygon class="tastiera-piano" points="50,0 950,0 1000,150 0,150"/><rect class="tastiera-cerniera" x="50" y="-8" width="900" height="9" rx="2"/><rect class="tastiera-tasto" x="100.0" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="157.4" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="214.9" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="272.3" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="329.7" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="387.1" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="444.6" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="502.0" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="559.4" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="616.9" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="674.3" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="731.7" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="789.1" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="846.6" y="10.0" width="53.4" height="13" rx="2"/><rect class="tastiera-tasto" x="94.5" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="152.7" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="210.9" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="269.1" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="327.4" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="385.6" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="443.8" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="502.0" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="560.2" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="618.4" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="676.6" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="734.9" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="793.1" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="851.3" y="26.5" width="54.2" height="13" rx="2"/><rect class="tastiera-tasto" x="89.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="148.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="207.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="266.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="325.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="384.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="443.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="502.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="561.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="620.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="679.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="738.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="797.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="856.0" y="43.0" width="55.0" height="13" rx="2"/><rect class="tastiera-tasto" x="83.5" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="143.3" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="203.1" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="262.9" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="322.6" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="382.4" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="442.2" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="502.0" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="561.8" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="621.6" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="681.4" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="741.1" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="800.9" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="860.7" y="59.5" width="55.8" height="13" rx="2"/><rect class="tastiera-tasto" x="78.0" y="76.0" width="60" height="13" rx="2"/><rect class="tastiera-tasto" x="142.0" y="76.0" width="60" height="13" rx="2"/><rect class="tastiera-tasto" x="206.0" y="76.0" width="60" height="13" rx="2"/><rect class="tastiera-tasto" x="270.0" y="76.0" width="460.0" height="13" rx="2"/><rect class="tastiera-tasto" x="734.0" y="76.0" width="60" height="13" rx="2"/><rect class="tastiera-tasto" x="798.0" y="76.0" width="60" height="13" rx="2"/><rect class="tastiera-tasto" x="862.0" y="76.0" width="60" height="13" rx="2"/><rect class="tastiera-trackpad" x="380" y="100" width="240" height="40" rx="5"/><path class="tastiera-bordo" d="M0 150 H1000 V156 Q1000 166 986 166 H14 Q0 166 0 156 Z"/></svg>
+        </div>
+        <div class="foto-carta">
+          <img src="/assets/img/foto-bolletta.webp" alt="La bolletta della luce di carta: totale da pagare 96,48 euro entro il 26 ottobre 2026." width="412" height="621" decoding="async">
         </div>
         <div class="telefono">
           <span class="telefono-isola" aria-hidden="true"></span>
-          <div class="telefono-schermo"><img src="/assets/img/app-telefono.webp" alt="Dimora dal telefono: una bolletta appena letta, con fornitore, importo e scadenza da confermare." width="780" height="1688" decoding="async"></div>
-        </div>
-        <div class="foto-carta">
-          <img src="/assets/img/foto-bolletta.webp" alt="La foto di una bolletta della luce: totale da pagare 96,48 euro entro il 26 ottobre 2026." width="412" height="621" decoding="async">
+          <div class="telefono-schermo">
+            <div class="fotocamera" aria-hidden="true">
+              <img src="/assets/img/foto-bolletta.webp" alt="" width="412" height="621" decoding="async">
+              <span class="mirino"><i></i><i></i><i></i><i></i></span>
+              <span class="scatto"></span>
+            </div>
+            <span class="lampo" aria-hidden="true"></span>
+            <img class="schermo-campi" src="/assets/img/app-telefono.webp" alt="Dimora dal telefono: la bolletta appena letta, con fornitore, importo e scadenza da confermare." width="780" height="1688" decoding="async">
+          </div>
         </div>
         <img class="dimorino-apertura" src="/assets/img/dimorino-lettura.webp" alt="" width="382" height="336" decoding="async">
       </div>
@@ -349,73 +364,24 @@
   </div>
 </section>
 
-<!-- 6. GLI ULTIMI AGGIORNAMENTI (secondo giro di Vitto, 25/10): una fila dal più recente, senza date, ognuno col suo
-     video piccolo che parte quando è sullo schermo; poi «In arrivo», senza pulsanti. -->
+<!-- 6. LE NOVITÀ (terzo giro di Vitto, 25/10): un blocco corto, «Dimora cresce con te.», il link a tutte le novità
+     (/novita) e «In arrivo», due righe sole. Gli articoli restano pagine a sé. -->
 <section class="sezione novita" id="novita">
-  <div class="contenitore">
-    <div class="sezione-testa">
-      <h2 class="titolo-sezione" data-parole>Gli ultimi aggiornamenti</h2>
-      <p class="sezione-sotto">Dimora è in continuo aggiornamento: lavoriamo per toglierti sempre più cose a cui pensare.</p>
+  <div class="contenitore novita-blocco">
+<!--NOVITA-->
+    <div class="cresce">
+      <h2 class="titolo-sezione" data-parole>Dimora cresce con te.</h2>
+      <p class="sezione-sotto">Ogni settimana aggiungiamo qualcosa che ti toglie un pensiero sulle tue case. Le novità le trovi nell'app, raccontate una per una.</p>
+      <p class="cresce-firma">Il team di Dimora</p>
+      <a class="collegamento" href="/novita">Leggi tutte le novità</a>
     </div>
-<!--AGGIORNAMENTI-->
-    <ol class="aggiornamenti">
-      <li class="aggiornamento">
-        <div class="aggiornamento-media"><img src="/assets/img/app-affitto-computer.webp" alt="" width="1280" height="800" loading="lazy" decoding="async"></div>
-        <div class="aggiornamento-corpo">
-          <h3 class="aggiornamento-titolo">Il contratto d'affitto, in chiaro.</h3>
-          <p>Dalla scheda della casa vedi quando scade il contratto, entro quando dare la disdetta, il regime e il deposito.</p>
-        </div>
-      </li>
-      <li class="aggiornamento">
-        <div class="aggiornamento-media" data-video-carta="/assets/novita/pacchetto-commercialista.mp4"><img src="/assets/novita/pacchetto-commercialista.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
-        <div class="aggiornamento-corpo">
-          <h3 class="aggiornamento-titolo">Al commercialista o al CAF, un pacchetto pronto.</h3>
-          <p>Per ogni casa e ogni anno, i documenti utili per la dichiarazione e un riepilogo in PDF e in tabella, pronti da mandare. Dimora ti dice anche quali non trova.</p>
-          <a class="collegamento" href="/novita/pacchetto-commercialista">Leggi l'articolo</a>
-        </div>
-      </li>
-      <li class="aggiornamento">
-        <div class="aggiornamento-media" data-video-carta="/assets/novita/carichi-al-resto.mp4"><img src="/assets/novita/carichi-al-resto.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
-        <div class="aggiornamento-corpo">
-          <h3 class="aggiornamento-titolo">Carichi, al resto pensa Dimora.</h3>
-          <p>Fotografi le pagine una per una o carichi un PDF: Dimora ricostruisce il documento, capisce che cos'è e ti avvisa se l'avevi già caricato.</p>
-          <a class="collegamento" href="/novita/carichi-al-resto">Leggi l'articolo</a>
-        </div>
-      </li>
-      <li class="aggiornamento">
-        <div class="aggiornamento-media" data-video-carta="/assets/novita/imu-calcolata.mp4"><img src="/assets/novita/imu-calcolata.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
-        <div class="aggiornamento-corpo">
-          <h3 class="aggiornamento-titolo">L'IMU, calcolata.</h3>
-          <p>Dimora trova le aliquote del tuo Comune e calcola acconto e saldo. Tiene conto di box, cantine e della tua quota, e calcola il saldo su quello che hai già versato. Tu controlli e paghi.</p>
-          <a class="collegamento" href="/novita/imu-calcolata">Leggi l'articolo</a>
-        </div>
-      </li>
-      <li class="aggiornamento">
-        <div class="aggiornamento-media" data-video-carta="/assets/novita/bonus-casa.mp4"><img src="/assets/novita/bonus-casa.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
-        <div class="aggiornamento-corpo">
-          <h3 class="aggiornamento-titolo">I bonus della casa, prima di pagare.</h3>
-          <p>Quando carichi un preventivo, una fattura o un bonifico, Dimora riconosce i lavori che possono avere un'agevolazione (ristrutturazione, ecobonus, bonus mobili, interessi del mutuo) e ti dice che cosa serve per non perderla: il bonifico giusto, la ricevuta ENEA, i documenti da portare al commercialista o al CAF.</p>
-          <a class="collegamento" href="/novita/bonus-casa">Leggi l'articolo</a>
-        </div>
-      </li>
-      <li class="aggiornamento">
-        <div class="aggiornamento-media" data-video-carta="/assets/novita/rate-condominio.mp4"><img src="/assets/novita/rate-condominio.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></div>
-        <div class="aggiornamento-corpo">
-          <h3 class="aggiornamento-titolo">Le rate del condominio, in ordine.</h3>
-          <p>Carichi il preventivo: Dimora trova le tue rate e le mette nelle scadenze.</p>
-          <a class="collegamento" href="/novita/rate-condominio">Leggi l'articolo</a>
-        </div>
-      </li>
-    </ol>
-<!--/AGGIORNAMENTI-->
+<!--/NOVITA-->
 <!--IN-ARRIVO-->
     <div class="in-arrivo">
       <h3 class="titolo-blocco">In arrivo</h3>
       <ul class="in-arrivo-elenco">
-        <li><span class="in-arrivo-titolo">L'aumento ISTAT del canone, calcolato.</span> <span class="in-arrivo-testo">Ogni anno Dimora calcola l'adeguamento del tuo affitto e te lo ricorda.</span></li>
-        <li><span class="in-arrivo-titolo">Il canone concordato, senza dubbi.</span> <span class="in-arrivo-testo">Se affitti a canone concordato, Dimora ti dice quali agevolazioni ti spettano e che cosa serve per non perderle.</span></li>
+        <li><span class="in-arrivo-titolo">L'adeguamento ISTAT del canone, automatico.</span> <span class="in-arrivo-testo">Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda.</span></li>
         <li><span class="in-arrivo-titolo">Quando cambiano le regole, te lo diciamo noi.</span> <span class="in-arrivo-testo">Con la legge di bilancio Dimora ti dice che cosa cambia per ognuna delle tue case.</span></li>
-        <li><span class="in-arrivo-titolo">Dal preventivo ai lavori, in un filo solo.</span> <span class="in-arrivo-testo">Preventivo, scelta, fattura e bonifico dello stesso lavoro, collegati.</span></li>
       </ul>
     </div>
 <!--/IN-ARRIVO-->
@@ -559,14 +525,15 @@
       <span class="marchio"><span class="marchio-segno" aria-hidden="true"><svg viewBox="1 24 98 54" width="26" height="14"><circle cx="14" cy="51" r="10" fill="currentColor"/><rect x="11.5" y="59" width="5" height="16" rx="2" fill="currentColor"/><circle cx="86" cy="51" r="10" fill="currentColor"/><rect x="83.5" y="59" width="5" height="16" rx="2" fill="currentColor"/><polygon points="28,49 50,27 72,49" fill="currentColor"/><rect x="33" y="48" width="34" height="27" rx="2.5" fill="currentColor"/><path d="M45 68 L45 61.5 A5 5 0 0 1 55 61.5 L55 68 Z" fill="#CE7F33"/></svg></span><span class="marchio-nome">Dimora</span></span>
       <p>Contatti: <a href="mailto:assistenza@dimorapp.com">assistenza@dimorapp.com</a></p>
     </div>
-    <nav class="piede-colonna" aria-label="Prodotto"><span class="piede-titolo">Prodotto</span><a href="/#come">Come funziona</a><a href="/#affitti">Se affitti una casa</a><a href="/#immobili">Per ogni immobile che hai</a><a href="/#novita">Aggiornamenti</a><a href="/#prezzi">Prezzi</a><a href="/#domande">Domande</a></nav>
-    <nav class="piede-colonna" aria-label="Gli ultimi aggiornamenti"><span class="piede-titolo">Gli ultimi aggiornamenti</span>
+    <nav class="piede-colonna" aria-label="Prodotto"><span class="piede-titolo">Prodotto</span><a href="/#come">Come funziona</a><a href="/#affitti">Se affitti una casa</a><a href="/#immobili">Per ogni immobile che hai</a><a href="/#novita">Novità</a><a href="/#prezzi">Prezzi</a><a href="/#domande">Domande</a></nav>
+    <nav class="piede-colonna" aria-label="Novità"><span class="piede-titolo">Novità</span>
 <!--PIEDE-NOVITA-->
       <a href="/novita/pacchetto-commercialista">Al commercialista o al CAF, un pacchetto pronto.</a>
       <a href="/novita/carichi-al-resto">Carichi, al resto pensa Dimora.</a>
       <a href="/novita/imu-calcolata">L'IMU, calcolata.</a>
       <a href="/novita/bonus-casa">I bonus della casa, prima di pagare.</a>
       <a href="/novita/rate-condominio">Le rate del condominio, in ordine.</a>
+      <a href="/novita">Tutte le novità</a>
 <!--/PIEDE-NOVITA-->
     </nav>
     <nav class="piede-colonna" aria-label="Legale e accesso"><span class="piede-titolo">Legale e accesso</span><a href="https://app.dimorapp.com/termini">Termini del servizio</a><a href="https://app.dimorapp.com/privacy">Informativa sulla privacy</a><a href="/#sicurezza">Sicurezza e dati</a><a href="https://app.dimorapp.com/login" data-evento="clic_accedi" data-posizione="pie_di_pagina">Accedi</a></nav>

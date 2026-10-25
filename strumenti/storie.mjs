@@ -187,22 +187,30 @@ export const PARTI = {
   azione: 'Prova Dimora gratis',
 };
 
-// La sezione delle novità nella landing (NOVITA_TESTI_V2: N26, N27 e l'etichetta delle carte; «Ottobre 2026» sopra
-// le carte, dal comando della regia del 25/10).
+// Il blocco delle novità nella landing (terzo giro di Vitto, 25/10): corto, senza la fila. Le novità si leggono una
+// per una nelle pagine degli articoli e nella pagina che le elenca tutte (/novita).
 export const NOVITA_LANDING = {
-  titolo: 'Gli ultimi aggiornamenti',
-  testo: 'Dimora è in continuo aggiornamento: lavoriamo per toglierti sempre più cose a cui pensare.',
-  etichetta: 'Nuovo · ottobre 2026', // solo nelle pagine degli articoli
+  titolo: 'Dimora cresce con te.',
+  testo: "Ogni settimana aggiungiamo qualcosa che ti toglie un pensiero sulle tue case. Le novità le trovi nell'app, raccontate una per una.",
+  firma: 'Il team di Dimora',
+  tutte: 'Leggi tutte le novità',
+  etichetta: 'Nuovo · ottobre 2026', // solo nelle pagine degli articoli e in /novita
 };
 
-// «In arrivo» (25/10, secondo giro di Vitto): cose che fanno dire «mi serve». Senza date e senza pulsanti.
+// La pagina che elenca tutte le novità (/novita) e il titolo delle «altre novità» in fondo agli articoli.
+export const PAGINA_NOVITA = {
+  titolo: 'Le novità di Dimora',
+  sotto: 'Che cosa abbiamo aggiunto a Dimora, raccontato una cosa per volta.',
+  descrizione: 'Le novità di Dimora, una per una: che cosa fa, come si usa, con le fonti.',
+  altre: 'Le altre novità',
+};
+
+// «In arrivo» (terzo giro di Vitto, 25/10): due righe sole. Senza date e senza pulsanti.
 export const IN_ARRIVO = {
   titolo: 'In arrivo',
   voci: [
-    { titolo: "L'aumento ISTAT del canone, calcolato.", testo: "Ogni anno Dimora calcola l'adeguamento del tuo affitto e te lo ricorda." },
-    { titolo: 'Il canone concordato, senza dubbi.', testo: 'Se affitti a canone concordato, Dimora ti dice quali agevolazioni ti spettano e che cosa serve per non perderle.' },
+    { titolo: "L'adeguamento ISTAT del canone, automatico.", testo: "Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda." },
     { titolo: 'Quando cambiano le regole, te lo diciamo noi.', testo: 'Con la legge di bilancio Dimora ti dice che cosa cambia per ognuna delle tue case.' },
-    { titolo: 'Dal preventivo ai lavori, in un filo solo.', testo: 'Preventivo, scelta, fattura e bonifico dello stesso lavoro, collegati.' },
   ],
 };
 
@@ -275,16 +283,10 @@ export const RACCONTI = {
   ],
 };
 
-// Gli ultimi aggiornamenti, dal più recente, senza date. Il primo non ha ancora un articolo né un video.
-export const AGGIORNAMENTI = [
-  { titolo: "Il contratto d'affitto, in chiaro.", testo: 'Dalla scheda della casa vedi quando scade il contratto, entro quando dare la disdetta, il regime e il deposito.', immagine: '/assets/img/app-affitto-computer.webp' },
-  { storia: 'pacchetto-commercialista' },
-  { storia: 'carichi-al-resto' },
-  { storia: 'imu-calcolata' },
-  { storia: 'bonus-casa' },
-  { storia: 'rate-condominio' },
-];
+// L'ordine delle novità, dalla più recente: la pagina /novita, le «altre novità» degli articoli e il piè di pagina.
+export const ORDINE_NOVITA = ['pacchetto-commercialista', 'carichi-al-resto', 'imu-calcolata', 'bonus-casa', 'rate-condominio'];
 
 export const ORIGINE = 'https://dimorapp.com';
 export const ISCRIZIONE = 'https://app.dimorapp.com/login';
 export const indirizzoArticolo = (id) => `/novita/${id}`;
+export const INDIRIZZO_NOVITA = '/novita';

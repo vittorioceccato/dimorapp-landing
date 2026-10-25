@@ -22,7 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STORIE as TUTTE, PARTI, NOVITA_LANDING, IN_ARRIVO, PASSI, DATI, RACCONTI, AGGIORNAMENTI, TIPI_DOCUMENTI, ORIGINE, ISCRIZIONE, indirizzoArticolo } from '../strumenti/storie.mjs';
+import { STORIE as TUTTE, PARTI, NOVITA_LANDING, PAGINA_NOVITA, IN_ARRIVO, PASSI, DATI, RACCONTI, ORDINE_NOVITA, TIPI_DOCUMENTI, ORIGINE, ISCRIZIONE, indirizzoArticolo, INDIRIZZO_NOVITA } from '../strumenti/storie.mjs';
 // Le storie pubblicate: una con `pubblica: false` (il canone a metà, 25/10) non ha né passo né articolo.
 const STORIE = TUTTE.filter((s) => s.pubblica !== false);
 
@@ -45,11 +45,12 @@ const VESTE = leggi('assets/veste.css');
 const CSS = leggi('assets/landing.css');
 const JS = leggi('assets/landing.js');
 const ARTICOLI = Object.fromEntries(STORIE.map((s) => [s.id, esiste(`novita/${s.id}.html`) ? leggi(`novita/${s.id}.html`) : '']));
-const PAGINE = { '/': HTML, ...Object.fromEntries(STORIE.map((s) => [indirizzoArticolo(s.id), ARTICOLI[s.id]])) };
+const ELENCO = esiste('novita.html') ? leggi('novita.html') : '';
+const PAGINE = { '/': HTML, [INDIRIZZO_NOVITA]: ELENCO, ...Object.fromEntries(STORIE.map((s) => [indirizzoArticolo(s.id), ARTICOLI[s.id]])) };
 
 /* ---------- 1. I file ---------- */
 sezione('1. I file');
-for (const f of ['assets/veste.css', 'assets/landing.css', 'assets/landing.js', 'assets/fonts/fraunces-600-latin.woff2', 'assets/fonts/fraunces-600-latin-ext.woff2', 'assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2', 'assets/img/dimorino-cartelle.webp', 'assets/img/quaderno.jpg', 'favicon.svg', 'dimora-og-2026-10.jpg', 'robots.txt', 'sitemap.xml', 'vercel.json']) verifica(esiste(f), `c'è ${f}`);
+for (const f of ['assets/veste.css', 'assets/landing.css', 'assets/landing.js', 'assets/fonts/fraunces-600-latin.woff2', 'assets/fonts/fraunces-600-latin-ext.woff2', 'assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2', 'assets/img/dimorino-cartelle.webp', 'assets/img/quaderno.jpg', 'favicon.svg', 'dimora-og-2026-10.jpg', 'robots.txt', 'sitemap.xml', 'vercel.json', 'novita.html', 'assets/img/app-computer-prima.webp']) verifica(esiste(f), `c'è ${f}`);
 for (const s of STORIE) {
   verifica(!!ARTICOLI[s.id], `c'è la pagina novita/${s.id}.html`);
   for (const e of ['mp4', 'jpg', 'webp']) {
@@ -106,7 +107,7 @@ sezione('3. Le storie');
 // gli ultimi aggiornamenti, telefono, prezzi, sicurezza, domande, chiusura. La sezione dei numeri a sé non c'è più.
 const ordinePagina = ['come', 'storia', 'affitti', 'immobili', 'novita', 'prezzi', 'sicurezza', 'domande', 'inizia'].map((id) => HTML.indexOf(`id="${id}"`));
 verifica(ordinePagina.every((x, i) => x > 0 && (i === 0 || x > ordinePagina[i - 1])), "l'ordine delle sezioni", ordinePagina.join(' '));
-verifica(HTML.indexOf('class="telefono-sezione"') > HTML.indexOf('id="novita"') && HTML.indexOf('class="telefono-sezione"') < HTML.indexOf('id="prezzi"'), 'il riquadro del telefono fra gli aggiornamenti e i prezzi');
+verifica(HTML.indexOf('class="telefono-sezione"') > HTML.indexOf('id="novita"') && HTML.indexOf('class="telefono-sezione"') < HTML.indexOf('id="prezzi"'), 'il riquadro del telefono fra le novità e i prezzi');
 const testoPagina = testo(HTML);
 verifica(!HTML.includes('id="numeri"') && !testoPagina.includes('Non sono conti da fare a mente'), "la sezione dei numeri non c'è più");
 for (const via of ['Se hai una seconda casa', 'Ogni mese, qualcosa in meno', 'Ottobre 2026', 'Ci stiamo lavorando', 'Il canone, anche quando arriva a metà', 'Decide il commercialista', "L'affitto, dal contratto alla disdetta", 'più di 130', 'Più di 130']) verifica(!testoPagina.includes(via), `nella pagina non c'è più «${via}»`);
@@ -168,25 +169,25 @@ for (const f of ['app-computer.webp', 'app-telefono.webp', 'foto-bolletta.webp',
 const telefono = testo(HTML.slice(HTML.indexOf('class="telefono-sezione"'), HTML.indexOf('id="prezzi"')));
 for (const t of ['Pensata anche per il telefono', 'App Store · in arrivo', 'Google Play · in arrivo', 'Presto anche su App Store e Google Play.']) verifica(telefono.includes(t), `telefono: «${t}»`);
 verifica(testoPagina.includes('Presto anche su App Store e Google Play. Entri con la tua mail'), 'le domande dicono ancora «Presto anche su App Store e Google Play»');
-// Gli ultimi aggiornamenti: una fila dal più recente, senza date
-verifica(testoPagina.includes(NOVITA_LANDING.titolo) && testoPagina.includes(NOVITA_LANDING.testo), 'gli aggiornamenti: titolo e riga sotto');
-const aggiornamenti = HTML.slice(HTML.indexOf('<!--AGGIORNAMENTI-->'), HTML.indexOf('<!--/AGGIORNAMENTI-->'));
-const righe = aggiornamenti.split('<li class="aggiornamento">').slice(1);
-verifica(righe.length === AGGIORNAMENTI.length, `gli aggiornamenti sono ${AGGIORNAMENTI.length}`);
-AGGIORNAMENTI.forEach((a, i) => {
-  const st = a.storia ? STORIE.find((x) => x.id === a.storia) : null;
-  const r = righe[i] || '';
-  const titolo = st ? st.titolo : a.titolo;
-  verifica(testo(r).includes(titolo) && testo(r).includes(st ? st.testo : a.testo), `aggiornamento ${i + 1}: «${titolo}»`);
-  if (st) verifica(r.includes(`href="${indirizzoArticolo(st.id)}"`) && r.includes(`data-video-carta="/assets/novita/${st.id}.mp4"`), `aggiornamento ${i + 1}: video piccolo e «Leggi l'articolo»`);
-  else verifica(!r.includes('<a ') && r.includes(`src="${a.immagine}"`) && esiste(a.immagine.slice(1)), `aggiornamento ${i + 1}: la schermata ferma, senza articolo`);
-});
-verifica(JSON.stringify(AGGIORNAMENTI.map((a) => a.storia || a.titolo)) === JSON.stringify(["Il contratto d'affitto, in chiaro.", 'pacchetto-commercialista', 'carichi-al-resto', 'imu-calcolata', 'bonus-casa', 'rate-condominio']), "l'ordine degli aggiornamenti del comando");
-verifica(!/\b20\d\d-\d\d-\d\d\b|ottobre 2026/i.test(testo(aggiornamenti)), 'gli aggiornamenti senza date');
-// In arrivo: quattro righe, senza pulsanti
+// Le novità (terzo giro di Vitto, 25/10): un blocco corto, niente fila. I testi del comando, parola per parola.
+const blocco = HTML.slice(HTML.indexOf('<!--NOVITA-->'), HTML.indexOf('<!--/NOVITA-->'));
+verifica(NOVITA_LANDING.titolo === 'Dimora cresce con te.' && NOVITA_LANDING.testo === "Ogni settimana aggiungiamo qualcosa che ti toglie un pensiero sulle tue case. Le novità le trovi nell'app, raccontate una per una." && NOVITA_LANDING.firma === 'Il team di Dimora', 'le novità: titolo, testo e firma del comando');
+verifica(blocco.length > 0 && [NOVITA_LANDING.titolo, NOVITA_LANDING.testo, NOVITA_LANDING.firma].every((t) => testo(blocco).includes(t)), 'le novità: il blocco nella pagina');
+verifica(blocco.includes(`<a class="collegamento" href="${INDIRIZZO_NOVITA}">Leggi tutte le novità</a>`), 'le novità: «Leggi tutte le novità» porta a /novita');
+verifica(!HTML.includes('class="aggiornamento') && !HTML.includes('<!--AGGIORNAMENTI-->') && !testoPagina.includes('Gli ultimi aggiornamenti'), "la fila degli aggiornamenti non c'è più");
+const testata = HTML.slice(HTML.indexOf('<!--TESTATA-->'), HTML.indexOf('<!--/TESTATA-->'));
+verifica((testata.match(/<a href="\/#novita">Novità<\/a>/g) || []).length === 2 && !testata.includes('Aggiornamenti'), 'il menu dice «Novità» e porta al blocco');
+// In arrivo: due righe sole, senza pulsanti
 const inArrivo = HTML.slice(HTML.indexOf('<!--IN-ARRIVO-->'), HTML.indexOf('<!--/IN-ARRIVO-->'));
-verifica(IN_ARRIVO.titolo === 'In arrivo' && IN_ARRIVO.voci.length === 4 && testo(inArrivo).includes(IN_ARRIVO.titolo) && IN_ARRIVO.voci.every((v) => testo(inArrivo).includes(`${v.titolo} ${v.testo}`)), '«In arrivo» con le quattro righe');
+const ARRIVO = ["L'adeguamento ISTAT del canone, automatico. Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda.", 'Quando cambiano le regole, te lo diciamo noi. Con la legge di bilancio Dimora ti dice che cosa cambia per ognuna delle tue case.'];
+verifica(IN_ARRIVO.titolo === 'In arrivo' && IN_ARRIVO.voci.length === 2 && testo(inArrivo).includes('In arrivo') && ARRIVO.every((t) => testo(inArrivo).includes(t)) && (inArrivo.match(/<li>/g) || []).length === 2, '«In arrivo» con le due righe del comando');
 verifica(!/<a |<button/.test(inArrivo), '«In arrivo» senza pulsanti');
+// La pagina di tutte le novità
+const elenco = ELENCO.slice(ELENCO.indexOf('<main'), ELENCO.indexOf('</main>'));
+verifica(/<h1[^>]*>Le novità di Dimora<\/h1>/.test(elenco) && PAGINA_NOVITA.titolo === 'Le novità di Dimora', '/novita: il titolo');
+const carteElenco = [...elenco.matchAll(/<h2 class="carta-titolo"><a href="([^"]+)">/g)].map((m) => m[1]);
+verifica(JSON.stringify(carteElenco) === JSON.stringify(ORDINE_NOVITA.map(indirizzoArticolo)) && ORDINE_NOVITA.length === STORIE.length && STORIE.every((x) => ORDINE_NOVITA.includes(x.id)), '/novita: tutti gli articoli pubblicati, dal più recente', carteElenco.join(' '));
+verifica(ORDINE_NOVITA.every((id) => elenco.includes(`data-video-carta="/assets/novita/${id}.mp4"`)), '/novita: ogni carta col suo video piccolo');
 for (const s of STORIE) {
   const h = ARTICOLI[s.id];
   if (!h) continue;
@@ -205,10 +206,11 @@ for (const s of STORIE) {
   verifica(h.includes(`href="${ISCRIZIONE}"`) && h.includes('data-evento="clic_inizia_prova"'), `articolo ${s.id}: «Prova Dimora gratis» porta all'iscrizione`);
   verifica(h.includes('<!--TESTATA-->') && h.includes('<!--PIEDE-->'), `articolo ${s.id}: testata e piè di pagina della landing`);
   verifica(h.includes(`data-src="/assets/novita/${s.id}.mp4"`) && h.includes(`src="/assets/novita/${s.id}.webp"`) && h.includes(`content="${ORIGINE}/assets/novita/${s.id}.jpg"`), `articolo ${s.id}: il suo video e la sua locandina`);
-  verifica(!/<video[^>]*\sautoplay/.test(h) && !/<video[^>]*\ssrc=/.test(h), `articolo ${s.id}: il video non parte e non si scarica senza lo script`);
+  verifica(/<video[^>]*\smuted\b[^>]*\splaysinline\b[^>]*\sautoplay\b/.test(h) && !/<video[^>]*\ssrc=/.test(h), `articolo ${s.id}: il video muto, in linea e in autoplay, e non si scarica senza lo script`);
+  verifica(h.includes(`<a class="indietro" href="${INDIRIZZO_NOVITA}">`) && h.includes(`>${PAGINA_NOVITA.altre}</h2>`), `articolo ${s.id}: «Tutte le novità» porta a /novita`);
 }
 const piede = HTML.slice(HTML.indexOf('<!--PIEDE-NOVITA-->'), HTML.indexOf('<!--/PIEDE-NOVITA-->'));
-verifica(STORIE.every((s) => piede.includes(`href="${indirizzoArticolo(s.id)}"`)) && !piede.includes('canone-a-meta'), 'il piè di pagina porta a tutti gli articoli pubblicati');
+verifica(STORIE.every((s) => piede.includes(`href="${indirizzoArticolo(s.id)}"`)) && piede.includes(`href="${INDIRIZZO_NOVITA}"`) && !piede.includes('canone-a-meta'), 'il piè di pagina porta a tutti gli articoli pubblicati e a /novita');
 verifica(!esiste('novita/canone-a-meta.html'), 'la pagina del canone a metà non c\'è');
 
 /* ---------- 4. Prezzi e domande (testi di oggi, corretti il 22/10) ---------- */
@@ -259,7 +261,7 @@ const SEZIONI = new Set([...HTML.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
 for (const [p, h] of Object.entries(PAGINE)) {
   const hrefs = [...h.matchAll(/<a\s[^>]*href="([^"]+)"/g)].map((m) => entita(m[1]));
   const strani = hrefs.filter((u) => {
-    if (APP.has(u) || FONTI.has(u) || u === 'mailto:assistenza@dimorapp.com' || u === '/') return false;
+    if (APP.has(u) || FONTI.has(u) || u === 'mailto:assistenza@dimorapp.com' || u === '/' || u === INDIRIZZO_NOVITA) return false;
     if (u.startsWith('/#')) return !SEZIONI.has(u.slice(2));
     if (u.startsWith('#')) return !new RegExp(`\\sid="${u.slice(1)}"`).test(h);
     if (u.startsWith('/novita/')) return !STORIE.some((s) => indirizzoArticolo(s.id) === u);
@@ -287,7 +289,9 @@ for (const [p, h] of Object.entries(PAGINE)) {
   let dati = null;
   try { dati = JSON.parse(ld[1]); } catch { /* sotto */ }
   verifica(!!dati, `${p}: i dati strutturati si leggono`);
-  if (dati && p !== '/') {
+  if (dati && p === INDIRIZZO_NOVITA) {
+    verifica(dati['@type'] === 'CollectionPage' && dati.hasPart.length === STORIE.length && descr === PAGINA_NOVITA.descrizione, '/novita: CollectionPage con tutti gli articoli');
+  } else if (dati && p !== '/') {
     const s = STORIE.find((x) => indirizzoArticolo(x.id) === p);
     verifica(dati['@type'] === 'Article' && dati.headline === s.titolo && dati.datePublished === s.uscita && dati.mainEntityOfPage === ORIGINE + p, `${p}: Article con titolo, data e indirizzo`);
     verifica(dati.description === s.articolo.rigaSotto && descr === s.articolo.rigaSotto, `${p}: la descrizione è la riga sotto il titolo`);
@@ -299,8 +303,8 @@ for (const [p, h] of Object.entries(PAGINE)) {
   }
 }
 const voci = [...leggi('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-verifica(JSON.stringify(voci) === JSON.stringify([ORIGINE + '/', ...STORIE.map((s) => ORIGINE + indirizzoArticolo(s.id))]), "la mappa del sito: la landing e gli articoli, e nient'altro", voci.join(' '));
-const altre = fs.readdirSync(RADICE).filter((f) => f.endsWith('.html') && f !== 'index.html');
+verifica(JSON.stringify(voci) === JSON.stringify([ORIGINE + '/', ORIGINE + INDIRIZZO_NOVITA, ...STORIE.map((s) => ORIGINE + indirizzoArticolo(s.id))]), "la mappa del sito: la landing, /novita e gli articoli, e nient'altro", voci.join(' '));
+const altre = fs.readdirSync(RADICE).filter((f) => f.endsWith('.html') && f !== 'index.html' && f !== 'novita.html');
 verifica(altre.length === 0, "nessun'altra pagina alla radice fuori dalla mappa", altre.join(' '));
 verifica(/Sitemap: https:\/\/dimorapp\.com\/sitemap\.xml/.test(leggi('robots.txt')), 'robots.txt indica la mappa');
 let vercel = {};
@@ -322,12 +326,18 @@ const fuoriVivo = regoleAnimate.filter((r) => !/^\.vivo\b/.test(r) && !/animatio
 verifica(fuoriVivo.length === 0, 'ogni animazione sta dietro «vivo»', fuoriVivo.map((r) => r.slice(0, 60)).join(' | '));
 verifica(CSS.includes('.racconto[data-pronto] .storia-locandina { display: none; }'), 'il racconto nasconde le immagini delle storie solo quando lo script ha preparato la finestra');
 verifica((racconto.match(/class="storia-locandina"/g) || []).length === Object.values(RACCONTI).flat().length && numero.includes('>120<'), 'senza script ogni passo dei racconti ha la sua immagine ferma');
-verifica(CSS.includes('.vivo [data-disegno] svg > * { stroke-dasharray: 1; stroke-dashoffset: 1; }') && !/\n\[data-disegno\] svg > \* \{[^}]*dashoffset/.test(CSS), 'senza script (o con «meno animazioni») i disegni sono già tracciati');
+verifica(CSS.includes('.vivo [data-disegno][data-segue] svg > * { stroke-dasharray: 1; }') && !/stroke-dashoffset:\s*1/.test(CSS), 'senza script (o con «meno animazioni») i disegni sono già tracciati: lo spostamento lo scrive lo script');
 verifica(!/<video/.test(HTML), 'nella landing nessun video senza lo script (li crea lui, senza indirizzo finché non servono)');
-verifica(JS.includes('if (c === scelto && !risparmio)') && JS.includes('c.video.pause()') && JS.includes('return i === attiva && inVista ? 2 : 0;'), 'gira un video solo alla volta: quello della storia sullo schermo col racconto in vista, o della carta più visibile');
+verifica(JS.includes('if (c === scelto && !fermi)') && JS.includes('c.video.pause()') && JS.includes('return i === attiva && inVista ? 2 : 0;'), 'gira un video solo alla volta: quello della storia sullo schermo col racconto in vista, o della carta più visibile');
+verifica(["v.setAttribute('muted', '')", "v.setAttribute('playsinline', '')", "v.setAttribute('autoplay', '')", 'v.autoplay = true'].every((x) => JS.includes(x)), 'ogni video muto, in linea e in autoplay insieme');
+verifica(JS.includes('p.catch(function () { pulsante(c); })') && JS.includes("b.className = 'video-avvia'") && JS.includes('if (risparmio && !c.voluto) pulsante(c)') && CSS.includes('.video-avvia {') && /\.schermo-video \{ opacity: 0;/.test(CSS), "se il telefono blocca la partenza resta l'immagine col pulsante ▶, mai un riquadro nero");
 verifica(JS.includes("v.preload = 'none'"), 'i video del racconto non si scaricano prima del loro turno');
 verifica(!/cursor:\s*(none|url)/.test(CSS), 'nessun cursore personalizzato');
-verifica(CSS.includes('.vivo [data-disegno][data-visto] svg > *') && /\.vivo \[data-disegno\]\[data-visto\] \.porta \{ animation: traccia[^}]*porta/.test(CSS) && JS.includes("document.querySelectorAll('[data-disegno]')"), 'i disegni si tracciano quando la sezione arriva, il tocco ambra per ultimo');
+verifica(JS.includes("document.querySelectorAll('[data-disegno]')") && JS.includes('t.el.style.strokeDashoffset = String(1 - x)') && JS.includes('t.porta) t.el.style.fillOpacity') && JS.includes("parte('disegni', function () { disegni.forEach") && !JS.includes("{ threshold: 0.5 }"), 'i disegni seguono lo scorrimento: si disegnano scendendo e si cancellano risalendo, il tocco ambra per ultimo');
+// L'apertura: il portatile con la tastiera e la sequenza in tre tempi (terzo giro di Vitto, 25/10)
+verifica(/class="portatile"[\s\S]*class="portatile-schermo"[\s\S]*<svg class="portatile-base"[\s\S]*class="tastiera-tasto"[\s\S]*class="tastiera-trackpad"/.test(apertura), 'apertura: il portatile ha lo schermo e, sotto, la base con la tastiera');
+verifica(apertura.includes('data-sequenza') && ['class="fotocamera"', 'class="mirino"', 'class="lampo"', 'class="schermo-campi"', 'class="schermo-prima"', 'class="schermo-dopo"', 'class="riga-nuova"', 'class="foto-carta"'].every((x) => apertura.includes(x)), 'apertura: la bolletta, la fotocamera col lampo, i campi e la scadenza nuova');
+verifica(['fotocamera', 'mirino', 'lampo', 'schermo-campi', 'schermo-dopo', 'riga-nuova'].every((x) => CSS.includes(`.vivo [data-sequenza] .${x} { animation: seq-`)) && CSS.includes('11s linear 2s infinite') && /\n\.fotocamera \{[^}]*opacity: 0;/.test(CSS) && !/\n\.portatile-schermo \.schermo-dopo \{[^}]*opacity/.test(CSS), "la sequenza si ripete; senza «vivo» resta l'ultimo fotogramma (i campi e la scadenza nuova)");
 verifica(JS.includes("dopo('numero'") && JS.includes("document.querySelectorAll('[data-conta]')") && JS.includes('osserva.disconnect()'), 'il numero dei documenti conta quando arriva sullo schermo, una volta');
 
 console.log(`\n${passati} controlli passati, ${falliti} falliti.`);

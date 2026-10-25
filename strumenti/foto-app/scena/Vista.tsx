@@ -43,10 +43,10 @@ export default function Vista({ vista }: { vista: string }) {
       <div className="flex min-h-screen">
         <DesktopSidebar nome="Mario" hasAffitti amministratore={false} />
         <main className="flex-1 min-w-0">
-          {vista === 'scadenze' && (
+          {(vista === 'scadenze' || vista === 'scadenze-prima') && (
             <div className="px-8 pt-7 pb-10 max-w-[820px]">
               <h1 className="font-titoli text-[26px] mb-4" style={{ color: 'var(--c-testo)' }}>Scadenze</h1>
-              <ScadenzeListClient deadlines={SCADENZE as never} in10str={OGGI} todayStr={OGGI} todayYear={2026} filterPropertyId={undefined} />
+              <ScadenzeListClient deadlines={(vista === 'scadenze-prima' ? SCADENZE.filter(x => x.id !== 's1') : SCADENZE) as never} in10str={OGGI} todayStr={OGGI} todayYear={2026} filterPropertyId={undefined} />
             </div>
           )}
           {vista === 'bolletta' && (

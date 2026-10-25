@@ -1,9 +1,11 @@
 # Le schermate dell'app nella landing (25/10/2026)
 
-Tre immagini, tutte nella veste nuova e con dati inventati (Mario Rossi, la casa di via dei Tigli a Padova, la casa al
+Le immagini, tutte nella veste nuova e con dati inventati (Mario Rossi, la casa di via dei Tigli a Padova, la casa al
 mare, il bilocale in affitto; la bolletta è quella di `assets/img/foto-bolletta.webp`):
 
 - `assets/img/app-computer.webp` (1280×800): le Scadenze dal computer, nell'apertura;
+- `assets/img/app-computer-prima.webp` (1280×800): le stesse Scadenze senza la bolletta, il primo tempo della
+  sequenza dell'apertura (vista `scadenze-prima` di `scena/Vista.tsx`);
 - `assets/img/app-telefono.webp` (780×1688): la bolletta appena letta, dal telefono, nell'apertura;
 - `assets/img/app-bolletta-computer.webp` (1280×800): la stessa lettura dal computer, nel passo delle bollette.
 
