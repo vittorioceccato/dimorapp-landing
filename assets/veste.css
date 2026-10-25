@@ -1,0 +1,98 @@
+/*
+  LA VESTE DI DIMORA, PER LA LANDING (25/10/2026).
+
+  Copiata dall'app, repository vittorioceccato/dimora, commit 8a568fa (origin/main, versione 0.9.44):
+    · i colori: la colonna NUOVA dei compiti, `[data-veste='nuova']` di app/globals.css, al carattere;
+    · le misure: la scala della veste nuova di app/globals.css (`--text-*`, `--radius-veste`) e i pezzi di
+      lib/stili.ts che hanno una variante `nuova:` (altezza 44 px, ombra del pulsante e della scheda);
+    · i caratteri: Plus Jakarta Sans per tutto, Fraunces 600 per i titoli da 22 px in su (app/layout.tsx),
+      serviti dalla landing stessa (assets/fonts). Fraunces mai sugli importi: non ha le cifre in colonna.
+
+  Quando l'app cambia la veste, si riallinea QUESTO file (e la riga qui sopra con il commit nuovo).
+  Il resto della landing non scrive colori né misure: usa solo le variabili di qui.
+  L'unico blocco che l'app non ha è in fondo, «Le misure della landing»: i titoli grandi dell'apertura e
+  delle sezioni, che nell'app non esistono. Stanno qui perché nessuno le scriva altrove.
+*/
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url(fonts/plus-jakarta-sans-latin-wght-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* Fraunces nel solo peso 600, i due sottoinsiemi dell'app (latin e latin-ext). Senza assi: la morbidezza SOFT
+   non c'è, come nell'app. */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/fraunces-600-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/fraunces-600-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* ── I compiti dei colori (app/globals.css, [data-veste='nuova']) ── */
+  --c-fondo: #FAF3E3;            /* il fondo della pagina */
+  --c-scheda: #FFFDF8;           /* schede, campi, fogli */
+  --c-fondo-tenue: #F6EEDC;      /* un riquadro neutro dentro una scheda; il fondo dei disegni delle case */
+  --c-riga: #E0D2B6;             /* le righe e il bordo delle schede (decorativo) */
+  --c-bordo: #E0D2B6;            /* il bordo di un pulsante secondario, di una pillola */
+  --c-bordo-campo: #8C8470;      /* il bordo dei controlli: almeno 3 a 1 */
+  --c-testo: #27302A;            /* l'inchiostro; anche il tratto dei disegni delle case */
+  --c-secondario: #40453C;
+  --c-etichetta: #5A5E54;
+  --c-principale: #20603D;       /* l'azione principale, i collegamenti d'azione, il bosco */
+  --c-principale-ombra: #174A2F; /* lo spessore del pulsante principale */
+  --c-su-scuro: #FFFDF8;         /* il testo sul bosco */
+  --c-stato-fondo: #E6EFE7;
+  --c-stato-testo: #20603D;
+  --c-esito-fondo: #E6EFE7;
+  --c-ritardo: #8F1818;          /* SOLO ritardo */
+  --c-accento: #CE7F33;          /* solo segni e disegni, MAI un testo (la porta delle case) */
+  --c-avviso-fondo: #FBE3C4;
+  --c-avviso-testo: #6B3D0C;
+
+  /* ── La scala (app/globals.css) ── */
+  --m-corpo: 16px;               /* 16 al telefono, 15 dal computer (sotto) */
+  --text-piccolo: 14px;
+  --text-minimo: 13px;
+  --text-sezione: 17px;
+  --text-titolo-pagina: 24px;    /* TITOLO_PAGINA, nuova:text-[24px] */
+  --radius-veste: 14px;
+  --altezza-tocco: 44px;         /* nuova:min-h-11 */
+
+  /* ── Le ombre (lib/stili.ts) ── */
+  --ombra-scheda: 0 1px 2px rgb(74 52 16 / 0.06);            /* SCHEDA */
+  --ombra-pulsante: 0 2px 0 var(--c-principale-ombra);       /* BOTTONE_PRINCIPALE */
+
+  /* ── I caratteri ── */
+  --font-corpo: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-titoli: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --spaziatura-titoli: -0.01em;  /* @utility font-titoli */
+
+  /* ── Le misure della landing (l'app non le ha: titoli grandi e spazi di pagina) ── */
+  --t-apertura: clamp(38px, 9.4vw, 68px);
+  --t-sezione-grande: clamp(30px, 6.4vw, 46px);
+  --t-storia: clamp(24px, 4.2vw, 30px);
+  --spazio-sezione: clamp(72px, 12vw, 136px);
+  --margine: 16px;               /* il margine laterale al telefono */
+  --larghezza: 1180px;           /* la colonna dal computer */
+  /* L'ombra della finestra del racconto e dei pannelli che galleggiano: lo stesso colore dell'ombra della scheda,
+     più ampia e più morbida. */
+  --ombra-finestra: 0 28px 56px -28px rgb(74 52 16 / 0.32), 0 1px 2px rgb(74 52 16 / 0.06);
+}
+
+@media (min-width: 64rem) {
+  :root { --m-corpo: 15px; --margine: 32px; }
+}

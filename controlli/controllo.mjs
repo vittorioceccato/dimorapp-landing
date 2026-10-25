@@ -1,907 +1,250 @@
-// Controllo della landing, con un comando solo e nessuna dipendenza:
+// Controllo della landing (veste nuova, 25/10/2026), con un comando solo e nessuna dipendenza:
 //
 //     node controlli/controllo.mjs
 //
-// Legge dal disco index.html, assets/stile.css e assets/pagina.js e verifica:
-//   1. nessun segnaposto fra parentesi quadre nel testo visibile (testo, alt, placeholder, title);
-//   2. i moduli della lista d'attesa sono quattro;
-//   3. la data del lancio e lo stato sono scritti in un punto solo, e nessuna data è scritta a mano;
-//   4. prezzi, immobili, letture, spazio, regalo dell'annuale e pacchetti coincidono con la tabella
-//      qui sotto, e il risparmio in euro è ricavato dai prezzi delle schede;
-//   5. le risorse caricate vengono solo dal sito stesso e, per il modulo, da Supabase; l'unica che non è
-//      un file del repository è lo script delle statistiche, servito da Vercel dallo stesso sito;
-//   6. i collegamenti vanno solo all'app, all'indirizzo canonico e ai mailto: del piè di pagina,
-//      e quelli interni portano a sezioni che esistono;
-//   7. i testi approvati (schede, prova, note sotto le schede, Dimorino), parola per parola,
-//      e i testi tolti non ci sono più da nessuna parte;
-//   8. l'interruttore annuale / mensile: bottoni veri, l'annuale scelto, il «fino al» ricavato dai prezzi,
-//      senza script i due prezzi insieme e il regalo, con il mensile risparmio e regalo invisibili;
-//   9. le domande frequenti: una per riga, chiuse, nel loro ordine, e le risposte nuove parola per parola;
-//  10. l'apertura del 7/10 e i sei raccordi: testi parola per parola, le tre schermate con le loro misure vere
-//      e i loro testi alternativi, la lente sulle due schermate, il passaggio di disposizione e Dimorino;
-//  11. il telefono (7/10, sera): il modello nuovo e la sua schermata, la lente che si riapre, la barra che segue,
-//      le quattro righe che scorrono, la lettera con «Continua a leggere», niente testo sotto i 12 px fino a 640 px.
-//  12. le statistiche di Vercel: i due tag una volta sola, la coda prima dello script, lo script da
-//      quel percorso esatto, nessun altro /_vercel/ e solo i cinque eventi previsti; ogni collegamento
-//      verso il login e ogni modulo della lista d'attesa con la sua etichetta, nessuna coppia
-//      evento e posizione ripetuta.
-//  13. la base per i motori di ricerca (14/10): robots.txt e sitemap.xml alla radice e pubblicati, la sitemap
-//      con le sole pagine vere, un solo JSON-LD nella testata che si legge come JSON, con Organization e
-//      SoftwareApplication, la descrizione uguale alla meta description, e nessun prezzo, offerta o valutazione.
-// Esce con 1 al primo controllo fallito, dopo averli stampati tutti.
+// Legge dal disco la pagina, gli articoli, gli stili e lo script, e verifica:
+//   1. i file ci sono: le pagine degli articoli per ogni storia, i video e le locandine, i caratteri;
+//   2. la veste: colori e misure stanno SOLO in assets/veste.css, coi valori dell'app (commit scritto in cima);
+//      landing.css non scrive colori; nell'HTML gli unici colori sono quelli dei disegni delle case;
+//   3. le storie: racconto, carte, piè di pagina e articoli coincidono con strumenti/storie.mjs (parola per parola),
+//      e negli articoli pubblici non c'è l'azione dell'app né l'etichetta personale;
+//   4. prezzi, prova e pacchetti coincidono con la tabella qui sotto; le domande frequenti sono dieci, nel loro ordine;
+//   5. le risorse caricate vengono solo dal sito stesso (più lo script delle statistiche di Vercel, a quel percorso);
+//      nessuno script di terzi, nessun tag di Google, nessun cookie scritto dallo script;
+//   6. i collegamenti vanno solo all'app (login, termini, privacy), alle pagine e sezioni che esistono, al mailto
+//      dell'assistenza e alle fonti degli articoli; ogni «Prova gratis» porta all'iscrizione di oggi;
+//   7. Google: un titolo, una descrizione, una canonica per pagina; i dati strutturati si leggono; la mappa del sito ha
+//      la landing e gli articoli e nient'altro; robots.txt la indica; vercel.json pulisce gli indirizzi;
+//   8. le animazioni: si accendono solo senza «meno animazioni», e senza script la pagina è completa
+//      (casa disegnata, immagini delle storie, numeri al loro valore); i video partono solo dallo script.
+// Esce con 1 se un controllo fallisce, dopo averli stampati tutti.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { STORIE, PARTI, NOVITA_LANDING, ORIGINE, ISCRIZIONE, indirizzoArticolo } from '../strumenti/storie.mjs';
 
 const RADICE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const leggi = (f) => fs.readFileSync(path.join(RADICE, f), 'utf8');
-const HTML = leggi('index.html');
-const CSS = leggi('assets/stile.css');
-const JS = leggi('assets/pagina.js');
-// Lo script senza commenti (i commenti spiegano, non dichiarano). Basta per il nostro file,
-// che ha «//» dentro le stringhe solo negli indirizzi «https://».
-const JS_CODICE = JS.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\\])\/\/.*$/gm, '$1');
+const esiste = (f) => fs.existsSync(path.join(RADICE, f));
 
-/* ---------- La tabella: prezzi, immobili, letture, spazio, regalo, pacchetti (regia, 6/10; letture e regalo dei piani raddoppiati il 12/10) ----------
-   Il risparmio dell'annuale non sta qui: si ricava dai prezzi scritti nelle schede. */
-const PIANI = {
-  'Dimora':      { anno: '59 €',  mese: '6,90 €',  immobili: 3,  letture: 20, gb: 5,  regalo: 20 },
-  'Dimora Plus': { anno: '119 €', mese: '12,90 €', immobili: 10, letture: 40, gb: 10, regalo: 40 },
-  'Dimora Max':  { anno: '219 €', mese: '22,90 €', immobili: 25, letture: 80, gb: 20, regalo: 80 },
-};
-const PROVA = { giorni: 30, letture: 20, gb: 1 };
-const PACCHETTI = [{ letture: 10, prezzo: '4,90 €' }, { letture: 20, prezzo: '7,90 €' }, { letture: 100, prezzo: '34,90 €' }];
-const SUPABASE = 'https://lgmqdcozhmaimkqnhpqb.supabase.co';
-const COLLEGAMENTI_AMMESSI = [
-  'https://app.dimorapp.com/login',
-  'https://app.dimorapp.com/termini',
-  'https://app.dimorapp.com/privacy',
-];
-const CANONICO = 'https://dimorapp.com/';
-const MAILTO_AMMESSI = ['mailto:assistenza@dimorapp.com'];
-// Vercel Web Analytics: lo script lo serve la piattaforma, dallo stesso sito, a questo percorso esatto.
-// È l'unica risorsa caricata che non è un file del repository. Nessun altro percorso, nessun prefisso.
-const DALLA_PIATTAFORMA = '/_vercel/insights/script.js';
-const CODA_VA = 'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };';
-const EVENTI = ['lista_iscritto', 'lista_gia_iscritto', 'clic_accedi', 'clic_guarda_come_funziona', 'clic_inizia_prova'];
-
-/* ---------- I testi approvati da Vitto parola per parola (regia, 5/10 e 6/10) ---------- */
-const TESTI = {
-  // Le schede, piano per piano: dotazione, riga del risparmio, descrizione, regalo dell'annuale.
-  schede: {
-    'Dimora': {
-      dotazione: ['Fino a 3 immobili', '20 letture AI al mese', '5 GB di archivio'],
-      risparmio: "Con l'annuale risparmi 23,80 €.",
-      desc: 'Per la tua casa o pochi immobili, anche in affitto.',
-      regalo: 'In regalo con il primo annuale: 20 letture AI in più, da usare quando vuoi entro 12 mesi.',
-    },
-    'Dimora Plus': {
-      dotazione: ['Fino a 10 immobili', '40 letture AI al mese', '10 GB di archivio'],
-      risparmio: "Con l'annuale risparmi 35,80 €.",
-      desc: 'Per gestire più immobili, con affitti e incassi sotto controllo.',
-      regalo: 'In regalo con il primo annuale: 40 letture AI in più, da usare quando vuoi entro 12 mesi.',
-    },
-    'Dimora Max': {
-      dotazione: ['Fino a 25 immobili', '80 letture AI al mese', '20 GB di archivio'],
-      risparmio: "Con l'annuale risparmi 55,80 €.",
-      desc: 'Per chi gestisce un patrimonio immobiliare più ampio.',
-      regalo: 'In regalo con il primo annuale: 80 letture AI in più, da usare quando vuoi entro 12 mesi.',
-    },
-  },
-  periodoAnno: "l'anno, in un'unica soluzione",
-  periodoMese: 'al mese',
-  prova: "30 giorni, 20 letture con l'AI e 1 GB di archivio, senza carta e senza addebiti automatici. Tutte le funzioni, senza limite di immobili.",
-  piani: 'Tutte le funzioni sono in ogni piano. Cambiano gli immobili, le letture AI e lo spazio.',
-  // Le note sotto le schede: tre, in quest'ordine, e nient'altro.
-  note: [
-    'Una lettura AI copre fino a 10 pagine di un documento.',
-    'Ti servono più letture? Ci sono i pacchetti aggiuntivi.',
-    'Piani e prezzi sono previsti e possono ancora cambiare: te li confermiamo prima di attivare i pagamenti.',
-  ],
-  fineProva: "Nessun addebito: la carta non te la chiediamo. Se non scegli un piano, il tuo account resta in sola consultazione: vedi, scarichi ed esporti tutto quello che hai caricato. Quando scegli un piano riprendi da dove eri. Se hai più immobili di quelli del piano, scegli tu quali tenere in gestione: gli altri restano consultabili.",
-  costo: "Da 59 € l'anno o 6,90 € al mese. Tutte le funzioni sono in ogni piano: cambiano gli immobili, le letture AI e lo spazio. I tre piani sono nella sezione Prezzi, e senza una tua scelta non c'è nessun addebito. Se gestisci più di 25 immobili, scrivici.",
-  lettureDomanda: 'Come funzionano le letture AI?',
-  lettureRisposta: 'Una lettura copre fino a 10 pagine di un documento: per un contratto di 14 pagine ne servono 2. Archiviare un documento o inserire i dati a mano non consuma letture.',
-  pacchettiDomanda: 'Posso avere più letture?',
-  pacchettiRisposta: 'Sì, con i pacchetti aggiuntivi: 10 letture a 4,90 €, 20 a 7,90 €, 100 a 34,90 €. Valgono 12 mesi e si comprano con un piano attivo.',
-  // L'apertura (7/10): il testo serve anche da descrizione della pagina, per i motori di ricerca e per i social.
-  eroe: 'Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze, tu controlli e confermi. Documenti, spese, contratti e incassi in un unico posto.',
-  firma: 'ha ideato Dimora',
-  guidaOcchiello: 'LA TUA GUIDA',
-  guidaTitolo: 'Ti presento Dimorino',
-  guidaTesto: "È la tua guida dentro Dimora: ti segue passo passo e ti aiuta con documenti, scadenze e tutto quello che riguarda la casa. Lo incontri quando entri per la prima volta e mentre Dimora legge i tuoi documenti. Ti tiene compagnia nell'attesa: a confermare i dati, come sempre, sei tu.",
-  sicuroDomanda: 'I miei documenti sono al sicuro?',
-  // 22/10, testi della regia approvati da Vitto: tre paragrafi, l'ultimo col collegamento all'informativa.
-  sicuroRisposta: [
-    "I tuoi documenti sono conservati in un archivio privato e cifrato, accessibile dal tuo account. Puoi scaricarli o eliminarli quando vuoi.",
-    "La lettura AI ti aiuta a organizzare dati e scadenze, senza usare i documenti per addestrare modelli. Se preferisci, puoi archiviarli anche senza lettura automatica.",
-  ],
-  sicuroUltimo: `<p>Per conoscere come trattiamo e proteggiamo i tuoi dati, leggi l'<a href="https://app.dimorapp.com/privacy">informativa sulla privacy</a>.</p>`,
-  annuale: 'Annuale (risparmi fino al {N}%)',
-  mensile: 'Mensile',
-};
-/* ---------- L'apertura e i sei raccordi (regia, 7/10), parola per parola ---------- */
-const APERTURA = {
-  titoloScheda: 'Dimora: gestione di immobili e affitti',
-  occhiello: 'Gestione di immobili e affitti',
-  // Il titolo su quattro righe, l'ultima in verde.
-  righeTitolo: ['Le tue case', 'e i tuoi affitti,', 'sotto controllo.'],
-  titoloVerde: 'Da una foto.',
-  scritta: 'Fai una foto o carica un PDF. Dimora compila per te.',
-  didascalia: [['Dal computer', 'hai tutti gli immobili sotto gli occhi.'], ['Dal telefono', 'fotografi il documento e lo confermi.']],
-  vantaggi: [
-    'Ogni immobile ha la sua scheda: documenti, spese, scadenze',
-    'Contratti, incassi e pagamenti in ritardo',
-    'Promemoria via mail per le tue scadenze',
-    'Legge foto, PDF, Word ed Excel: più di 130 tipi di documenti',
-  ],
-  // Le tre schermate: file, misure vere in pixel, testo alternativo (quello dell'anteprima approvata).
-  schermate: [
-    { src: 'assets/img/home-computer.webp', w: 1475, h: 775, alt: 'La home di Dimora da computer: menu, saluto, riepilogo, le tre case e le scadenze in arrivo.' },
-    { src: 'assets/img/lettura-bolletta-telefono-alta.webp', w: 1170, h: 2400, alt: 'Dimora da telefono: una bolletta appena letta, con fornitore, importo, scadenza e il pulsante per archiviarla.' },
-    { src: 'assets/img/foto-bolletta.webp', w: 412, h: 621, alt: 'La foto di una bolletta della luce: totale da pagare 96,48 euro entro il 26 ottobre 2026.' },
-  ],
-  // La lente (7/10, sera): le due schermate si aprono ingrandite, alla grandezza a cui sono state acquisite.
-  lente: { 'assets/img/home-computer.webp': 1180, 'assets/img/lettura-bolletta-telefono-alta.webp': 390 },
-  // Dimorino sul computer: una misura sua, fra 130 e 165 px (il 7/10 era 130; «+25–30%»), che non segue il portatile.
-  dimorinoComputer: { min: 130, max: 165 },
-  // I sei raccordi.
-  comeTitolo: 'Fotografi il documento. Dimora si ricorda il resto.',
-  comeSotto: 'Dal documento alla scadenza, in tre passi.',
-  costiTitolo: 'Costi e rendimento, casa per casa',
-  costiTesto: 'Mutuo, spese e manutenzioni, anno per anno. Se affitti, vedi anche la resa netta del tuo portafoglio.',
-  affittiSotto: 'Contratti, incassi, ritardi e scadenze fiscali, contratto per contratto. E vedi quanto rendono i tuoi affitti.',
-  chiusura: "Una bolletta o un contratto d'affitto bastano per vedere come funziona. La prova è gratuita: 30 giorni, senza carta.",
-};
-/* ---------- La lettera (regia, 7/10, sera), parola per parola: la domanda e i tre paragrafi ---------- */
-const LETTERA = {
-  domanda: 'Sai quanto ti costano i tuoi immobili e, se li affitti, quanto ti rendono?',
-  paragrafi: [
-    "Per molti la risposta è sparsa ovunque: la bolletta nella mail, la rata del mutuo sull'estratto conto, la fattura dell'idraulico in un cassetto. Se affitti, devi anche tenere insieme contratti, canoni incassati, pagamenti in ritardo e scadenze.",
-    'Mia mamma tiene tutto a mano, nel quaderno della foto, con una cura che rispetto. Io ho voluto togliere la fatica di rimettere insieme i pezzi.',
-    'Dimora nasce da qui: documenti, spese e affitti nello stesso posto, casa per casa. Questi problemi li conosco, perché sono anche i miei.',
-  ],
-  // La didascalia della foto resta com'era, con il 2026.
-  didascalia: "Il quaderno dei conti di casa di mia mamma: un'agenda del 2013, riusata per il 2026.",
-  continua: 'Continua a leggere',
-};
-// I testi di prima, che non devono esserci più da nessuna parte (né nella pagina, né nello stile, né nello script).
-const VIA = [
-  // La lettera di prima (7/10, sera).
-  'quante spese ha generato la tua casa nel 2025', 'Con una seconda casa, o una casa in affitto, si aggiungono canoni',
-  'Dimora nasce da qui: tutto nello stesso posto',
-  'LA MASCOTTE', 'Dove vanno i miei documenti?', 'se ne ha, una o due seconde case',
-  // Le sei note sotto le schede tolte il 6/10.
-  'Sono indicazioni, non limiti: in ogni piano puoi gestire tutti gli immobili che vuoi.',
-  'tutti gli immobili che vuoi',
-  'Durante la beta ogni documento letto consuma una lettura.',
-  'Archiviare e inserire a mano non consuma letture.',
-  'Con il piano annuale ricevi anche letture di benvenuto',
-  'Ti servono più letture? 20 a',
-  'Finita la prova, se non scegli un piano il tuo account resta in sola consultazione: vedi, scarichi ed esporti tutto.',
-  // Due frasi di versioni precedenti del listino che non vanno messe da nessuna parte (regia, 6/10).
-  'I file Word, Excel e CSV contano sempre una lettura.',
-  'si rinnovano ogni mese',
-  'non si accumulano',
-  // Le formule di prima delle schede.
-  'risparmi circa il', 'Indicativamente', 'Consigliato per chi',
-  // Il testo in alto e la firma di prima (6/10).
-  'e per chi affitta da sé', 'legge ogni segnalazione',
-  // L'apertura di prima, con l'anteprima disegnata e il suo elenco, e i testi cambiati dai raccordi (7/10).
-  'Ciao Giulia', 'Questa settimana hai 2 scadenze', 'Conferma e ricordamelo', 'Guarda come funziona',
-  'Promemoria via mail a 30, 7 e 1 giorno', 'Confermi tu ogni dato prima che entri',
-  'Per chi ha una casa o più di una', 'Dimora — la tua casa, senza burocrazia', "Carichi un documento, Dimora lo legge con l'AI", 'finalmente in ordine',
-  'Senza moduli da riempire a mano', 'Sai quanto ti costa ogni casa', 'Per chi gestisce da sé uno o più affitti',
-  'Una bolletta o una rata del condominio bastano',
-  'Per la tua casa e una o due seconde case', 'Per chi affitta più immobili e ha contratti', 'propri o di famiglia',
-  // Le righe dei piani del comando del 7/10, cambiate lo stesso giorno sugli appunti di Vitto.
-  'Per la tua casa o per pochi immobili', 'tuoi o di famiglia', 'Per chi gestisce molti immobili.',
-];
-// Le domande frequenti, nel loro ordine: dopo «Quanto costa dopo la prova?» le due sulle letture.
-const DOMANDE = [
-  'Per chi è pensata Dimora?',
-  'Che cosa succede alla fine della prova?',
-  'Quanto costa dopo la prova?',
-  TESTI.lettureDomanda,
-  TESTI.pacchettiDomanda,
-  'Quali documenti legge?',
-  'Quanto può essere lungo un documento?',
-  TESTI.sicuroDomanda,
-  'Serve installare qualcosa?',
-  'Posso portare via i miei dati?',
-];
-// La risposta cambiata il 7/10.
-const PER_CHI_RISPOSTA = "Per chi gestisce direttamente i propri immobili: la casa in cui vive, le seconde case, quelle che affitta. Per capire se ti è utile c'è la prova gratuita.";
-// Le risposte che non cambiano (oltre a quella sui documenti al sicuro).
-const RISPOSTE_DI_SEMPRE = {
-  'Quali documenti legge?': "Più di 130 tipi di documenti della casa: bollette, contratti d'affitto, preventivi e bilanci del condominio, F24, polizze, rogiti, conferme di prenotazione e molti altri, in foto, PDF, Word, Excel o CSV. Se un documento non lo riconosce, lo archivi lo stesso e compili a mano.",
-  'Quanto può essere lungo un documento?': 'Nella beta Dimora legge fino a 30 pagine scansionate o fotografate per documento; un PDF con il testo anche di più. Se il documento è più lungo, prima della lettura ti avvisa che alcune pagine potrebbero restare fuori, e alla fine ti dice quante ne ha inviate in lettura.',
-  // 22/10: gli store tornano (decisione di Vitto), detti «presto».
-  'Serve installare qualcosa?': "No. Dimora funziona già dal browser, sul computer e sul telefono, e sul telefono puoi aggiungerla alla schermata Home. Presto anche su App Store e Google Play. Entri con la tua mail, senza password.",
-  'Posso portare via i miei dati?': "Sì. Dalle Impostazioni scarichi i tuoi dati in un file, quando vuoi. Ogni documento lo scarichi dalla sua pagina, e quelli del fascicolo per il commercialista anche tutti insieme, in uno ZIP. Se decidi di andartene, elimini l'account.",
-};
-
-/* ---------- Un lettore di HTML minimo (la pagina è nostra e ben formata) ---------- */
-const VUOTI = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
-function entita(s) {
-  return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) => {
-    if (e[0] === '#') return String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10));
-    return { nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" }[e.toLowerCase()] ?? m;
-  });
-}
-function attributi(s) {
-  const a = {};
-  for (const m of s.matchAll(/([^\s=/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) a[m[1].toLowerCase()] = entita(m[2] ?? m[3] ?? m[4] ?? '');
-  return a;
-}
-// Restituisce i tag (con gli antenati) e i pezzi di testo (con gli antenati).
-function analizza(html) {
-  const pulito = html.replace(/<!--[\s\S]*?-->/g, '');
-  const tag = [], testi = [], pila = [];
-  const re = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)([^>]*?)(\/?)>|([^<]+)/g;
-  let m, dentroRaw = null;
-  while ((m = re.exec(pulito))) {
-    if (m[5] !== undefined) {
-      if (!dentroRaw && m[5].trim()) testi.push({ testo: entita(m[5]), antenati: pila.slice() });
-      continue;
-    }
-    const chiude = m[1] === '/', nome = m[2].toLowerCase();
-    if (dentroRaw) { if (chiude && nome === dentroRaw) { dentroRaw = null; pila.pop(); } continue; }
-    if (chiude) { const i = pila.map(t => t.nome).lastIndexOf(nome); if (i >= 0) pila.length = i; continue; }
-    const t = { nome, attr: attributi(m[3]), antenati: pila.slice() };
-    tag.push(t);
-    if (VUOTI.has(nome) || m[4] === '/') continue;
-    pila.push(t);
-    if (nome === 'script' || nome === 'style') dentroRaw = nome;
-  }
-  return { tag, testi };
-}
-
-/* ---------- I controlli ---------- */
 let falliti = 0, passati = 0;
 function verifica(cond, nome, dettaglio) {
-  if (cond) { passati++; console.log('  ok  ' + nome); }
-  else { falliti++; console.log('  NO  ' + nome + (dettaglio !== undefined ? '\n        ' + JSON.stringify(dettaglio) : '')); }
+  if (cond) passati++; else { falliti++; console.log(`  ✗ ${nome}${dettaglio ? ' — ' + dettaglio : ''}`); }
 }
-const spazi = (s) => s.replace(/[\s ]+/g, ' ').trim();
-const { tag, testi } = analizza(HTML);
-const finto = (antenati) => antenati.some(t => 'data-finto' in t.attr);
-const corpo = tag.find(t => t.nome === 'body');
-const classi = (t) => (t.attr.class || '').split(/\s+/).filter(Boolean);
-const conClasse = (c, dentro) => tag.filter(t => classi(t).includes(c) && (!dentro || t.antenati.includes(dentro)));
-const testoDi = (t) => spazi(testi.filter(x => x.antenati.includes(t)).map(x => x.testo).join(' '));
-// Un importo scritto «6,90 €» in centesimi.
-const centesimi = (s) => { const m = /^(\d+)(?:,(\d{2}))? €$/.exec(spazi(s)); return m ? +m[1] * 100 + +(m[2] || 0) : NaN; };
-// E al contrario: dei centesimi scritti «23,80 €».
-const inEuro = (c) => `${Math.floor(c / 100)},${String(c % 100).padStart(2, '0')} €`;
+const sezione = (t) => console.log(t);
 
-// Il testo visibile: i nodi di testo e gli attributi che si vedono o si leggono.
-const visibile = [
-  ...testi.map(t => ({ testo: t.testo, finto: finto(t.antenati), antenati: t.antenati })),
-  ...tag.flatMap(t => ['alt', 'placeholder', 'title', 'aria-label'].filter(a => t.attr[a]).map(a => ({ testo: t.attr[a], finto: finto(t.antenati), antenati: t.antenati, attributo: a, tag: t }))),
-];
-// I testi alternativi delle schermate dell'apertura descrivono le schermate (una bolletta dimostrativa con la sua
-// scadenza): le loro date non sono date del lancio. Si controllano parola per parola nella sezione 10.
-const dellaSchermata = (v) => v.attributo === 'alt' && v.antenati.some(a => classi(a).includes('ap-dispositivi'));
-const tuttoIlTesto = spazi(visibile.map(v => v.testo).join(' '));
-const testoVero = spazi(visibile.filter(v => !v.finto).map(v => v.testo).join(' '));
+const entita = (s) => s.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+const testo = (html) => entita(html.replace(/<!--[\s\S]*?-->/g, '').replace(/<script[\s\S]*?<\/script>/g, '').replace(/<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+const attributi = (html, nome) => [...html.matchAll(new RegExp(`\\s${nome}="([^"]*)"`, 'g'))].map((m) => entita(m[1]));
 
-console.log('\n1. Segnaposto');
-{
-  const quadre = visibile.filter(v => /\[[^\]]*\]/.test(v.testo)).map(v => spazi(v.testo));
-  verifica(quadre.length === 0, 'nessun segnaposto fra parentesi quadre nel testo visibile', quadre);
-  verifica(visibile.length > 200, `il testo visibile è stato letto (${visibile.length} pezzi)`);
-}
+const HTML = leggi('index.html');
+const VESTE = leggi('assets/veste.css');
+const CSS = leggi('assets/landing.css');
+const JS = leggi('assets/landing.js');
+const ARTICOLI = Object.fromEntries(STORIE.map((s) => [s.id, esiste(`novita/${s.id}.html`) ? leggi(`novita/${s.id}.html`) : '']));
+const PAGINE = { '/': HTML, ...Object.fromEntries(STORIE.map((s) => [indirizzoArticolo(s.id), ARTICOLI[s.id]])) };
 
-console.log('\n2. Moduli');
-{
-  const moduli = tag.filter(t => t.nome === 'form' && 'data-wl' in t.attr);
-  verifica(moduli.length === 4, `i moduli della lista d'attesa sono quattro (${moduli.length})`);
-  const campi = tag.filter(t => t.nome === 'input' && t.antenati.some(a => a.nome === 'form' && 'data-wl' in a.attr));
-  verifica(campi.filter(c => c.attr.type === 'email').length === 4, 'ogni modulo ha il suo campo mail');
-  verifica(campi.filter(c => c.attr.name === 'company').length === 4, 'ogni modulo ha il campo esca «company»');
-  verifica(tag.filter(t => 'data-wl-esito' in t.attr).length === 4, 'ogni modulo ha il suo riquadro d\'esito');
-  verifica(JS.includes("source: 'landing'") && JS.includes('/rest/v1/waitlist'), 'il modulo scrive nella waitlist con source \'landing\'');
-  verifica((JS.match(/Grazie! Ti avvisiamo all\\'apertura\./g) || []).length === 1 && /r\.status === 201 \|\| r\.status === 409/.test(JS), '201 e 409 hanno lo stesso esito');
-}
-
-console.log('\n3. Data del lancio e stato, in un punto solo');
-{
-  const conLancio = tag.filter(t => 'data-lancio' in t.attr);
-  const conStato = tag.filter(t => 'data-stato' in t.attr);
-  verifica(conLancio.length === 1 && conLancio[0] === corpo, 'data-lancio è scritto una volta, sul <body>', conLancio.map(t => t.nome));
-  verifica(conStato.length === 1 && conStato[0] === corpo, 'data-stato è scritto una volta, sul <body>', conStato.map(t => t.nome));
-  const lancio = corpo.attr['data-lancio'] || '';
-  verifica(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:\d{2})$/.test(lancio) && !isNaN(Date.parse(lancio)), `data-lancio è una data con il fuso (${lancio})`);
-  verifica(['in arrivo', 'aperta'].includes(corpo.attr['data-stato']), `data-stato vale «in arrivo» o «aperta» (${corpo.attr['data-stato']})`);
-  const giorno = lancio.slice(0, 10);
-  const volte = [HTML, CSS, JS].reduce((n, f) => n + (f.split(giorno).length - 1), 0);
-  verifica(volte === 1, `la data ${giorno} compare una volta sola fra HTML, CSS e script (${volte})`);
-  const MESI = 'gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre';
-  const senzaSchermate = spazi(visibile.filter(v => !dellaSchermata(v)).map(v => v.testo).join(' '));
-  verifica(visibile.filter(dellaSchermata).length === APERTURA.schermate.length, `i testi alternativi esclusi qui sono solo quelli delle ${APERTURA.schermate.length} schermate dell'apertura`);
-  const aMano = [...senzaSchermate.matchAll(new RegExp(`\\b\\d{1,2} (${MESI})\\b|\\balle \\d{1,2}:\\d{2}\\b`, 'g'))].map(m => m[0]);
-  verifica(aMano.length === 0, 'nessuna data scritta a mano nel testo (le frasi con la data le compone lo script)', aMano);
-  const nelloScript = [...JS_CODICE.matchAll(new RegExp(`\\d{1,2} (${MESI})|\\d{1,2}:\\d{2}|20\\d\\d-\\d\\d-\\d\\d`, 'g'))].map(m => m[0]);
-  verifica(nelloScript.length === 0, 'nessuna data scritta nello script', nelloScript);
-  verifica(tag.filter(t => 'data-quando' in t.attr).length === 2, 'le frasi con la data sono due, e si compongono da data-lancio');
-}
-
-console.log('\n4. Prezzi, immobili, letture, spazio, regalo e pacchetti');
-{
-  const schede = tag.filter(t => t.nome === 'article' && 'data-piano' in t.attr);
-  verifica(JSON.stringify(schede.map(s => s.attr['data-piano'])) === JSON.stringify(Object.keys(PIANI)), 'i piani sono tre, nell\'ordine della tabella', schede.map(s => s.attr['data-piano']));
-  for (const s of schede) {
-    const nome = s.attr['data-piano'];
-    const atteso = PIANI[nome], approvato = TESTI.schede[nome];
-    if (!atteso || !approvato) continue;
-    const t = testoDi(s);
-    const pezzo = (c) => conClasse(c, s).map(testoDi);
-    const uno = (c, x) => JSON.stringify(pezzo(c)) === JSON.stringify([x]);
-    const figli = tag.filter(x => x.antenati[x.antenati.length - 1] === s);
-    verifica(uno('piano-prezzo-anno', `${atteso.anno} ${TESTI.periodoAnno}`), `${nome}: con l'annuale «${atteso.anno} ${TESTI.periodoAnno}»`, pezzo('piano-prezzo-anno'));
-    verifica(uno('piano-prezzo-mese', `${atteso.mese} ${TESTI.periodoMese}`), `${nome}: con il mensile «${atteso.mese} ${TESTI.periodoMese}»`, pezzo('piano-prezzo-mese'));
-    // Il risparmio in euro si ricava dai prezzi scritti nella scheda: 12 volte il mensile meno l'annuale.
-    const cifra = (c) => centesimi(conClasse(c, s).flatMap(b => tag.filter(x => x.antenati.includes(b) && classi(x).includes('piano-cifra')).map(testoDi))[0] || '');
-    const cAnno = cifra('piano-prezzo-anno'), cMese = cifra('piano-prezzo-mese');
-    const risparmio = 12 * cMese - cAnno;
-    verifica(cAnno === centesimi(atteso.anno) && cMese === centesimi(atteso.mese) && risparmio > 0, `${nome}: i prezzi letti dalla scheda tornano con la tabella (12 × ${atteso.mese} − ${atteso.anno} = ${inEuro(risparmio)})`);
-    verifica(uno('piano-risparmio', `Con l'annuale risparmi ${inEuro(risparmio)}.`), `${nome}: «Con l'annuale risparmi ${inEuro(risparmio)}.», ricavato dai prezzi`, pezzo('piano-risparmio'));
-    verifica(uno('piano-risparmio', approvato.risparmio), `${nome}: la riga del risparmio è quella approvata`, pezzo('piano-risparmio'));
-    verifica(uno('piano-oppure', `oppure ${atteso.mese} al mese.`), `${nome}: senza script «oppure ${atteso.mese} al mese.» accanto al prezzo dell'anno`, pezzo('piano-oppure'));
-    // La dotazione: tre voci, in quest'ordine, la prima nuova.
-    const dot = conClasse('piano-dotazione', s);
-    const voci = dot.length === 1 ? tag.filter(x => x.antenati[x.antenati.length - 1] === dot[0]).map(testoDi) : [];
-    verifica(JSON.stringify(voci) === JSON.stringify(approvato.dotazione), `${nome}: ${approvato.dotazione.join(' · ')}`, voci);
-    verifica(JSON.stringify(voci) === JSON.stringify([`Fino a ${atteso.immobili} immobili`, `${atteso.letture} letture AI al mese`, `${atteso.gb} GB di archivio`]), `${nome}: la dotazione torna con la tabella (${atteso.immobili} immobili, ${atteso.letture} letture, ${atteso.gb} GB)`);
-    verifica(uno('piano-desc', approvato.desc), `${nome}: la descrizione`, pezzo('piano-desc'));
-    verifica(uno('piano-regalo', approvato.regalo) && approvato.regalo.includes(`: ${atteso.regalo} letture AI in più,`), `${nome}: il regalo del primo annuale (${atteso.regalo} letture)`, pezzo('piano-regalo'));
-    verifica(figli.length >= 2 && classi(figli[figli.length - 1]).includes('piano-regalo') && classi(figli[figli.length - 2]).includes('piano-desc'), `${nome}: il regalo è l'ultima riga della scheda, sotto la descrizione`, figli.map(f => classi(f).join('.')));
-    const suRichiesta = nome === 'Dimora Max';
-    verifica(t.includes('Attivazione su richiesta') === suRichiesta, `${nome}: «Attivazione su richiesta» ${suRichiesta ? "c'è" : "non c'è"}`);
+/* ---------- 1. I file ---------- */
+sezione('1. I file');
+for (const f of ['assets/veste.css', 'assets/landing.css', 'assets/landing.js', 'assets/fonts/fraunces-600-latin.woff2', 'assets/fonts/fraunces-600-latin-ext.woff2', 'assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2', 'assets/img/dimorino-cartelle.webp', 'assets/img/quaderno.jpg', 'favicon.svg', 'dimora-og-2026-10.jpg', 'robots.txt', 'sitemap.xml', 'vercel.json']) verifica(esiste(f), `c'è ${f}`);
+for (const s of STORIE) {
+  verifica(!!ARTICOLI[s.id], `c'è la pagina novita/${s.id}.html`);
+  for (const e of ['mp4', 'jpg', 'webp']) {
+    const f = `assets/novita/${s.id}.${e}`;
+    verifica(esiste(f), `c'è ${f}`);
+    if (e === 'mp4' && esiste(f)) verifica(fs.statSync(path.join(RADICE, f)).size < 1_000_000, `${f} pesa meno di 1 MB`);
   }
-  verifica(testoVero.includes(`${PROVA.giorni} giorni, ${PROVA.letture} letture con l'AI e ${PROVA.gb} GB di archivio, senza carta`), `la prova: ${PROVA.giorni} giorni, ${PROVA.letture} letture, ${PROVA.gb} GB`);
-  const pacchetti = PACCHETTI.map((p, i) => `${p.letture}${i ? '' : ' letture'} a ${p.prezzo}`).join(', ');
-  verifica(testoVero.includes(`con i pacchetti aggiuntivi: ${pacchetti}. Valgono 12 mesi`), `i pacchetti di letture: ${pacchetti}`);
-  // Nessun altro prezzo, numero di immobili, di letture o spazio nel testo vero (le anteprime decorative sono escluse).
-  const risparmi = Object.values(PIANI).map(p => inEuro(12 * centesimi(p.mese) - centesimi(p.anno)));
-  const euroAmmessi = new Set([...Object.values(PIANI).flatMap(p => [p.anno, p.mese]), ...PACCHETTI.map(p => p.prezzo), ...risparmi].map(spazi));
-  const euro = [...testoVero.matchAll(/(\d+(?:,\d+)?) €/g)].map(m => m[0]).filter(e => !euroAmmessi.has(e));
-  verifica(euro.length === 0, `nessun altro importo in euro (i risparmi ammessi sono quelli dei prezzi: ${risparmi.join(', ')})`, euro);
-  const immobiliAmmessi = new Set(Object.values(PIANI).map(p => p.immobili));
-  const immobili = [...testoVero.matchAll(/(\d+) immobili/g)].map(m => +m[1]).filter(n => !immobiliAmmessi.has(n));
-  verifica(immobili.length === 0, 'nessun altro numero di immobili', immobili);
-  const gbAmmessi = new Set([PROVA.gb, ...Object.values(PIANI).map(p => p.gb)]);
-  const gb = [...testoVero.matchAll(/(\d+) GB/g)].map(m => +m[1]).filter(n => !gbAmmessi.has(n));
-  verifica(gb.length === 0, 'nessun altro spazio in GB', gb);
-  const lettureAmmesse = new Set([PROVA.letture, ...Object.values(PIANI).flatMap(p => [p.letture, p.regalo]), ...PACCHETTI.map(p => p.letture)]);
-  const letture = [...testoVero.matchAll(/(\d+) letture/g)].map(m => +m[1]).filter(n => !lettureAmmesse.has(n));
-  verifica(letture.length === 0, 'nessun altro numero di letture', letture);
 }
+for (const vecchio of ['assets/stile.css', 'assets/pagina.js']) verifica(!esiste(vecchio), `${vecchio} non c'è più`);
 
-console.log('\n5. Risorse caricate');
-{
-  const caricate = [];
-  for (const t of tag) {
-    if (t.nome === 'script' && t.attr.src) caricate.push(t.attr.src);
-    if (t.nome === 'link' && t.attr.rel !== 'canonical') caricate.push(t.attr.href);
-    if (['img', 'source', 'iframe', 'video', 'audio', 'embed'].includes(t.nome) && t.attr.src) caricate.push(t.attr.src);
-    if (t.attr.srcset) caricate.push(...t.attr.srcset.split(',').map(s => s.trim().split(/\s+/)[0]));
-    if (t.attr.style) caricate.push(...[...t.attr.style.matchAll(/url\(\s*['"]?([^'")]+)/g)].map(m => m[1]));
-  }
-  caricate.push(...[...CSS.matchAll(/url\(\s*['"]?([^'")]+)/g)].map(m => 'assets/' + m[1]));
-  caricate.push(...[...CSS.matchAll(/@import\s+(?:url\()?['"]?([^'")\s;]+)/g)].map(m => m[1]));
-  const esterne = caricate.filter(u => /^(https?:)?\/\//i.test(u));
-  verifica(esterne.length === 0, `script, stili, font e immagini vengono dal sito (${caricate.length} risorse)`, esterne);
-  const mancanti = caricate.filter(u => !/^(https?:)?\/\//i.test(u) && u !== DALLA_PIATTAFORMA).map(u => u.split(/[?#]/)[0]).filter(u => !fs.existsSync(path.join(RADICE, u)));
-  verifica(mancanti.length === 0, `ogni risorsa esiste nel repository (tranne ${DALLA_PIATTAFORMA}, servito dalla piattaforma dallo stesso sito)`, mancanti);
-  const indirizziScript = [...JS_CODICE.matchAll(/https?:\/\/[^\s'"`)]+/g)].map(m => m[0]);
-  verifica(indirizziScript.length > 0 && indirizziScript.every(u => new URL(u).origin === SUPABASE), 'lo script chiama solo Supabase (per il modulo)', indirizziScript);
-  verifica(!/fonts\.googleapis|fonts\.gstatic|googletagmanager|google-analytics|plausible|<iframe/i.test(HTML + CSS + JS), 'niente carattere da altri siti, niente statistiche di altri siti');
-  verifica(!/document\.cookie|localStorage|sessionStorage/.test(JS), 'nessun cookie, nessuna memoria nel browser');
+/* ---------- 2. La veste ---------- */
+sezione('2. La veste');
+verifica(/commit 8a568fa/.test(VESTE.slice(0, 600)), "veste.css dice in cima da quale commit dell'app viene");
+// I valori della colonna nuova di app/globals.css (commit 8a568fa).
+const COMPITI = {
+  '--c-fondo': '#FAF3E3', '--c-scheda': '#FFFDF8', '--c-fondo-tenue': '#F6EEDC', '--c-riga': '#E0D2B6', '--c-bordo': '#E0D2B6',
+  '--c-bordo-campo': '#8C8470', '--c-testo': '#27302A', '--c-secondario': '#40453C', '--c-etichetta': '#5A5E54',
+  '--c-principale': '#20603D', '--c-principale-ombra': '#174A2F', '--c-su-scuro': '#FFFDF8', '--c-stato-fondo': '#E6EFE7',
+  '--c-stato-testo': '#20603D', '--c-esito-fondo': '#E6EFE7', '--c-ritardo': '#8F1818', '--c-accento': '#CE7F33',
+  '--c-avviso-fondo': '#FBE3C4', '--c-avviso-testo': '#6B3D0C',
+  '--text-piccolo': '14px', '--text-minimo': '13px', '--text-sezione': '17px', '--radius-veste': '14px', '--m-corpo': '16px',
+};
+for (const [k, v] of Object.entries(COMPITI)) verifica(new RegExp(`${k}:\\s*${v}\\s*;`, 'i').test(VESTE), `veste.css: ${k} = ${v}`);
+verifica(/@media \(min-width: 64rem\)\s*\{\s*:root\s*\{\s*--m-corpo:\s*15px/.test(VESTE), "il corpo è 15 px dal computer, come nell'app");
+verifica(/font-family: 'Fraunces';\s*font-style: normal;\s*font-weight: 600;/.test(VESTE), 'Fraunces nel solo peso 600');
+const cssSenzaCommenti = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+verifica(!/#[0-9a-f]{3,8}\b/i.test(cssSenzaCommenti), 'landing.css non scrive colori esadecimali', (cssSenzaCommenti.match(/#[0-9a-f]{3,8}\b/gi) || []).join(' '));
+verifica(!/\brgba?\(|\bhsla?\(|\boklch\(/i.test(cssSenzaCommenti), 'landing.css non scrive colori rgb/hsl/oklch');
+verifica(!/font-family:(?!\s*var\()/i.test(cssSenzaCommenti), 'landing.css usa solo i caratteri della veste');
+for (const [p, h] of Object.entries(PAGINE)) {
+  const colori = new Set((h.match(/#[0-9A-Fa-f]{6}\b/g) || []).map((c) => c.toUpperCase()));
+  const ammessi = new Set(['#27302A', '#CE7F33', '#F6EEDC', '#FAF3E3']); // il tratto, la porta, il fondo dei disegni; il colore del tema
+  verifica([...colori].every((c) => ammessi.has(c)), `${p}: nell'HTML solo i colori dei disegni delle case`, [...colori].filter((c) => !ammessi.has(c)).join(' '));
+  verifica(!/\sstyle="[^"]*(color|background)/.test(h), `${p}: nessuno stile in linea con colori`);
 }
+// Il disegno della casa in apertura è il sorgente «casa» della regia, così com'è (aggiunti solo pathLength e l'ordine del tratto).
+for (const d of ['M40 100V52q0-8 8-8h6', 'M72 50l34-26 34 26', 'M100 100V86a6 6 0 0 1 12 0v14z', 'M10 100h200']) verifica(HTML.includes(`d="${d}"`), `la casa dell'apertura ha il tratto ${d}`);
+verifica(/x="78" y="48" width="56" height="52"/.test(HTML) && /x="134" y="58" width="40" height="42"/.test(HTML), "la casa dell'apertura ha i suoi due corpi");
+verifica(/class="casa-porta"[^>]*fill="#CE7F33"/.test(HTML), 'la porta ha il tocco ambra');
 
-console.log('\n6. Collegamenti');
-{
-  const ids = new Set(tag.filter(t => t.attr.id).map(t => t.attr.id));
-  const link = tag.filter(t => t.nome === 'a' && t.attr.href !== undefined);
-  const interni = link.filter(a => a.attr.href.startsWith('#'));
-  const rotti = interni.filter(a => !ids.has(a.attr.href.slice(1))).map(a => a.attr.href);
-  verifica(interni.length > 0 && rotti.length === 0, `i ${interni.length} collegamenti interni portano a sezioni che esistono`, rotti);
-  const mailto = link.filter(a => a.attr.href.startsWith('mailto:'));
-  verifica(mailto.length > 0 && mailto.every(a => MAILTO_AMMESSI.includes(a.attr.href) && a.antenati.some(x => x.nome === 'footer')), 'i mailto: sono solo quelli del piè di pagina', mailto.map(a => a.attr.href));
-  // Le schermate dell'apertura sono collegamenti al loro file (la lente): ammessi, purché il file sia nel repository.
-  const aUnaSchermata = (a) => 'data-lente' in a.attr && fs.existsSync(path.join(RADICE, a.attr.href));
-  const altri = link.filter(a => !a.attr.href.startsWith('#') && !a.attr.href.startsWith('mailto:') && !aUnaSchermata(a)).map(a => a.attr.href).filter(h => !COLLEGAMENTI_AMMESSI.includes(h) && h !== CANONICO);
-  verifica(altri.length === 0, "gli altri collegamenti vanno solo all'app (login, termini, privacy), all'indirizzo canonico o ai file delle schermate", altri);
-  const canonici = tag.filter(t => t.nome === 'link' && t.attr.rel === 'canonical');
-  verifica(canonici.length === 1 && canonici[0].attr.href === CANONICO, `l'indirizzo canonico è ${CANONICO}`);
-  const accedi = link.filter(a => spazi(testi.filter(x => x.antenati.includes(a)).map(x => x.testo).join(' ')) === 'Accedi').map(a => a.attr.href);
-  verifica(accedi.length >= 2 && accedi.every(h => h === 'https://app.dimorapp.com/login'), '«Accedi» porta a app.dimorapp.com/login', accedi);
+/* ---------- 3. Le storie ---------- */
+sezione('3. Le storie');
+const racconto = HTML.slice(HTML.indexOf('<!--RACCONTO-->'), HTML.indexOf('<!--/RACCONTO-->'));
+const idRacconto = attributi(racconto, 'data-storia');
+verifica(JSON.stringify(idRacconto) === JSON.stringify(['imu-calcolata', 'rate-condominio', 'carichi-al-resto', 'pacchetto-commercialista', 'bonus-casa', 'canone-a-meta']), 'il racconto: IMU, condominio, caricamento, commercialista, bonus, canone', idRacconto.join(', '));
+const testoRacconto = testo(racconto);
+for (const s of STORIE) {
+  verifica(testoRacconto.includes(s.titolo) && testoRacconto.includes(s.testo), `racconto: «${s.titolo}» col suo testo breve`);
+  verifica(racconto.includes(`href="${indirizzoArticolo(s.id)}"`), `racconto: «${s.titolo}» porta al suo articolo`);
 }
-
-console.log('\n7. Testi approvati, parola per parola');
-{
-  const prova = conClasse('prova-desc').map(testoDi);
-  verifica(JSON.stringify(prova) === JSON.stringify([TESTI.prova]), 'la prova gratuita', prova);
-  const testa = conClasse('piani-testa');
-  const sotto = testa.length === 1 ? tag.filter(t => t.nome === 'span' && t.antenati[t.antenati.length - 1] === testa[0]).map(testoDi) : [];
-  verifica(JSON.stringify(sotto) === JSON.stringify([TESTI.piani]), 'la frase dei piani', sotto);
-  const elencoNote = conClasse('piani-note');
-  const note = elencoNote.length === 1 ? tag.filter(t => t.nome === 'li' && t.antenati[t.antenati.length - 1] === elencoNote[0]) : [];
-  verifica(JSON.stringify(note.map(testoDi)) === JSON.stringify(TESTI.note), `le note sotto le schede sono ${TESTI.note.length}, in quest'ordine, e nient'altro`, note.map(testoDi));
-  verifica(note.length > 0 && classi(note[note.length - 1]).includes('piani-note-ultima'), 'la nota sui prezzi previsti chiude il riquadro');
-  const eroe = conClasse('eroe-lead').map(testoDi);
-  verifica(JSON.stringify(eroe) === JSON.stringify([TESTI.eroe]), 'il testo in alto (uno solo, per computer e telefono)', eroe);
-  const firma = conClasse('firma-ruolo').map(testoDi);
-  verifica(JSON.stringify(firma) === JSON.stringify([TESTI.firma]), `la firma della lettera: «${TESTI.firma}»`, firma);
-  const allApertura = "30 giorni gratis, 20 letture con l'AI, senza carta.";
-  verifica(tuttoIlTesto.split(allApertura).length - 1 === 3, `«${allApertura}» in cima e in fondo, come prima (3 volte)`);
-  const guida = conClasse('mascotte-testi');
-  verifica(guida.length === 1, 'Dimorino ha un riquadro solo');
-  const g = guida[0];
-  const dentro = (prova) => tag.filter(t => t.antenati.includes(g) && prova(t)).map(testoDi);
-  const occhiello = dentro(t => classi(t).includes('occhiello')), titolo = dentro(t => t.nome === 'h3'), testo = dentro(t => t.nome === 'p');
-  verifica(JSON.stringify(occhiello) === JSON.stringify([TESTI.guidaOcchiello]), `Dimorino: «${TESTI.guidaOcchiello}»`, occhiello);
-  verifica(JSON.stringify(titolo) === JSON.stringify([TESTI.guidaTitolo]), `Dimorino: «${TESTI.guidaTitolo}»`, titolo);
-  verifica(JSON.stringify(testo) === JSON.stringify([TESTI.guidaTesto]), 'Dimorino: il testo', testo);
-  // Né nel testo della pagina, né nel sorgente (anche nei commenti), né nello stile, né nello script.
-  const sorgenti = [tuttoIlTesto, spazi(entita(HTML)), spazi(CSS), spazi(JS)];
-  const rimasti = VIA.filter(v => sorgenti.some(s => s.includes(v)));
-  verifica(rimasti.length === 0, `i testi di prima non ci sono più da nessuna parte (${VIA.length} cercati)`, rimasti);
+const carte = HTML.slice(HTML.indexOf('<!--CARTE-->'), HTML.indexOf('<!--/CARTE-->'));
+const testoCarte = testo(carte);
+const conCarta = STORIE.filter((s) => s.carta);
+verifica((carte.match(/class="carta"/g) || []).length === conCarta.length, `le carte di ottobre sono ${conCarta.length}`);
+for (const s of conCarta) verifica(testoCarte.includes(s.titolo) && testoCarte.includes(s.testo) && carte.includes(`href="${indirizzoArticolo(s.id)}"`), `carta: «${s.titolo}»`);
+verifica(testoCarte.split(NOVITA_LANDING.etichetta).length - 1 === conCarta.length, 'ogni carta dice «Nuovo · ottobre 2026»');
+verifica(testo(HTML).includes(NOVITA_LANDING.titolo) && testo(HTML).includes(NOVITA_LANDING.testo), 'la sezione delle novità ha N26 e N27');
+for (const s of STORIE) {
+  const h = ARTICOLI[s.id];
+  if (!h) continue;
+  const corpo = testo(h.slice(h.indexOf('<main'), h.indexOf('</main>')));
+  const a = s.articolo;
+  const chiusa = a.fonti.length ? PARTI.fonti : a.senzaFonti;
+  verifica(a.fonti.length > 0 || /^Senza fonti: /.test(a.senzaFonti || ''), `articolo ${s.id}: le fonti, o la riga «Senza fonti»`);
+  const attesi = [s.titolo, a.rigaSotto, PARTI.perche, ...a.perche, PARTI.passi, ...a.passi, PARTI.alComando, a.alComando, PARTI.firma, chiusa, PARTI.azione, ...a.fonti.map((f) => f.titolo)];
+  const mancanti = attesi.filter((t) => !corpo.includes(t));
+  verifica(mancanti.length === 0, `articolo ${s.id}: tutti i testi, parola per parola`, mancanti.map((m) => m.slice(0, 50)).join(' | '));
+  verifica(!/Nota interna/.test(corpo), `articolo ${s.id}: niente note interne della regia`);
+  for (const f of a.fonti) for (const u of f.indirizzi) verifica(h.includes(`href="${u}"`), `articolo ${s.id}: la fonte ${new URL(u).hostname} ha il collegamento`);
+  const ordine = [a.rigaSotto, PARTI.perche, PARTI.passi, PARTI.alComando, PARTI.azione, PARTI.firma, chiusa].map((t) => corpo.indexOf(t));
+  verifica(ordine.every((x, i) => i === 0 || x > ordine[i - 1]), `articolo ${s.id}: le parti nel loro ordine`);
+  for (const via of ['Guarda la tua IMU', 'Prepara il pacchetto', 'Carica un preventivo', 'Carica il preventivo', 'Vai agli incassi', 'saldo stimato']) verifica(!corpo.includes(via), `articolo ${s.id}: niente «${via}» dell'app`);
+  verifica(h.includes(`href="${ISCRIZIONE}"`) && h.includes('data-evento="clic_inizia_prova"'), `articolo ${s.id}: «Prova Dimora gratis» porta all'iscrizione`);
+  verifica(h.includes('<!--TESTATA-->') && h.includes('<!--PIEDE-->'), `articolo ${s.id}: testata e piè di pagina della landing`);
+  verifica(h.includes(`data-src="/assets/novita/${s.id}.mp4"`) && h.includes(`src="/assets/novita/${s.id}.webp"`) && h.includes(`content="${ORIGINE}/assets/novita/${s.id}.jpg"`), `articolo ${s.id}: il suo video e la sua locandina`);
+  verifica(!/<video[^>]*\sautoplay/.test(h) && !/<video[^>]*\ssrc=/.test(h), `articolo ${s.id}: il video non parte e non si scarica senza lo script`);
 }
+const piede = HTML.slice(HTML.indexOf('<!--PIEDE-NOVITA-->'), HTML.indexOf('<!--/PIEDE-NOVITA-->'));
+verifica(STORIE.every((s) => piede.includes(`href="${indirizzoArticolo(s.id)}"`)), 'il piè di pagina porta a tutti gli articoli');
 
-console.log("\n8. L'interruttore annuale / mensile");
-{
-  const sezione = tag.find(t => t.nome === 'section' && t.attr.id === 'prezzi');
-  verifica(!!sezione && 'data-prezzi' in sezione.attr && !('data-periodo' in sezione.attr), 'la sezione dei prezzi ha data-prezzi e nasce senza data-periodo (lo scrive lo script)');
-  const inter = conClasse('interruttore');
-  verifica(inter.length === 1 && inter[0].antenati.includes(sezione), "l'interruttore è uno, nella sezione dei prezzi");
-  const i0 = inter[0];
-  const testa = conClasse('piani-testa')[0], griglia = conClasse('piani')[0];
-  verifica(!!testa && !!griglia && tag.indexOf(testa) < tag.indexOf(i0) && tag.indexOf(i0) < tag.indexOf(griglia), "l'interruttore sta sotto «Tutte le funzioni…» e sopra le tre schede");
-  verifica(!!testa && testoDi(testa).endsWith(TESTI.piani), "la frase sopra l'interruttore è quella approvata", testa && testoDi(testa));
-  const dentro = tag.filter(t => t.antenati.includes(i0));
-  const bottoni = dentro.filter(t => t.nome === 'button');
-  verifica(bottoni.length === 2 && bottoni.every(b => b.attr.type === 'button') && !dentro.some(t => ['a', 'input', 'label', 'select'].includes(t.nome)), "due bottoni veri (type=\"button\") e nient'altro di cliccabile");
-  const [anno, mese] = bottoni;
-  verifica(anno?.attr['data-periodo-scelta'] === 'anno' && anno?.attr['aria-pressed'] === 'true', "il primo è l'annuale, scelto all'apertura (aria-pressed=\"true\")");
-  verifica(mese?.attr['data-periodo-scelta'] === 'mese' && mese?.attr['aria-pressed'] === 'false', 'il secondo è il mensile (aria-pressed="false")');
-  const tAnno = anno ? testoDi(anno) : '', tMese = mese ? testoDi(mese) : '';
-  const scritto = Number((/fino al (\d+)%/.exec(tAnno) || [])[1]);
-  // Il risparmio più alto, ricavato dai prezzi scritti nelle schede (non dalla tabella e non dal testo), per difetto.
-  const schede = tag.filter(t => t.nome === 'article' && 'data-piano' in t.attr);
-  const cifra = (s, c) => centesimi(conClasse(c, s).flatMap(b => tag.filter(x => x.antenati.includes(b) && classi(x).includes('piano-cifra')).map(testoDi))[0] || '');
-  const risparmi = schede.map(s => (1 - cifra(s, 'piano-prezzo-anno') / (12 * cifra(s, 'piano-prezzo-mese'))) * 100);
-  const massimo = Math.floor(Math.max(...risparmi));
-  verifica(risparmi.length === 3 && risparmi.every(r => isFinite(r) && r > 0), `i risparmi letti dalle schede: ${risparmi.map(r => r.toFixed(2)).join('%, ')}%`);
-  verifica(scritto === massimo, `«fino al ${scritto}%» è il risparmio più alto delle schede, per difetto (${massimo}%)`);
-  verifica(tAnno === TESTI.annuale.replace('{N}', String(massimo)) && tMese === TESTI.mensile, `le due voci: «${tAnno}» e «${tMese}»`);
-  const css = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
-  const regola = (sel) => [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(m => m[1].split(',').map(x => x.trim()).includes(sel)).map(m => m[2]).join(';');
-  const nascosto = (sel) => /display:\s*none/.test(regola(sel));
-  verifica(nascosto('[data-prezzi]:not([data-periodo]) .interruttore') && nascosto('[data-prezzi]:not([data-periodo]) .piano-prezzo-mese'), 'senza script niente interruttore e niente secondo prezzo: restano i due prezzi insieme');
-  verifica(nascosto('[data-prezzi][data-periodo] .piano-oppure'), 'con lo script «oppure … al mese.» sparisce dalle schede');
-  verifica(nascosto('[data-prezzi][data-periodo="anno"] .piano-prezzo-mese') && nascosto('[data-prezzi][data-periodo="mese"] .piano-prezzo-anno'), 'un prezzo alla volta, quello scelto');
-  const riga = regola('[data-prezzi][data-periodo="mese"] .piano-risparmio');
-  verifica(/visibility:\s*hidden/.test(riga) && !/display/.test(riga), 'con il mensile la riga del risparmio non si vede ma tiene il suo spazio', riga);
-  const regalo = regola('[data-prezzi][data-periodo="mese"] .piano-regalo');
-  verifica(/visibility:\s*hidden/.test(regalo) && !/display/.test(regalo), 'con il mensile la riga del regalo non si vede ma tiene il suo spazio', regalo);
-  // Ogni regola che nomina il regalo, anche dentro le @media: l'unica che lo nasconde è quella del mensile,
-  // quindi con l'annuale e senza script il regalo si vede.
-  const regoleRegalo = [...css.matchAll(/([^{}]*piano-regalo[^{}]*)\{([^{}]*)\}/g)].map(m => ({ sel: m[1].split(',').map(x => x.trim()).filter(x => x.includes('piano-regalo')), corpo: m[2] }));
-  const nascondono = regoleRegalo.filter(r => /display:\s*none|visibility:\s*hidden|opacity:\s*0(?![.\d])/.test(r.corpo)).flatMap(r => r.sel);
-  verifica(regoleRegalo.length > 0 && JSON.stringify(nascondono) === JSON.stringify(['[data-prezzi][data-periodo="mese"] .piano-regalo']), "il regalo si nasconde solo con il mensile: con l'annuale e senza script si vede", nascondono);
-  // Dove «l'anno, in un'unica soluzione» non sta accanto alla cifra, il periodo va sotto in tutte e tre le schede.
-  const strette = /@media\s*\(max-width:\s*359px\),\s*\(min-width:\s*1024px\)\s*and\s*\(max-width:\s*1279px\)\s*\{[^{}]*\{[^{}]*flex-wrap:\s*wrap[^{}]*\}\s*\.piano-periodo\s*\{\s*flex-basis:\s*100%;?\s*\}/.test(css);
-  verifica(strette, 'nelle schede strette (sotto i 360 px e fra 1024 e 1279 px) il periodo va sotto la cifra: le righe del prezzo restano uguali');
-  // Sotto il mouse un piano non si sposta: le tre schede restano alla stessa altezza.
-  const hover = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => m[1].split(',').map(x => x.trim()).includes('.piano:hover'));
-  verifica(hover.length === 1 && /transform:\s*none/.test(hover[0][2]) && /border-color/.test(hover[0][2]) && hover[0][1].includes('.js .rv.in.piano:hover'), 'sotto il mouse un piano non si solleva: si distingue con ombra e bordo', hover.map(m => m[2]));
-  // Le note: centrate, una sotto l'altra, in una colonna di 760 px al massimo; l'ultima più piccola e più chiara, senza riga.
-  const note = regola('.piani-note'), righe = regola('.piani-note li'), ultima = regola('.piani-note .piani-note-ultima');
-  verifica(/align-items:\s*center/.test(note) && /text-align:\s*center/.test(note) && /flex-direction:\s*column/.test(note) && !/grid/.test(css.match(/\.piani-note\s*\{[^}]*\}/g).join(' ')), 'le note sono centrate, una sotto l\'altra (niente colonne)', note);
-  verifica(/max-width:\s*760px/.test(righe), 'le note stanno in una colonna larga al massimo 760 px', righe);
-  verifica(/color:\s*var\(--muto\)/.test(ultima) && !/border/.test(css.match(/[^{}]*piani-note-ultima[^{}]*\{[^}]*\}/g).join(' ')), 'l\'ultima nota è più chiara e senza riga di separazione', ultima);
-  const corpi = [...css.matchAll(/\.piani-note \.piani-note-ultima\s*\{[^}]*font-size:\s*([\d.]+)px/g)].map(m => +m[1]);
-  const corpiNote = [...css.matchAll(/\.piani-note\s*\{[^}]*font-size:\s*([\d.]+)px/g)].map(m => +m[1]);
-  verifica(corpi.length === 2 && corpiNote.length === 2 && corpi.every((c, i) => c < corpiNote[i]), `l'ultima nota è più piccola delle altre, sul telefono e sul computer (${corpi.join('/')} contro ${corpiNote.join('/')} px)`);
-  const insieme = [...css.matchAll(/([^{}]+)\{/g)].map(m => m[1].split(',').map(x => x.trim())).filter(s => s.includes('.piano-mese') && s.includes('.piano .piano-regalo'));
-  verifica(insieme.length === 2, 'la riga del regalo ha lo stile della riga del risparmio (le stesse regole di .piano-mese, sul telefono e sul computer)', insieme.length);
-  verifica(/setAttribute\('data-periodo', periodo\)/.test(JS_CODICE) && /setAttribute\('aria-pressed'/.test(JS_CODICE) && /scegli\('anno'\)/.test(JS_CODICE), "lo script scrive data-periodo e aria-pressed, e parte dall'annuale");
+/* ---------- 4. Prezzi e domande (testi di oggi, corretti il 22/10) ---------- */
+sezione('4. Prezzi e domande');
+const PIANI = {
+  'Dimora':      { anno: '59 €',  mese: '6,90 €',  immobili: 3,  letture: 20, gb: 5,  regalo: 20, risparmio: '23,80 €' },
+  'Dimora Plus': { anno: '119 €', mese: '12,90 €', immobili: 10, letture: 40, gb: 10, regalo: 40, risparmio: '35,80 €' },
+  'Dimora Max':  { anno: '219 €', mese: '22,90 €', immobili: 25, letture: 80, gb: 20, regalo: 80, risparmio: '55,80 €' },
+};
+const cent = (s) => { const m = /^(\d+)(?:,(\d{2}))? €$/.exec(s); return +m[1] * 100 + +(m[2] || 0); };
+for (const [nome, p] of Object.entries(PIANI)) {
+  const i = HTML.indexOf(`data-piano="${nome}"`);
+  const scheda = testo(HTML.slice(i, HTML.indexOf('</article>', i)));
+  for (const t of [p.anno, p.mese, `Fino a ${p.immobili} immobili`, `${p.letture} letture AI al mese`, `${p.gb} GB di archivio`, `${p.regalo} letture AI in più`, `Con l'annuale risparmi ${p.risparmio}`]) verifica(scheda.includes(t), `${nome}: «${t}»`);
+  verifica(cent(p.mese) * 12 - cent(p.anno) === cent(p.risparmio), `${nome}: il risparmio è dodici mesi meno l'annuale`);
 }
+const risparmioMax = Math.max(...Object.values(PIANI).map((p) => (cent(p.mese) * 12 - cent(p.anno)) / (cent(p.mese) * 12)));
+verifica(testo(HTML).includes(`risparmi fino al ${Math.floor(risparmioMax * 100)}%`), "l'interruttore dice il risparmio massimo, arrotondato per difetto");
+verifica(testo(HTML).includes("30 giorni, 20 letture con l'AI e 1 GB di archivio, senza carta e senza addebiti automatici. Tutte le funzioni, senza limite di immobili."), 'la prova gratuita, parola per parola');
+verifica(testo(HTML).includes('10 letture a 4,90 €, 20 a 7,90 €, 100 a 34,90 €'), 'i pacchetti');
+const DOMANDE = ['Per chi è pensata Dimora?', 'Che cosa succede alla fine della prova?', 'Quanto costa dopo la prova?', 'Come funzionano le letture AI?', 'Posso avere più letture?', 'Quali documenti legge?', 'Quanto può essere lungo un documento?', 'I miei documenti sono al sicuro?', 'Serve installare qualcosa?', 'Posso portare via i miei dati?'];
+const domande = [...HTML.matchAll(/<details class="domanda"><summary><h3>([^<]+)<\/h3>/g)].map((m) => entita(m[1]));
+verifica(JSON.stringify(domande) === JSON.stringify(DOMANDE), 'le dieci domande nel loro ordine', domande.join(' | '));
+verifica(!/<details class="domanda" open/.test(HTML), 'le domande partono chiuse');
 
-console.log('\n9. Le domande frequenti');
-{
-  const elenco = conClasse('domande');
-  verifica(elenco.length === 1, 'le domande stanno in un elenco solo');
-  const domande = tag.filter(t => classi(t).includes('domanda'));
-  verifica(domande.length === DOMANDE.length && domande.every(d => d.nome === 'details' && d.antenati.includes(elenco[0])), `ogni domanda è un <details> (${domande.length})`, domande.map(d => d.nome));
-  verifica(domande.every(d => !('open' in d.attr)), "all'apertura della pagina sono tutte chiuse");
-  const titoli = domande.map(d => {
-    const s = tag.filter(t => t.nome === 'summary' && t.antenati.includes(d));
-    const h = s.length === 1 ? tag.filter(t => t.nome === 'h3' && t.antenati.includes(s[0])) : [];
-    return h.length === 1 ? testoDi(h[0]) : null;
+/* ---------- 5. Le risorse ---------- */
+sezione('5. Le risorse');
+const STATISTICHE = '/_vercel/insights/script.js';
+for (const [p, h] of Object.entries(PAGINE)) {
+  const senzaLink = h.replace(/<a\s[^>]*>/g, '');
+  const risorse = [...attributi(senzaLink, 'src'), ...attributi(senzaLink, 'data-src'), ...[...h.matchAll(/<link[^>]+href="([^"]+)"/g)].map((m) => m[1]).filter((u) => !/^https:\/\/dimorapp\.com\//.test(u))];
+  const esterne = risorse.filter((u) => /^(https?:)?\/\//.test(u));
+  verifica(esterne.length === 0, `${p}: nessuna risorsa da un altro sito`, esterne.join(' '));
+  const mancanti = risorse.filter((u) => u.startsWith('/') && u !== STATISTICHE).map((u) => u.slice(1)).filter((u) => !esiste(u));
+  verifica(mancanti.length === 0, `${p}: ogni risorsa è un file del repository`, mancanti.join(' '));
+  const script = [...h.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]);
+  verifica(JSON.stringify(script) === JSON.stringify(['/assets/landing.js', STATISTICHE]), `${p}: solo landing.js e le statistiche di Vercel`, script.join(' '));
+  verifica(!/googletagmanager|google-analytics|gtag\(|fbq\(|hotjar|clarity\.ms/i.test(h), `${p}: nessun tag di terzi`);
+}
+verifica(!/document\.cookie|localStorage|sessionStorage/.test(JS), 'lo script non scrive cookie né memoria del browser');
+verifica(!/\bfetch\(|XMLHttpRequest|sendBeacon/.test(JS), 'lo script non chiama nessun indirizzo');
+
+/* ---------- 6. I collegamenti ---------- */
+sezione('6. I collegamenti');
+const FONTI = new Set(STORIE.flatMap((s) => s.articolo.fonti.flatMap((f) => f.indirizzi)));
+const APP = new Set([ISCRIZIONE, 'https://app.dimorapp.com/termini', 'https://app.dimorapp.com/privacy']);
+const SEZIONI = new Set([...HTML.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+for (const [p, h] of Object.entries(PAGINE)) {
+  const hrefs = [...h.matchAll(/<a\s[^>]*href="([^"]+)"/g)].map((m) => entita(m[1]));
+  const strani = hrefs.filter((u) => {
+    if (APP.has(u) || FONTI.has(u) || u === 'mailto:assistenza@dimorapp.com' || u === '/') return false;
+    if (u.startsWith('/#')) return !SEZIONI.has(u.slice(2));
+    if (u.startsWith('#')) return !new RegExp(`\\sid="${u.slice(1)}"`).test(h);
+    if (u.startsWith('/novita/')) return !STORIE.some((s) => indirizzoArticolo(s.id) === u);
+    return true;
   });
-  verifica(JSON.stringify(titoli) === JSON.stringify(DOMANDE), "il titolo di ogni domanda è nella sua riga (<summary>), nel loro ordine (le due sulle letture dopo «Quanto costa dopo la prova?»)", titoli);
-  const segni = domande.map(d => tag.filter(t => t.antenati.includes(d) && classi(t).includes('domanda-segno')));
-  verifica(segni.every(s => s.length === 1 && s[0].attr['aria-hidden'] === 'true' && !testoDi(s[0])), 'ogni riga ha il suo «+», solo disegnato (aria-hidden)');
-  const risposte = domande.map(d => tag.filter(t => t.nome === 'p' && t.antenati.includes(d)).map(testoDi));
-  const iSicura = DOMANDE.indexOf(TESTI.sicuroDomanda);
-  verifica(risposte.every((r, i) => r.length === (i === iSicura ? 3 : 1) && r.every(Boolean)), `ogni domanda ha la sua risposta (in tre paragrafi «${TESTI.sicuroDomanda}»)`);
-  const sicura = risposte[iSicura];
-  verifica(sicura?.[0] === TESTI.sicuroRisposta[0] && sicura?.[1] === TESTI.sicuroRisposta[1], `«${TESTI.sicuroDomanda}»: i primi due paragrafi, parola per parola`, sicura);
-  // Il terzo paragrafo col collegamento: si confronta il sorgente, perché il testo letto mette uno spazio prima e dopo il collegamento.
-  const ultimo = tag.filter(t => t.nome === 'p' && t.antenati.includes(domande[iSicura]))[2];
-  const linkUltimo = ultimo ? tag.filter(t => t.nome === 'a' && t.antenati.includes(ultimo)) : [];
-  verifica(HTML.split(TESTI.sicuroUltimo).length === 2 && linkUltimo.length === 1 && linkUltimo[0].attr.href === 'https://app.dimorapp.com/privacy' && testoDi(linkUltimo[0]) === 'informativa sulla privacy',
-    `«${TESTI.sicuroDomanda}»: il terzo paragrafo parola per parola, con «informativa sulla privacy» che porta all'informativa`, ultimo && testoDi(ultimo));
-  // Le risposte nuove (6/10), parola per parola.
-  const nuove = [
-    ['Che cosa succede alla fine della prova?', TESTI.fineProva],
-    ['Quanto costa dopo la prova?', TESTI.costo],
-    [TESTI.lettureDomanda, TESTI.lettureRisposta],
-    [TESTI.pacchettiDomanda, TESTI.pacchettiRisposta],
-  ];
-  for (const [d, r] of nuove) {
-    const data = risposte[DOMANDE.indexOf(d)];
-    verifica(data?.[0] === r, `«${d}»: la risposta approvata`, data);
-  }
-  const perChi = risposte[DOMANDE.indexOf('Per chi è pensata Dimora?')];
-  verifica(perChi?.[0] === PER_CHI_RISPOSTA, '«Per chi è pensata Dimora?»: la risposta del 7/10', perChi);
-  // Le altre non cambiano.
-  for (const [d, r] of Object.entries(RISPOSTE_DI_SEMPRE)) {
-    const data = risposte[DOMANDE.indexOf(d)];
-    verifica(data?.[0] === r, `«${d}»: la risposta di sempre`, data);
-  }
+  verifica(strani.length === 0, `${p}: ogni collegamento va dove deve`, strani.join(' '));
+  const prova = [...h.matchAll(/<a\s[^>]*>(Prova gratis|Prova Dimora gratis|Inizia la prova gratuita)<\/a>/g)].map((m) => m[0]);
+  verifica(prova.length > 0 && prova.every((a) => a.includes(`href="${ISCRIZIONE}"`) && a.includes('data-evento="clic_inizia_prova"')), `${p}: ogni «Prova gratis» porta all'iscrizione di oggi, con il suo evento`);
+  const eventi = [...h.matchAll(/data-evento="([^"]+)"\s+data-posizione="([^"]+)"/g)].map((m) => m[1] + '/' + m[2]);
+  verifica(eventi.every((e) => /^(clic_inizia_prova|clic_accedi)\//.test(e)), `${p}: solo gli eventi clic_inizia_prova e clic_accedi`);
+  verifica(new Set(eventi).size === eventi.length, `${p}: nessuna coppia evento e posizione ripetuta`);
 }
 
-console.log("\n10. L'apertura e i sei raccordi");
-{
-  // La scheda del browser e le descrizioni: il titolo nuovo, e il testo dell'apertura per motori di ricerca e social.
-  const titolo = testi.filter(x => x.antenati.some(a => a.nome === 'title')).map(x => spazi(x.testo));
-  verifica(JSON.stringify(titolo) === JSON.stringify([APERTURA.titoloScheda]), `il titolo della scheda: «${APERTURA.titoloScheda}»`, titolo);
-  const meta = (k, v) => tag.filter(t => t.nome === 'meta' && t.attr[k] === v).map(t => t.attr.content);
-  verifica(JSON.stringify(meta('property', 'og:title')) === JSON.stringify([APERTURA.titoloScheda]) && JSON.stringify(meta('name', 'twitter:title')) === JSON.stringify([APERTURA.titoloScheda]), 'og:title e twitter:title sono il titolo della scheda');
-  for (const [k, v] of [['name', 'description'], ['property', 'og:description'], ['name', 'twitter:description']]) {
-    verifica(JSON.stringify(meta(k, v)) === JSON.stringify([TESTI.eroe]), `${v}: il testo dell'apertura`, meta(k, v));
-  }
-  // Il titolo: quattro righe (tre a capo), l'ultima in verde.
-  const h1 = tag.filter(t => t.nome === 'h1');
-  verifica(h1.length === 1, 'un titolo solo nella pagina');
-  const pezziH1 = h1.length ? testi.filter(x => x.antenati.includes(h1[0])).map(x => spazi(x.testo)).filter(Boolean) : [];
-  verifica(JSON.stringify(pezziH1) === JSON.stringify([...APERTURA.righeTitolo, APERTURA.titoloVerde]), 'il titolo: «Le tue case / e i tuoi affitti, / sotto controllo. / Da una foto.»', pezziH1);
-  verifica(h1.length && tag.filter(t => t.nome === 'br' && t.antenati.includes(h1[0])).length === 2, 'le prime tre righe sono separate da due a capo');
-  const verde = conClasse('h1-verde');
-  verifica(verde.length === 1 && verde[0].antenati.includes(h1[0]) && testoDi(verde[0]) === APERTURA.titoloVerde, `«${APERTURA.titoloVerde}» in verde, su una riga sua`);
-  const occhiello = conClasse('eroe-occhiello').map(testoDi);
-  verifica(JSON.stringify(occhiello) === JSON.stringify([APERTURA.occhiello]), `il sopratitolo: «${APERTURA.occhiello}»`, occhiello);
-  const disp = conClasse('ap-dispositivi');
-  verifica(disp.length === 1, 'le schermate stanno in un riquadro solo');
-  const scritta = conClasse('ap-scritta').map(testoDi);
-  verifica(JSON.stringify(scritta) === JSON.stringify([APERTURA.scritta]) && conClasse('ap-scritta')[0]?.antenati.includes(disp[0]), `la scritta verde accanto alla foto: «${APERTURA.scritta}»`, scritta);
-  const bollino = conClasse('ap-bollino');
-  verifica(bollino.length === 1 && bollino[0].attr['aria-hidden'] === 'true', 'il bollino della fotocamera è uno, solo disegnato (aria-hidden)');
-  verifica(!/ap-angolo/.test(HTML + CSS), 'niente angolini attorno alla foto (tolti il 7/10, su richiesta di Vitto)');
-  const dida = conClasse('ap-didascalia');
-  const righe = dida.length === 1 ? tag.filter(t => t.nome === 'span' && t.antenati[t.antenati.length - 1] === dida[0]) : [];
-  const lette = righe.map(r => { const b = tag.filter(t => t.nome === 'b' && t.antenati.includes(r)); return [b.length === 1 ? testoDi(b[0]) : null, testoDi(r)]; });
-  verifica(JSON.stringify(lette) === JSON.stringify(APERTURA.didascalia.map(([g, t]) => [g, `${g} ${t}`])), 'la didascalia: «Dal computer …» e «Dal telefono …», con il grassetto', lette);
-  const elenco = conClasse('ap-vantaggi');
-  const vantaggi = elenco.length === 1 ? tag.filter(t => t.nome === 'li' && t.antenati[t.antenati.length - 1] === elenco[0]).map(testoDi) : [];
-  verifica(JSON.stringify(vantaggi) === JSON.stringify(APERTURA.vantaggi), 'i quattro vantaggi, in ordine', vantaggi);
-  verifica(elenco.length === 1 && tag.indexOf(disp[0]) < tag.indexOf(elenco[0]) && tag.indexOf(dida[0]) < tag.indexOf(elenco[0]), 'i vantaggi stanno sotto le schermate e la didascalia');
-  // Le tre schermate: il file giusto, le misure vere (lette dal file), il testo alternativo.
-  const immagini = disp.length ? tag.filter(t => t.nome === 'img' && t.antenati.includes(disp[0]) && !classi(t).includes('ap-dimorino')) : [];
-  verifica(immagini.length === APERTURA.schermate.length, `le schermate sono ${APERTURA.schermate.length}`, immagini.map(i => i.attr.src));
-  // Le misure di un WebP si leggono dalla sua intestazione (VP8, VP8L o VP8X), senza librerie.
-  const misureWebp = (file) => {
-    const b = fs.readFileSync(path.join(RADICE, file));
-    if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
-    const tipo = b.toString('ascii', 12, 16);
-    if (tipo === 'VP8L') { const v = b.readUInt32LE(21); return { w: (v & 0x3fff) + 1, h: ((v >> 14) & 0x3fff) + 1 }; }
-    if (tipo === 'VP8X') return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
-    if (tipo === 'VP8 ') return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
-    return null;
-  };
-  for (const atteso of APERTURA.schermate) {
-    const img = immagini.find(i => i.attr.src === atteso.src);
-    const vere = img ? misureWebp(atteso.src) : null;
-    verifica(!!img && !!vere && vere.w === atteso.w && vere.h === atteso.h, `${atteso.src}: il file è di ${atteso.w} × ${atteso.h} px`, vere);
-    verifica(!!img && +img.attr.width === atteso.w && +img.attr.height === atteso.h, `${atteso.src}: larghezza e altezza dichiarate (${atteso.w} × ${atteso.h}), la pagina non salta`, img && [img.attr.width, img.attr.height]);
-    verifica(img?.attr.alt === atteso.alt, `${atteso.src}: il testo alternativo`, img?.attr.alt);
-  }
-  // Le schermate si mostrano intere: nessun ritaglio nelle regole dell'apertura.
-  const cssPulito = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
-  const regoleAp = [...cssPulito.matchAll(/([^{}]*\.ap-[^{}]*)\{([^{}]*)\}/g)];
-  verifica(regoleAp.length > 10 && !regoleAp.some(m => /object-fit|object-position/.test(m[2])), "nessun object-fit nelle regole dell'apertura: le schermate restano intere e nelle loro proporzioni");
-  // La lente: le due schermate (non la foto della bolletta) sono collegamenti al loro stesso file, con la grandezza reale.
-  for (const [src, larghezza] of Object.entries(APERTURA.lente)) {
-    const img = immagini.find(i => i.attr.src === src);
-    const a = img && img.antenati.filter(x => x.nome === 'a').pop();
-    verifica(!!a && 'data-lente' in a.attr && a.attr.href === src && +a.attr['data-larghezza'] === larghezza, `${src}: si apre ingrandita (il collegamento è al suo file, grandezza reale ${larghezza} px)`, a && [a.attr.href, a.attr['data-larghezza']]);
-    verifica(!!a && tag.some(s => s.antenati.includes(a) && classi(s).includes('ap-lente-segno') && s.attr['aria-hidden'] === 'true'), `${src}: la lente piccola che lo dice, solo disegnata`);
-  }
-  const foto = immagini.find(i => i.attr.src === 'assets/img/foto-bolletta.webp');
-  verifica(!!foto && !foto.antenati.some(x => x.nome === 'a'), 'la foto della bolletta non è un collegamento');
-  const finestre = tag.filter(x => x.nome === 'dialog' && 'data-lente-finestra' in x.attr);
-  verifica(finestre.length === 1, 'la finestra della lente è una sola (<dialog>)');
-  const bottoni = finestre.length ? tag.filter(b => b.nome === 'button' && b.antenati.includes(finestre[0])) : [];
-  const chiudi = bottoni.find(b => 'data-lente-chiudi' in b.attr), modo = bottoni.find(b => 'data-lente-modo' in b.attr);
-  verifica(!!chiudi && chiudi.attr.type === 'button' && testoDi(chiudi) === 'Chiudi', 'la finestra ha un bottone «Chiudi» vero');
-  verifica(!!modo && modo.attr.type === 'button' && testoDi(modo) === 'Dimensione reale' && modo.attr['aria-pressed'] === 'false', 'e «Dimensione reale», un bottone che dice se è premuto');
-  verifica(/showModal\(\)/.test(JS_CODICE) && /typeof finestra\.showModal !== 'function'/.test(JS_CODICE) && /e\.preventDefault\(\)/.test(JS_CODICE) && /partenza\.focus\(\)/.test(JS_CODICE) && /addEventListener\('close'/.test(JS_CODICE), 'lo script: finestra modale (Esc la chiude), il fuoco torna alla schermata, senza <dialog> si apre il file');
-  // Il portatile c'è a ogni larghezza (7/10, sera): nessuna regola lo nasconde. Le due disposizioni si dividono a 1200 px.
-  verifica(![...cssPulito.matchAll(/([^{}]*\.ap-portatile[^{}]*)\{([^{}]*)\}/g)].some(m => /display:\s*none/.test(m[2])), 'il portatile non si nasconde a nessuna larghezza');
-  const fino = /@media\s*\(max-width:\s*1200px\)\s*\{[^@]*?\.ap-dispositivi\s*\{[^}]*max-width:\s*560px/.test(cssPulito);
-  const da = /@media\s*\(min-width:\s*1201px\)\s*\{[^@]*?\.eroe-griglia\s*\{[^}]*grid-template-columns/.test(cssPulito);
-  verifica(fino && da, 'fino a 1200 px il gruppo in colonna, largo al massimo 560 px; da 1201 px le due colonne di prima');
-  verifica(/\.ap-dispositivi\s*\{[^}]*container-type:\s*inline-size/.test(cssPulito) && /\.ap-schermo\s*\{[^}]*cqw/.test(cssPulito) && /\.ap-telefono\s*\{[^}]*cqw/.test(cssPulito), 'il gruppo dei dispositivi è disegnato in proporzione alla sua larghezza (cqw)');
-  // Dimorino: sul computer una misura sua, fra 130 e 165 px; sul telefono senza vw (a 390 px con la barra sporgeva).
-  const dimo = /\.ap-dimorino\s*\{[^}]*--d:\s*clamp\((\d+)px,\s*[\d.]+cqw,\s*(\d+)px\)[^}]*width:\s*var\(--d\)/.exec(cssPulito);
-  verifica(!!dimo && +dimo[1] === APERTURA.dimorinoComputer.min && +dimo[2] === APERTURA.dimorinoComputer.max, `Dimorino sul computer fra ${APERTURA.dimorinoComputer.min} e ${APERTURA.dimorinoComputer.max} px, non in proporzione al portatile`, dimo && dimo.slice(1));
-  verifica(![...cssPulito.matchAll(/([^{}]*\.ap-dimorino[^{}]*)\{([^{}]*)\}/g)].some(m => /vw/.test(m[2])), "Dimorino non si misura sulla finestra (vw): non sporge oltre l'apertura");
-  // I sei raccordi.
-  const testaDi = (id, nome) => { const s = tag.find(t => t.nome === 'section' && t.attr.id === id); const t = s && conClasse('sezione-testa', s)[0]; return t ? tag.filter(x => x.nome === nome && x.antenati.includes(t)).map(testoDi) : null; };
-  verifica(JSON.stringify(testaDi('come', 'h2')) === JSON.stringify([APERTURA.comeTitolo]) && JSON.stringify(testaDi('come', 'p')) === JSON.stringify([APERTURA.comeSotto]), `«Come funziona»: «${APERTURA.comeTitolo}», e sotto «${APERTURA.comeSotto}»`, [testaDi('come', 'h2'), testaDi('come', 'p')]);
-  const funzioni = tag.find(t => t.nome === 'section' && t.attr.id === 'funzioni');
-  const schedaCosti = tag.filter(t => t.nome === 'article' && t.antenati.includes(funzioni)).find(a => tag.some(h => h.nome === 'h3' && h.antenati.includes(a) && testoDi(h) === APERTURA.costiTitolo));
-  verifica(!!schedaCosti && testoDi(tag.find(p => p.nome === 'p' && p.antenati.includes(schedaCosti))) === APERTURA.costiTesto, `«Che cosa fa per te»: «${APERTURA.costiTitolo}», testo invariato`);
-  verifica(JSON.stringify(testaDi('affitti', 'p')) === JSON.stringify([APERTURA.affittiSotto]), '«Per chi affitta»: il sottotitolo nuovo', testaDi('affitti', 'p'));
-  const chiusura = conClasse('finale-testi').flatMap(f => tag.filter(p => p.nome === 'p' && p.antenati.includes(f)).map(testoDi));
-  verifica(chiusura.length === 1 && chiusura[0].startsWith(APERTURA.chiusura), 'la chiusura: «Una bolletta o un contratto d\'affitto bastano…», il resto della frase com\'era', chiusura);
-  // Il titolo di prima dell'apertura ora è il titolo di «Come funziona», e solo lì.
-  verifica(spazi(entita(HTML)).split(APERTURA.comeTitolo).length - 1 === 1, `«${APERTURA.comeTitolo}» compare una volta sola, come titolo di «Come funziona»`);
-}
-
-console.log('\n11. Il telefono: il modello nuovo, la lente, la barra che segue, le righe che scorrono, la lettera');
-{
-  const cssPulito = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
-  const regola = (sel) => [...cssPulito.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => m[1].split(',').map(x => x.trim()).includes(sel)).map(m => m[2]).join(';');
-  // Il blocco «fino a 640 px» (un solo @media, letto contando le graffe).
-  // Il primo blocco con quella testata che contiene «dentro» (le @media con la stessa testata possono essere più d'una).
-  const blocco = (testa, dentro = '') => { for (let i = cssPulito.indexOf(testa); i >= 0; i = cssPulito.indexOf(testa, i + 1)) { const p = cssPulito.indexOf('{', i); let n = 0, j = p; for (; j < cssPulito.length; j++) { if (cssPulito[j] === '{') n++; else if (cssPulito[j] === '}' && --n === 0) break; } const corpo = cssPulito.slice(p + 1, j); if (corpo.includes(dentro)) return corpo; } return ''; };
-  const stretto = blocco('@media (max-width: 640px)', '.storia-resto');
-  verifica(stretto.length > 1000, `c'è il blocco «fino a 640 px» (${stretto.length} caratteri)`);
-
-  // Il telefono: una striscia di 44 punti su 390 del colore della schermata, con l'isola dentro, e sotto la schermata intera.
-  const tel = conClasse('ap-telefono');
-  const stato = conClasse('ap-telefono-stato'), isola = conClasse('ap-isola');
-  verifica(tel.length === 1 && stato.length === 1 && stato[0].antenati.includes(tel[0]) && stato[0].attr['aria-hidden'] === 'true' && isola.length === 1 && isola[0].antenati.includes(stato[0]), 'il telefono ha in alto la striscia con l\'isola, solo disegnate (aria-hidden)');
-  const img = tel.length ? tag.find(t => t.nome === 'img' && t.antenati.includes(tel[0])) : null;
-  verifica(!!img && tag.indexOf(stato[0]) < tag.indexOf(img), 'la striscia sta sopra la schermata');
-  verifica(!!img && +img.attr.width === 3 * 390 && +img.attr.height === 3 * 800, 'la schermata è 390 × 800 punti a densità tripla (1170 × 2400 px)', img && [img.attr.width, img.attr.height]);
-  const striscia = regola('.ap-telefono-stato');
-  verifica(/aspect-ratio:\s*390\s*\/\s*44/.test(striscia) && /background:\s*#F2F5F0/i.test(striscia), 'la striscia è alta 44 punti su 390, del colore di fondo della schermata (#F2F5F0)', striscia);
-  const iso = regola('.ap-isola');
-  const top = Number((/top:\s*([\d.]+)%/.exec(iso) || [])[1]), alta = Number((/height:\s*([\d.]+)%/.exec(iso) || [])[1]);
-  verifica(top > 0 && alta > 0 && top + alta <= 100, `l'isola sta tutta dentro la striscia (dal ${top}% al ${(top + alta).toFixed(1)}%): non copre la schermata`, iso);
-  // Sul computer: largo 23cqw, il telefono non è più alto del portatile (le misure lette dallo stile).
-  const telCss = regola('.ap-telefono');
-  const cornice = Number((/border:\s*calc\(var\(--tel\)\s*\*\s*([\d.]+)\)/.exec(telCss) || [])[1]);
-  const largo = Number((/--tel:\s*([\d.]+)cqw/.exec(regola('.ap-dispositivi')) || [])[1]);
-  const computer = blocco('@media (min-width: 1201px)', '.ap-portatile');
-  const port = Number((/\.ap-portatile\s*\{[^}]*width:\s*([\d.]+)%/.exec(computer) || [])[1]);
-  const bordi = (/\.ap-schermo\s*\{[^}]*border-width:\s*([\d.]+)cqw\s+([\d.]+)cqw\s+([\d.]+)cqw/.exec(computer) || []).slice(1).map(Number);
-  const altezzaTel = largo * (1 - 2 * cornice) * 844 / 390 + 2 * cornice * largo;
-  const altezzaPort = (port - 2 * bordi[0]) * 775 / 1475 + bordi[0] + bordi[2] + port * 1.1111 * 124 / 1000;
-  verifica(largo > 0 && cornice > 0 && cornice <= .03 && bordi.length === 3 && altezzaTel < altezzaPort, `sul computer il telefono (${largo}cqw, cornice ${(cornice * 100).toFixed(1)}%) è alto ${altezzaTel.toFixed(1)}cqw, meno del portatile (${altezzaPort.toFixed(1)}cqw)`);
-  const piccolo = Number((/--tel:\s*clamp\((\d+)px,\s*[\d.]+cqw,\s*(\d+)px\)/.exec(blocco('@media (max-width: 1200px)', '.ap-dispositivi')) || [])[1]);
-  verifica(piccolo >= 230, `fino a 1200 px il telefono non è mai più stretto di ${piccolo} px: i valori nei campi si leggono`);
-
-  // La lente: la pulizia della chiusura non tocca una lente già riaperta.
-  verifica(/addEventListener\('close',\s*function\s*\(\)\s*\{\s*if\s*\(finestra\.open\)\s*return;/.test(JS_CODICE) && !/removeAttribute\('src'\)/.test(JS_CODICE), 'la lente: se è già stata riaperta, la chiusura di prima non le toglie l\'immagine');
-
-  // La barra che segue, fino a 1200 px.
-  const barra = blocco('@media (max-width: 1200px)', 'scroll-padding-top');
-  const padding = Number((/html\s*\{[^}]*scroll-padding-top:\s*(\d+)px/.exec(barra) || [])[1]);
-  const altaBarra = Number((/\[data-barra="fissa"\]\s*\.testata-riga\s*\{[^}]*height:\s*(\d+)px/.exec(barra) || [])[1]);
-  verifica(altaBarra >= 48 && altaBarra <= 56 && padding > altaBarra, `la barra fissa è alta ${altaBarra} px e le ancore si fermano ${padding} px sotto il bordo`);
-  verifica(/\[data-barra="fissa"\]\s*\.testata-barra\s*\{[^}]*position:\s*fixed/.test(barra) && /\.testata\s*\{[^}]*height:\s*65px/.test(cssPulito), 'la barra diventa fissa e la testata tiene il suo spazio (la pagina non salta)');
-  const daBarra = conClasse('solo-largo').map(a => [classi(a).includes('v-arrivo') ? 'arrivo' : 'aperta', a.attr.href, testoDi(a)]);
-  const daMenu = conClasse('menu-cta').map(a => [classi(a).includes('v-arrivo') ? 'arrivo' : 'aperta', a.attr.href, testoDi(a)]);
-  verifica(JSON.stringify(daBarra) === JSON.stringify(daMenu), '«Avvisami» della barra fa quello che fa «Avvisami» nel menu, stato del lancio compreso', [daBarra, daMenu]);
-  const accediMenu = conClasse('menu-accedi');
-  verifica(accediMenu.length === 1 && accediMenu[0].attr.href === 'https://app.dimorapp.com/login' && testoDi(accediMenu[0]) === 'Accedi', '«Accedi» c\'è anche nel menu, per quando non sta nella barra');
-  verifica(/barra\(\)/.test(JS_CODICE) && /setAttribute\('data-barra', 'fissa'\)/.test(JS_CODICE), 'lo script segna la barra fissa quando la testata esce dallo schermo');
-
-  // Le quattro righe che scorrono.
-  const righe = tag.filter(t => 'data-scorre' in t.attr);
-  const sezioni = righe.map(r => (r.antenati.find(a => a.nome === 'section') || {}).attr?.id);
-  verifica(JSON.stringify(sezioni) === JSON.stringify(['perchi', 'come', 'affitti', 'prezzi']), 'le righe che scorrono sono quattro: Per chi è, Come funziona, Per chi affitta, I piani', sezioni);
-  const titoli = righe.map(r => { const t = tag.find(x => x.attr.id === r.attr['data-scorre']); return t && /^h[23]$/.test(t.nome) && t.antenati.includes(r.antenati.find(a => a.nome === 'section')) ? testoDi(t) : null; });
-  verifica(titoli.every(Boolean), 'ognuna prende il nome dal titolo della sua sezione (niente testo nuovo)', titoli);
-  const scorre = /\[data-scorre\]\s*\{[^}]*overflow-x:\s*auto[^}]*scroll-snap-type:\s*x mandatory/.test(stretto) && /\[data-scorre\]\s*>\s*\*\s*\{[^}]*\*\s*\.82\)[^}]*scroll-snap-align:\s*start/.test(stretto);
-  verifica(scorre, 'fino a 640 px scorrono con il dito e si agganciano (CSS), ogni scheda larga l\'82% dello schermo');
-  verifica(/setAttribute\('role', 'region'\)/.test(JS_CODICE) && /setAttribute\('tabindex', '0'\)/.test(JS_CODICE) && /setAttribute\('aria-labelledby'/.test(JS_CODICE) && /className = 'puntini'/.test(JS_CODICE), 'lo script aggiunge i puntini e rende la riga raggiungibile da tastiera e leggibile come regione');
-
-  // La lettera.
-  const scheda = tag.find(t => 'data-storia' in t.attr);
-  const ps = scheda ? tag.filter(t => t.nome === 'p' && t.antenati.includes(scheda)) : [];
-  verifica(ps.length === 4 && testoDi(ps[0]) === LETTERA.domanda && classi(ps[0]).includes('storia-domanda'), 'la lettera: la domanda nuova', ps[0] && testoDi(ps[0]));
-  verifica(JSON.stringify(ps.slice(1).map(testoDi)) === JSON.stringify(LETTERA.paragrafi), 'la lettera: i tre paragrafi, parola per parola', ps.slice(1).map(testoDi));
-  const resto = tag.find(t => t.attr.id === 'storia-resto');
-  verifica(!!resto && !ps[1].antenati.includes(resto) && ps.slice(2).every(p => p.antenati.includes(resto)), 'sul telefono si leggono la domanda e il primo paragrafo; gli altri due stanno nel resto');
-  const continua = tag.find(t => 'data-storia-apri' in t.attr);
-  verifica(!!continua && continua.nome === 'button' && continua.attr.type === 'button' && testoDi(continua) === LETTERA.continua && continua.attr['aria-controls'] === 'storia-resto' && continua.attr['aria-expanded'] === 'false', `«${LETTERA.continua}» è un bottone vero, che dice che cosa apre`);
-  const firma = conClasse('firma')[0];
-  verifica(!!firma && !firma.antenati.includes(resto) && tag.indexOf(continua) < tag.indexOf(firma), 'la firma resta sempre visibile, sotto «Continua a leggere»');
-  verifica(/\[data-chiusa\]\s*\.storia-resto\s*\{\s*display:\s*none/.test(stretto) && /\.storia-continua\s*\{[^}]*display:\s*none/.test(cssPulito), 'il resto si chiude solo fino a 640 px e solo con lo script; senza script si legge tutta');
-  const dida = conClasse('storia-foto').flatMap(f => tag.filter(t => t.nome === 'figcaption' && t.antenati.includes(f)).map(testoDi));
-  verifica(JSON.stringify(dida) === JSON.stringify([LETTERA.didascalia]), 'la didascalia della foto resta com\'era, con il 2026', dida);
-
-  // Fino a 640 px: niente testo sotto i 12 px, le etichette piccole a 12, il piè di pagina con aree da 40 px.
-  const corpi = [...stretto.matchAll(/font-size:\s*([\d.]+)px/g)].map(m => +m[1]);
-  verifica(corpi.length > 0 && corpi.every(c => c >= 12), `nel blocco «fino a 640 px» nessun corpo sotto i 12 px (${Math.min(...corpi)} il più piccolo)`);
-  const etichette = ['.fm-anno', '.fm-tag', '.fm-tag-piccolo', '.fm-occhiello', '.piano-richiesta'];
-  const alzate = etichette.filter(e => [...stretto.matchAll(/([^{}]+)\{([^{}]*)\}/g)].some(m => m[1].split(',').map(x => x.trim()).includes(e) && /font-size:\s*12px/.test(m[2])));
-  verifica(alzate.length === etichette.length, 'le etichette del fascicolo e «Attivazione su richiesta» a 12 px (erano 10,5 e 11)', alzate);
-  verifica(/\.piede-colonna a\s*\{[^}]*min-height:\s*40px/.test(stretto) && /\.piede-basso a\s*\{[^}]*min-height:\s*40px/.test(stretto), 'nel piè di pagina ogni collegamento si tocca su un\'area alta almeno 40 px');
-}
-
-console.log('\n12. Le statistiche di Vercel');
-{
-  const html = HTML.replace(/<!--[\s\S]*?-->/g, '');
-  const testa = html.slice(0, html.indexOf('</head>'));
-  const script = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].map(m => ({ attr: attributi(m[1]), corpo: m[2].trim(), pos: m.index, fine: m.index + m[0].length }));
-  const coda = script.filter(s => !s.attr.src && spazi(s.corpo) === CODA_VA);
-  const dalla = script.filter(s => s.attr.src === DALLA_PIATTAFORMA);
-  verifica(coda.length === 1 && dalla.length === 1, 'i due tag ci sono, una volta sola ciascuno', { coda: coda.length, script: dalla.length });
-  // L'ordine (8/10): la coda nella testata, prima di ogni altro script e prima di ogni foglio di stile (uno script dopo un
-  // foglio di stile ferma la lettura finché il CSS non arriva: su 3G pagina.js arrivava quasi un secondo dopo); lo script
-  // delle statistiche nel corpo, subito dopo assets/pagina.js (in mezzo solo spazi).
-  const primoStile = html.search(/<link\b[^>]*\brel=["']?stylesheet/i);
-  verifica(coda.length === 1 && script[0] === coda[0] && coda[0].pos < testa.length && primoStile > 0 && coda[0].pos < primoStile, 'la coda `va` è nella testata, prima di ogni altro script e del foglio di stile');
-  const pagina = script.filter(s => s.attr.src === 'assets/pagina.js');
-  const dopoPagina = pagina.length === 1 && dalla.length === 1 && dalla[0].pos >= pagina[0].fine ? html.slice(pagina[0].fine, dalla[0].pos) : null;
-  verifica(pagina.length === 1 && dalla.length === 1 && dalla[0].pos > testa.length && dopoPagina !== null && /^\s*$/.test(dopoPagina), `lo script delle statistiche è nel corpo, subito dopo assets/pagina.js`, { pagina: pagina.length, inTesta: dalla.length === 1 && dalla[0].pos < testa.length, inMezzo: dopoPagina && dopoPagina.slice(0, 80) });
-  verifica(dalla.length === 1 && 'defer' in dalla[0].attr, `lo script carica proprio ${DALLA_PIATTAFORMA}, con defer`);
-  // 14/10: i dati strutturati (application/ld+json) sono dati, non codice: il browser non li esegue.
-  // Si contano a parte, nella sezione 13; qui restano vietati tutti gli altri script scritti nella pagina.
-  const inLinea = script.filter(s => !s.attr.src && s.attr.type !== 'application/ld+json');
-  verifica(inLinea.length === 1, 'nessun altro script eseguibile scritto nella pagina oltre alla coda', inLinea.map(s => s.corpo.slice(0, 60)));
-  const vercel = (HTML.match(/_vercel/g) || []).length;
-  verifica(vercel === 1 && HTML.includes(`"${DALLA_PIATTAFORMA}"`), `nell'HTML nessun altro riferimento a /_vercel/ (${vercel})`);
-  verifica(!/_vercel/.test(CSS) && !/_vercel/.test(JS_CODICE), 'nessun /_vercel/ nel foglio di stile e nello script');
-  // Gli eventi: solo i cinque nomi, i clic letti da un ascoltatore solo. Un sesto nome è rosso; uno dei cinque
-  // senza più un pulsante no (8/10: main ha tolto «Guarda come funziona», e clic_guarda_come_funziona resta
-  // nell'elenco senza un elemento che lo mandi). Quelli senza elemento si scrivono nel nome della verifica.
-  const conEvento = tag.filter(t => 'data-evento' in t.attr);
-  const nomiHtml = [...new Set(conEvento.map(t => t.attr['data-evento']))];
-  const nomiJs = [...new Set([...JS_CODICE.matchAll(/'((?:lista|clic)_[a-z_]+)'/g)].map(m => m[1]))];
-  const usati = [...new Set([...nomiHtml, ...nomiJs])].sort();
-  const senzaElemento = EVENTI.filter(x => !usati.includes(x));
-  verifica(usati.length > 0 && usati.every(x => EVENTI.includes(x)), `gli eventi sono solo fra i cinque previsti (${usati.join(', ')}${senzaElemento.length ? '; senza elemento: ' + senzaElemento.join(', ') : ''})`, usati);
-  verifica(conEvento.every(t => t.attr['data-posizione']), `ogni elemento con un evento ha la sua posizione (${conEvento.length})`, conEvento.filter(t => !t.attr['data-posizione']).map(t => t.attr['data-evento']));
-  verifica((JS_CODICE.match(/closest\('\[data-evento\]'\)/g) || []).length === 1 && (JS_CODICE.match(/'event'/g) || []).length === 1, "un ascoltatore solo per i clic, un punto solo che manda gli eventi");
-  verifica(/statistica\('beforeSend'/.test(JS_CODICE), "gli indirizzi si ripuliscono prima dell'invio (beforeSend)");
-  // La protezione per le modifiche future (7/10): un pulsante nuovo verso l'app, o un modulo nuovo della
-  // lista d'attesa, senza etichetta non deve passare in silenzio. Si trova dall'indirizzo, si conta dalla funzione.
-  const versoLogin = tag.filter(t => (t.attr.href || '').startsWith(COLLEGAMENTI_AMMESSI[0]));
-  const loginSenza = versoLogin.filter(t => !t.attr['data-evento'] || !t.attr['data-posizione']);
-  verifica(versoLogin.length > 0 && loginSenza.length === 0, `ogni collegamento verso ${COLLEGAMENTI_AMMESSI[0]} ha data-evento e data-posizione (${versoLogin.length} trovati)`, loginSenza.map(t => t.attr));
-  const moduliLista = tag.filter(t => t.nome === 'form' && 'data-wl' in t.attr);
-  const moduliSenza = moduliLista.filter(t => !t.attr['data-posizione']);
-  verifica(moduliLista.length > 0 && moduliSenza.length === 0, `ogni modulo della lista d'attesa ha la sua data-posizione (${moduliLista.length} trovati)`, moduliSenza.map(t => t.attr));
-  // I moduli mandano lista_iscritto o lista_gia_iscritto: per loro la coppia è «lista» e la posizione.
-  const coppie = [
-    ...conEvento.map(t => `${t.attr['data-evento']} · ${t.attr['data-posizione'] || ''}`),
-    ...moduliLista.map(t => `lista · ${t.attr['data-posizione'] || ''}`),
-  ];
-  const doppie = [...new Set(coppie.filter((c, i) => coppie.indexOf(c) !== i))];
-  verifica(doppie.length === 0, `nessuna coppia evento e posizione ripetuta (${coppie.length} coppie)`, doppie);
-}
-
-console.log('\n13. La base per i motori di ricerca');
-{
-  const esiste = (f) => fs.existsSync(path.join(RADICE, f));
-  // robots.txt
-  const robots = esiste('robots.txt') ? leggi('robots.txt') : '';
-  const righe = robots.split(/\r?\n/).map(r => r.trim()).filter(r => r && !r.startsWith('#'));
-  const campi = righe.map(r => { const i = r.indexOf(':'); return i > 0 ? [r.slice(0, i).trim().toLowerCase(), r.slice(i + 1).trim()] : ['', '']; });
-  verifica(righe.length > 0 && campi.every(c => ['user-agent', 'allow', 'disallow', 'sitemap'].includes(c[0])), `robots.txt c'è e ogni riga è una direttiva nota (${righe.length} righe)`, righe);
-  verifica(campi.length > 0 && campi[0][0] === 'user-agent' && campi[0][1] === '*', 'robots.txt comincia con «User-agent: *»');
-  verifica(campi.some(c => c[0] === 'allow' && c[1] === '/') && !campi.some(c => c[0] === 'disallow' && c[1] === '/'), 'robots.txt lascia leggere tutto il sito');
-  const smRobots = campi.filter(c => c[0] === 'sitemap').map(c => c[1]);
-  verifica(smRobots.length === 1 && smRobots[0] === CANONICO + 'sitemap.xml', "robots.txt indica la sitemap, con l'indirizzo assoluto", smRobots);
-  // sitemap.xml
-  const sm = esiste('sitemap.xml') ? leggi('sitemap.xml') : '';
-  verifica(sm.startsWith('<?xml version="1.0" encoding="UTF-8"?>') && sm.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && sm.trim().endsWith('</urlset>'), "sitemap.xml c'è, con la dichiarazione XML e un <urlset> dello schema delle sitemap");
-  const aperti = [...sm.matchAll(/<([a-z]+)[ >]/g)].map(m => m[1]), chiusi = [...sm.matchAll(/<\/([a-z]+)>/g)].map(m => m[1]);
-  verifica(aperti.length > 0 && [...aperti].sort().join() === [...chiusi].sort().join() && aperti.every(n => ['urlset', 'url', 'loc', 'lastmod'].includes(n)), 'sitemap.xml: ogni elemento è chiuso e sono solo urlset, url, loc e lastmod', aperti);
-  const voci = [...sm.matchAll(/<url>\s*<loc>([^<]*)<\/loc>\s*<lastmod>([^<]*)<\/lastmod>\s*<\/url>/g)].map(m => ({ loc: m[1], lastmod: m[2] }));
-  verifica(voci.length > 0 && voci.length === (sm.match(/<url>/g) || []).length, `ogni voce della sitemap ha indirizzo e data (${voci.length})`);
-  // Le pagine vere: i file .html alla radice del repository. Una pagina nuova non in sitemap è rossa, e viceversa.
-  const pagine = fs.readdirSync(RADICE).filter(f => f.endsWith('.html')).map(f => f === 'index.html' ? CANONICO : CANONICO + f).sort();
-  verifica(voci.map(v => v.loc).sort().join() === pagine.join(), `la sitemap elenca tutte e sole le pagine del sito (${pagine.join(', ')})`, voci.map(v => v.loc));
-  verifica(voci.every(v => v.loc.startsWith(CANONICO) && !v.loc.includes('?') && !v.loc.includes('#')), 'gli indirizzi della sitemap sono assoluti, su https://dimorapp.com/, senza parametri');
-  const canonico = tag.find(t => t.nome === 'link' && t.attr.rel === 'canonical');
-  verifica(!!canonico && voci.some(v => v.loc === canonico.attr.href), 'la pagina principale è in sitemap col suo indirizzo canonico');
-  const dataVera = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d + 'T00:00:00Z')) && new Date(d + 'T00:00:00Z').toISOString().slice(0, 10) === d;
-  verifica(voci.every(v => dataVera(v.lastmod)), 'ogni data della sitemap è una data vera, AAAA-MM-GG', voci.map(v => v.lastmod));
-  // I due file devono essere pubblicati: .vercelignore non li esclude.
-  const ignorati = esiste('.vercelignore') ? leggi('.vercelignore').split(/\r?\n/).map(r => r.trim()).filter(Boolean) : [];
-  verifica(!ignorati.some(r => r.includes('robots') || r.includes('sitemap') || r.startsWith('*') || r.endsWith('.txt') || r.endsWith('.xml')), '.vercelignore non esclude robots.txt né sitemap.xml', ignorati);
-  // Il JSON-LD
-  const html = HTML.replace(/<!--[\s\S]*?-->/g, '');
-  const testa = html.slice(0, html.indexOf('</head>'));
-  const ld = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].map(m => ({ attr: attributi(m[1]), corpo: m[2], pos: m.index })).filter(s => s.attr.type === 'application/ld+json');
-  verifica(ld.length === 1 && ld[0].pos < testa.length, `un solo JSON-LD, nella testata (${ld.length})`);
+/* ---------- 7. Google ---------- */
+sezione('7. Google');
+for (const [p, h] of Object.entries(PAGINE)) {
+  const canoniche = [...h.matchAll(/<link rel="canonical" href="([^"]+)"/g)].map((m) => m[1]);
+  verifica(canoniche.length === 1 && canoniche[0] === ORIGINE + p, `${p}: una canonica, ${ORIGINE + p}`, canoniche.join(' '));
+  verifica((h.match(/<title>/g) || []).length === 1, `${p}: un titolo`);
+  const descr = attributi(h.match(/<meta name="description"[^>]*>/)?.[0] || '', 'content')[0] || '';
+  verifica(descr.length >= 50 && descr.length <= 170, `${p}: la descrizione fra 50 e 170 caratteri`, String(descr.length));
+  verifica(/<meta property="og:image" content="https:\/\/dimorapp\.com\/[^"]+"/.test(h), `${p}: og:image con l'indirizzo intero`);
+  verifica((h.match(/<h1[\s>]/g) || []).length === 1, `${p}: un titolo h1`);
+  const ld = h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   let dati = null;
-  try { dati = JSON.parse(ld[0].corpo); } catch { /* resta null */ }
-  verifica(dati !== null && dati['@context'] === 'https://schema.org' && Array.isArray(dati['@graph']), 'il JSON-LD si legge come JSON, con il contesto di schema.org e un @graph');
-  const nodi = dati && Array.isArray(dati['@graph']) ? dati['@graph'] : [];
-  verifica(nodi.map(n => n['@type']).join() === 'Organization,SoftwareApplication', "nel JSON-LD ci sono Organization e SoftwareApplication, e nient'altro", nodi.map(n => n['@type']));
-  const org = nodi.find(n => n['@type'] === 'Organization') || {}, app = nodi.find(n => n['@type'] === 'SoftwareApplication') || {};
-  verifica(org.name === 'Dimora' && org.url === 'https://dimorapp.com', 'Organization: nome «Dimora», indirizzo https://dimorapp.com', org);
-  const logo = typeof org.logo === 'string' && org.logo.startsWith(CANONICO) ? org.logo.slice(CANONICO.length) : null;
-  verifica(!!logo && esiste(logo) && tag.some(t => (t.attr.href || t.attr.src) === logo), `il logo è un indirizzo assoluto di un file che c'è e che la pagina usa già (${logo})`, org.logo);
-  verifica(app.name === 'Dimora' && app.applicationCategory === 'BusinessApplication' && app.operatingSystem === 'Web' && app.url === 'https://app.dimorapp.com' && app.inLanguage === 'it', "SoftwareApplication: nome, categoria, sistema, indirizzo dell'app e lingua", app);
-  const meta = tag.find(t => t.nome === 'meta' && t.attr.name === 'description');
-  verifica(!!meta && app.description === meta.attr.content, 'la descrizione del JSON-LD è uguale alla meta description');
-  // Niente prezzi, offerte, valutazioni o recensioni, a qualunque profondità: i pagamenti non sono attivi.
-  const chiavi = [], valoriTipo = [];
-  const giro = (v) => {
-    if (Array.isArray(v)) { v.forEach(giro); return; }
-    if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) { chiavi.push(k); if (k === '@type') valoriTipo.push(String(x)); giro(x); }
-  };
-  giro(dati);
-  const CHIAVI_VIETATE = ['offers', 'price', 'pricecurrency', 'pricespecification', 'aggregaterating', 'review', 'reviews', 'ratingvalue'];
-  const TIPI_VIETATI = ['Offer', 'AggregateOffer', 'Review', 'AggregateRating', 'Rating'];
-  const vietati = [...chiavi.filter(k => CHIAVI_VIETATE.includes(k.toLowerCase())), ...valoriTipo.filter(t => TIPI_VIETATI.includes(t))];
-  verifica(dati !== null && vietati.length === 0, 'nel JSON-LD nessun prezzo, offerta, valutazione o recensione', vietati);
-  // La pagina dichiara la lingua, e ogni immagine ha il suo alt (vuoto solo per quelle decorative).
-  const radice = tag.find(t => t.nome === 'html');
-  verifica(!!radice && radice.attr.lang === 'it', '<html lang="it">');
-  const img = tag.filter(t => t.nome === 'img');
-  verifica(img.length > 0 && img.every(t => 'alt' in t.attr), `ogni immagine ha l'attributo alt (${img.length}, ${img.filter(t => t.attr.alt).length} con un testo)`);
-}
-
-console.log('\n14. Le frasi vere (22/10)');
-{
-  // Le frasi di prima: promettevano cose che l'app non fa, o meno di quello che fa.
-  // Gli store sono tornati (22/10, decisione di Vitto): via resta solo la frase di prima.
-  for (const via of ['60 tipi', '30, 7 e 1', 'maschera', "L'app per App Store e Google Play è in arrivo", 'stima indicativa dalla tua aliquota',
-    'Francoforte', "fuori dall'Europa", 'non li vendiamo', 'cancella dopo 30 giorni']) {
-    verifica(!HTML.includes(via), `nella pagina non c'è più «${via}»`);
+  try { dati = JSON.parse(ld[1]); } catch { /* sotto */ }
+  verifica(!!dati, `${p}: i dati strutturati si leggono`);
+  if (dati && p !== '/') {
+    const s = STORIE.find((x) => indirizzoArticolo(x.id) === p);
+    verifica(dati['@type'] === 'Article' && dati.headline === s.titolo && dati.datePublished === s.uscita && dati.mainEntityOfPage === ORIGINE + p, `${p}: Article con titolo, data e indirizzo`);
+    verifica(dati.description === s.articolo.rigaSotto && descr === s.articolo.rigaSotto, `${p}: la descrizione è la riga sotto il titolo`);
   }
-  // «30 giorni» resta solo per la prova gratuita, mai riferito ai dati.
-  const trenta = visibile.filter(v => /30 giorni/.test(v.testo)).map(v => spazi(v.testo)).filter(t => !/gratis|gratuita|prova|Al lancio|letture con l'AI/i.test(t));
-  verifica(trenta.length === 0, '«30 giorni» compare solo per la prova gratuita', trenta);
-  // «in arrivo» fra i testi visibili: solo nei due segni degli store. Fuori restano il testo alternativo della
-  // schermata (descrive l'immagine) e la scritta della beta, che con data-stato="aperta" non si vede.
-  const aperta = tag.find(t => t.nome === 'body')?.attr['data-stato'] === 'aperta';
-  const inArrivo = visibile.filter(v => /in arrivo/i.test(v.testo))
-    .filter(v => !dellaSchermata(v) && !(aperta && v.antenati.some(a => classi(a).includes('v-arrivo'))))
-    .filter(v => !v.antenati.some(a => classi(a).includes('negozi')))
-    .map(v => spazi(v.testo));
-  verifica(aperta && inArrivo.length === 0, '«in arrivo» fra i testi visibili solo nei due segni degli store (la beta è aperta)', inArrivo);
-  // I due segni, con il loro contenitore dentro il riquadro del telefono, come prima.
-  const negozi = tag.filter(t => classi(t).includes('negozi'));
-  const segni = negozi.length === 1 ? tag.filter(t => t.nome === 'span' && t.antenati.includes(negozi[0])).map(testoDi) : [];
-  verifica(negozi.length === 1 && negozi[0].antenati.some(a => classi(a).includes('telefono'))
-    && JSON.stringify(segni) === JSON.stringify(['App Store · in arrivo', 'Google Play · in arrivo']),
-    'nel riquadro del telefono i due segni «App Store · in arrivo» e «Google Play · in arrivo»', segni);
-  // Le frasi nuove, parola per parola, quante volte devono esserci.
-  const nuove = [
-    ["IMU, condominio, polizze, rinnovi: le tiene in ordine e ogni lunedì ti manda una mail con le scadenze della settimana. Se una scadenza ti preme, chiedi un promemoria in più. L'IMU la stima con le aliquote ufficiali del tuo Comune.", 1],
-    ['più di 130 tipi', 2],
-    ['Più di 130 tipi', 1],
-    // Nel riquadro «Dove stanno» e nel primo paragrafo della domanda: due volte.
-    [TESTI.sicuroRisposta[0], 2],
-    ["L'AI legge i tuoi documenti per aiutarti a mettere in ordine dati e scadenze. Non vengono usati per addestrare modelli.", 1],
-    [TESTI.sicuroRisposta[1], 1],
-    ['apre la scheda giusta', 1],
-    ['Dimora è ottimizzata per lo schermo del telefono: fotografi il documento e lo carichi dal browser, senza installare nulla. Presto anche su App Store e Google Play.', 1],
-    ['Presto anche su App Store e Google Play.', 2],
-  ];
-  for (const [frase, volte] of nuove) {
-    const n = testoVero.split(frase).length - 1;
-    verifica(n === volte, `la frase nuova c'è ${volte} ${volte === 1 ? 'volta' : 'volte'} (${n}): «${frase.slice(0, 60)}…»`);
+  if (dati && p === '/') {
+    const app = dati['@graph'].find((x) => x['@type'] === 'SoftwareApplication');
+    verifica(app && app.description === descr, '/: la descrizione dei dati strutturati è la meta description');
+    verifica(!/"offers"|"price"|"aggregateRating"/.test(ld[1]), '/: nessun prezzo, offerta o valutazione nei dati strutturati');
   }
-  verifica(nuove.every(([f]) => !/[—–]/.test(f)), 'nelle frasi nuove nessun trattino lungo');
 }
+const voci = [...leggi('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+verifica(JSON.stringify(voci) === JSON.stringify([ORIGINE + '/', ...STORIE.map((s) => ORIGINE + indirizzoArticolo(s.id))]), "la mappa del sito: la landing e gli articoli, e nient'altro", voci.join(' '));
+const altre = fs.readdirSync(RADICE).filter((f) => f.endsWith('.html') && f !== 'index.html');
+verifica(altre.length === 0, "nessun'altra pagina alla radice fuori dalla mappa", altre.join(' '));
+verifica(/Sitemap: https:\/\/dimorapp\.com\/sitemap\.xml/.test(leggi('robots.txt')), 'robots.txt indica la mappa');
+let vercel = {};
+try { vercel = JSON.parse(leggi('vercel.json')); } catch { /* sotto */ }
+verifica(vercel.cleanUrls === true && vercel.trailingSlash === false, 'vercel.json: indirizzi puliti (/index.html e /novita/x.html rimandano alla canonica)');
+const intestazioni = JSON.stringify(vercel.headers || []);
+verifica(intestazioni.includes('X-Robots-Tag') && intestazioni.includes('vercel'), 'vercel.json: gli indirizzi *.vercel.app non si indicizzano');
+verifica(/^controlli$/m.test(leggi('.vercelignore')) && /^strumenti$/m.test(leggi('.vercelignore')), 'controlli e strumenti non si pubblicano');
 
-console.log(`\n${passati} passati, ${falliti} falliti`);
+/* ---------- 8. Le animazioni ---------- */
+sezione('8. Le animazioni');
+for (const [p, h] of Object.entries(PAGINE)) {
+  const testa = h.slice(0, h.indexOf('</head>'));
+  verifica(/prefers-reduced-motion: reduce\)'\)\.matches\) document\.documentElement\.classList\.add\('vivo'\)/.test(testa), `${p}: «vivo» si accende nella testa, solo senza «meno animazioni»`);
+}
+verifica(/@media \(prefers-reduced-motion: reduce\)[\s\S]*animation: none !important[\s\S]*transition: none !important/.test(CSS), 'con «meno animazioni» nessuna animazione e nessuna transizione');
+const regoleAnimate = (cssSenzaCommenti.replace(/@keyframes[^{]+\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, '').match(/[^{}]+\{[^{}]*\banimation:[^{}]*\}/g) || []).map((r) => r.trim());
+const fuoriVivo = regoleAnimate.filter((r) => !/^\.vivo\b/.test(r) && !/animation: none/.test(r));
+verifica(fuoriVivo.length === 0, 'ogni animazione sta dietro «vivo»', fuoriVivo.map((r) => r.slice(0, 60)).join(' | '));
+verifica(CSS.includes('.racconto[data-pronto] .storia-locandina { display: none; }'), 'il racconto nasconde le immagini delle storie solo quando lo script ha preparato la finestra');
+verifica((racconto.match(/class="storia-locandina"/g) || []).length === STORIE.length, 'senza script ogni storia ha la sua immagine ferma');
+verifica(/data-conta="977">977</.test(HTML) && /data-conta="7894">7\.894</.test(HTML) && /data-conta="45">45</.test(HTML), 'senza script i numeri sono già al loro valore');
+verifica(!/<video/.test(HTML), 'nella landing nessun video senza lo script (li crea lui, senza indirizzo finché non servono)');
+verifica(JS.includes('if (i === attiva && inVista && !risparmio)') && JS.includes('s.video.pause()'), 'gira solo il video della storia sullo schermo, e solo con il racconto in vista');
+verifica(JS.includes("v.preload = 'none'"), 'i video del racconto non si scaricano prima del loro turno');
+verifica(!/cursor:\s*(none|url)/.test(CSS), 'nessun cursore personalizzato');
+verifica(CSS.includes('.vivo .casa-grande [pathLength]') && /\.vivo \.casa-grande \.casa-porta \{ animation: traccia[^}]*porta/.test(CSS), 'la casa si traccia e la porta ambra arriva per ultima');
+
+console.log(`\n${passati} controlli passati, ${falliti} falliti.`);
 process.exit(falliti ? 1 : 0);
