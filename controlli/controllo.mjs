@@ -156,13 +156,13 @@ for (const [pg, h] of Object.entries(PAGINE)) {
   verifica(numeri.every((n) => n === String(TIPI_DOCUMENTI)), `${pg}: «più di ${TIPI_DOCUMENTI} tipi» ovunque`, numeri.join(' '));
 }
 // Il commercialista e il CAF
-for (const t of ['Tutto pronto per il commercialista o il CAF', 'le carte per il commercialista o il CAF', 'Segni la spesa da portare al commercialista o al CAF', 'Al commercialista o al CAF, un pacchetto pronto.', 'i documenti da portare al commercialista o al CAF']) verifica(testoPagina.includes(t), `CAF: «${t}»`);
+for (const t of ['Tutto pronto per il commercialista o il CAF', 'Segni la spesa da portare al commercialista o al CAF', 'Al commercialista o al CAF, un pacchetto pronto.', 'i documenti da portare al commercialista o al CAF']) verifica(testoPagina.includes(t), `CAF: «${t}»`);
 // I disegni grandi: la casa in Come funziona, l'appartamento in Se affitti
 verifica(/class="disegno-grande" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="come"'), HTML.indexOf('id="storia"'))), 'Come funziona: la casa grande');
 verifica(/class="disegno-grande" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="affitti"'), HTML.indexOf('id="immobili"'))), "Se affitti: l'appartamento grande");
 // L'apertura: come la landing di prima, nella veste nuova (le schermate dell'app con dati inventati).
 const apertura = HTML.slice(HTML.indexOf('class="apertura"'), HTML.indexOf('id="come"'));
-for (const t of ['Gestione di immobili e affitti', 'Le tue case e i tuoi affitti, sotto controllo.', 'Fotografi o carichi un documento: Dimora legge i dati e prepara le scadenze, tu controlli e confermi. Documenti, spese, contratti e incassi in un unico posto.', 'Inizia la prova gratuita', 'Dal computer hai tutti gli immobili sotto gli occhi.', 'Dal telefono fotografi il documento e lo confermi.', 'Fai una foto o carica un PDF. Dimora compila per te.']) verifica(testo(apertura).includes(t), `apertura: «${t.slice(0, 40)}»`);
+for (const t of ['Gestione di immobili e affitti', 'Le tue case e i tuoi affitti, sotto controllo.', 'Fotografi un documento: Dimora lo mette nella casa giusta, ne ricava i dati e si ricorda le scadenze. Un fascicolo per ogni casa, che si compila da solo.', 'Inizia la prova gratuita', 'Dal computer hai tutti gli immobili sotto gli occhi.', 'Dal telefono fotografi il documento e lo confermi.', 'Fai una foto o carica un PDF. Dimora compila per te.']) verifica(testo(apertura).includes(t), `apertura: «${t.slice(0, 40)}»`);
 verifica(!testo(apertura).includes('Da una foto.'), 'apertura: il titolo senza «Da una foto.»');
 for (const f of ['app-computer.webp', 'app-telefono.webp', 'foto-bolletta.webp', 'dimorino-lettura.webp']) verifica(apertura.includes(`src="/assets/img/${f}"`) && esiste(`assets/img/${f}`), `apertura: ${f}`);
 // Il telefono e gli store
@@ -179,8 +179,10 @@ const testata = HTML.slice(HTML.indexOf('<!--TESTATA-->'), HTML.indexOf('<!--/TE
 verifica((testata.match(/<a href="\/#novita">Novità<\/a>/g) || []).length === 2 && !testata.includes('Aggiornamenti'), 'il menu dice «Novità» e porta al blocco');
 // In arrivo: due righe sole, senza pulsanti
 const inArrivo = HTML.slice(HTML.indexOf('<!--IN-ARRIVO-->'), HTML.indexOf('<!--/IN-ARRIVO-->'));
-const ARRIVO = ["L'adeguamento ISTAT del canone, automatico. Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda.", 'Quando cambiano le regole, te lo diciamo noi. Con la legge di bilancio Dimora ti dice che cosa cambia per ognuna delle tue case.'];
-verifica(IN_ARRIVO.titolo === 'In arrivo' && IN_ARRIVO.voci.length === 2 && testo(inArrivo).includes('In arrivo') && ARRIVO.every((t) => testo(inArrivo).includes(t)) && (inArrivo.match(/<li>/g) || []).length === 2, '«In arrivo» con le due righe del comando');
+// Quarto giro (26/10): tre righe, in quest'ordine.
+const ARRIVO = ["I canoni e le spese, abbinati dall'estratto conto. Carichi l'estratto conto del mese: Dimora riconosce i canoni arrivati e le spese già pagate, e tu confermi con un tocco.", "L'adeguamento ISTAT del canone, automatico. Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda.", "Quando cambiano le regole, te lo diciamo noi. Dimora tiene d'occhio le novità per chi possiede immobili e ti dice che cosa cambia per ognuna delle tue case."];
+const posArrivo = ARRIVO.map((t) => testo(inArrivo).indexOf(t));
+verifica(IN_ARRIVO.titolo === 'In arrivo' && IN_ARRIVO.voci.length === 3 && testo(inArrivo).includes('In arrivo') && posArrivo.every((x, i) => x >= 0 && (i === 0 || x > posArrivo[i - 1])) && (inArrivo.match(/<li>/g) || []).length === 3, '«In arrivo» con le tre righe del comando, nel loro ordine');
 verifica(!/<a |<button/.test(inArrivo), '«In arrivo» senza pulsanti');
 // La pagina di tutte le novità
 const elenco = ELENCO.slice(ELENCO.indexOf('<main'), ELENCO.indexOf('</main>'));
@@ -231,10 +233,38 @@ const risparmioMax = Math.max(...Object.values(PIANI).map((p) => (cent(p.mese) *
 verifica(testo(HTML).includes(`risparmi fino al ${Math.floor(risparmioMax * 100)}%`), "l'interruttore dice il risparmio massimo, arrotondato per difetto");
 verifica(testo(HTML).includes("30 giorni, 20 letture con l'AI e 1 GB di archivio, senza carta e senza addebiti automatici. Tutte le funzioni, senza limite di immobili."), 'la prova gratuita, parola per parola');
 verifica(testo(HTML).includes('10 letture a 4,90 €, 20 a 7,90 €, 100 a 34,90 €'), 'i pacchetti');
-const DOMANDE = ['Per chi è pensata Dimora?', 'Che cosa succede alla fine della prova?', 'Quanto costa dopo la prova?', 'Come funzionano le letture AI?', 'Posso avere più letture?', 'Quali documenti legge?', 'Quanto può essere lungo un documento?', 'I miei documenti sono al sicuro?', 'Serve installare qualcosa?', 'Posso portare via i miei dati?'];
+const DOMANDE = ['Per chi è pensata Dimora?', 'Non basta ChatGPT?', 'Che cosa succede alla fine della prova?', 'Quanto costa dopo la prova?', 'Come funzionano le letture AI?', 'Posso avere più letture?', 'Quali documenti legge?', 'Quanto può essere lungo un documento?', 'I miei documenti sono al sicuro?', 'Serve installare qualcosa?', 'Posso portare via i miei dati?'];
 const domande = [...HTML.matchAll(/<details class="domanda"><summary><h3>([^<]+)<\/h3>/g)].map((m) => entita(m[1]));
-verifica(JSON.stringify(domande) === JSON.stringify(DOMANDE), 'le dieci domande nel loro ordine', domande.join(' | '));
+verifica(JSON.stringify(domande) === JSON.stringify(DOMANDE), 'le undici domande nel loro ordine', domande.join(' | '));
 verifica(!/<details class="domanda" open/.test(HTML), 'le domande partono chiuse');
+/* Quarto giro (26/10): i testi del comando, parola per parola. */
+const domandeTesto = testo(HTML.slice(HTML.indexOf('id="domande"'), HTML.indexOf('</section>', HTML.indexOf('id="domande"'))));
+verifica(domandeTesto.includes("Per chi è pensata Dimora? Per chi gestisce direttamente i propri immobili, soprattutto chi ne ha più di uno: la casa in cui vive, le seconde case, quelle che affitta, quelle di famiglia. Per capire se ti è utile c'è la prova gratuita."), 'domande: «Per chi è pensata Dimora?» del quarto giro');
+verifica(domandeTesto.includes("Non basta ChatGPT? Un assistente può leggere un documento. Dimora tiene il fascicolo di ogni casa negli anni, ti avvisa da sola quando qualcosa scade e fa i conti con le regole italiane, come l'IMU del tuo Comune."), 'domande: «Non basta ChatGPT?» subito dopo');
+verifica(!/FAQPage/.test(HTML), 'le domande non sono nei dati strutturati (niente FAQ da aggiornare)');
+verifica(testo(apertura).includes('Contratti, canoni incassati e mesi che mancano') && !testoPagina.includes('incassi e pagamenti in ritardo'), 'apertura: «Contratti, canoni incassati e mesi che mancano»');
+verifica(/<p class="apertura-motto">Archivia<span class="punto">\.<\/span> Compila<span class="punto">\.<\/span> Ricorda<span class="punto">\.<\/span> Fa i conti<span class="punto">\.<\/span><\/p>/.test(apertura) && CSS.includes('.apertura-motto .punto { color: var(--c-accento); }') && apertura.indexOf('apertura-motto') < apertura.indexOf('data-posizione="apertura"'), 'apertura: il motto prima del pulsante, coi punti in ambra');
+verifica(/<p class="apertura-sicuro"><a href="#sicurezza"><svg[\s\S]*?<\/svg><span>I tuoi documenti in un archivio privato e cifrato\. Non li usiamo per addestrare modelli\.<\/span><\/a><\/p>/.test(apertura) && apertura.indexOf('apertura-sicuro') > apertura.indexOf('apertura-nota'), 'apertura: il lucchetto sotto la nota porta alla sezione');
+const fascicolo = HTML.slice(HTML.indexOf('class="funzioni"'), HTML.indexOf('id="risposte"'));
+verifica(testo(fascicolo).includes('Un fascicolo per ogni casa, che si compila da solo. Non una cartella di file: i documenti diventano dati in ordine. Rendite, canoni, rate, scadenze e spese di ogni casa, sempre aggiornati e collegati al documento da cui vengono.') && (fascicolo.match(/class="funzione"/g) || []).length === 6 && !testoPagina.includes('Tre cose in meno'), 'il fascicolo: titolo, riga e le sei voci');
+const risposte = HTML.slice(HTML.indexOf('id="risposte"'), HTML.indexOf('</section>', HTML.indexOf('id="risposte"')));
+const RISPOSTE = [
+  ['Quanto ho speso per la casa al mare nel 2025?', "Nella scheda della casa, ai costi dell'anno: € 3.240, in 14 spese, ognuna con la sua fattura."],
+  ['Entro quando posso dare la disdetta in via Roma?', "Nella carta dell'affitto: entro il 31 marzo 2027, e Dimora te lo ricorda prima."],
+  ["Dov'è il rogito del box?", 'Nei documenti del box, legato alla sua casa: si apre con un tocco.'],
+  ['Quanta IMU pago a dicembre?', 'Fra le scadenze: € 828,67 per la casa al mare, con le aliquote del tuo Comune.'],
+];
+verifica(HTML.indexOf('id="risposte"') > HTML.indexOf('class="funzioni"') && HTML.indexOf('id="risposte"') < HTML.indexOf('id="storia"'), 'le risposte subito dopo il fascicolo');
+verifica(testo(risposte).includes("Le risposte, senza cercare nei cassetti. Quello che oggi cerchi fra mail, estratti conto e cartelle, in Dimora lo trovi in un colpo d'occhio."), 'le risposte: titolo e riga');
+verifica(RISPOSTE.every(([d, a]) => risposte.includes(`<dt>${d.replace(/&/g, '&amp;')}</dt><dd>${a}</dd>`)) && (risposte.match(/<dt>/g) || []).length === 4, 'le risposte: le quattro righe, domanda e risposta');
+verifica(CSS.includes('.risposta dt { font-family: var(--font-titoli); font-weight: 600; font-style: italic;') && /@media \(min-width: 48rem\) \{ \.risposta \{ grid-template-columns/.test(CSS) && !/<video|data-video/.test(risposte), 'le risposte: domanda in corsivo, a fianco solo dal tablet, nessun video');
+verifica(testoPagina.includes('Mia mamma segue da sola più di una casa, compresa quella di mia nonna: tiene tutto a mano, nel quaderno della foto, con una cura che rispetto. Io ho voluto togliere la fatica di rimettere insieme i pezzi.'), 'la storia: la frase nuova');
+const sicurezza = HTML.slice(HTML.indexOf('id="sicurezza"'), HTML.indexOf('</section>', HTML.indexOf('id="sicurezza"')));
+verifica(sicurezza.includes('<p class="sicurezza-evidenza">Rogiti, contratti ed estratti conto sono carte personali: le trattiamo così.</p>') && !sicurezza.includes('Ecco dove stanno'), 'sicurezza: la riga in evidenza');
+const vociSicure = [...sicurezza.matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1]);
+verifica(JSON.stringify(vociSicure) === JSON.stringify(['Dove stanno', 'Letti solo per te', 'Ogni dato ha la sua fonte', 'Li porti via quando vuoi']), 'sicurezza: la voce nuova fra «Letti solo per te» e «Li porti via quando vuoi»', vociSicure.join(' | '));
+verifica(testo(sicurezza).includes('Ogni dato ha la sua fonte Ogni documento resta collegato alla sua casa e ai dati che ne sono stati ricavati. Se un dato manca, Dimora te lo chiede e non lo inventa.'), 'sicurezza: la frase di riserva (dalla scheda la fonte si vede solo per i dati catastali)');
+verifica(!/Unione Europea|a prova di hacker|sicurezza bancaria|militare/i.test(testoPagina), 'sicurezza: nessuna frase non verificata (niente «Unione Europea», niente parole grosse)');
 
 /* ---------- 5. Le risorse ---------- */
 sezione('5. Le risorse');
@@ -333,7 +363,7 @@ verifica(["v.setAttribute('muted', '')", "v.setAttribute('playsinline', '')", "v
 verifica(JS.includes('p.catch(function () { pulsante(c); })') && JS.includes("b.className = 'video-avvia'") && JS.includes('if (risparmio && !c.voluto) pulsante(c)') && CSS.includes('.video-avvia {') && /\.schermo-video \{ opacity: 0;/.test(CSS), "se il telefono blocca la partenza resta l'immagine col pulsante ▶, mai un riquadro nero");
 verifica(JS.includes("v.preload = 'none'"), 'i video del racconto non si scaricano prima del loro turno');
 verifica(!/cursor:\s*(none|url)/.test(CSS), 'nessun cursore personalizzato');
-verifica(JS.includes("document.querySelectorAll('[data-disegno]')") && JS.includes('t.el.style.strokeDashoffset = String(1 - x)') && JS.includes('t.porta) t.el.style.fillOpacity') && JS.includes("parte('disegni', function () { disegni.forEach") && !JS.includes("{ threshold: 0.5 }"), 'i disegni seguono lo scorrimento: si disegnano scendendo e si cancellano risalendo, il tocco ambra per ultimo');
+verifica(JS.includes("document.querySelectorAll('[data-disegno]')") && JS.includes('t.el.style.strokeDashoffset = String(1 - x)') && JS.includes('var CORSA = 2.4;') && JS.includes('(p * (ultimo + CORSA) - t.i) / CORSA') && JS.includes('t.porta) t.el.style.fillOpacity') && JS.includes("parte('disegni', function () { disegni.forEach") && !JS.includes("{ threshold: 0.5 }"), 'i disegni seguono lo scorrimento: si disegnano scendendo e si cancellano risalendo, il tocco ambra per ultimo');
 // L'apertura: il portatile con la tastiera e la sequenza in tre tempi (terzo giro di Vitto, 25/10)
 verifica(/class="portatile"[\s\S]*class="portatile-schermo"[\s\S]*<svg class="portatile-base"[\s\S]*class="tastiera-tasto"[\s\S]*class="tastiera-trackpad"/.test(apertura), 'apertura: il portatile ha lo schermo e, sotto, la base con la tastiera');
 verifica(apertura.includes('data-sequenza') && ['class="fotocamera"', 'class="mirino"', 'class="lampo"', 'class="schermo-campi"', 'class="schermo-prima"', 'class="schermo-dopo"', 'class="riga-nuova"', 'class="foto-carta"'].every((x) => apertura.includes(x)), 'apertura: la bolletta, la fotocamera col lampo, i campi e la scadenza nuova');

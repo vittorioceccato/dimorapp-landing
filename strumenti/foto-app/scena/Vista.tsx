@@ -33,6 +33,25 @@ const BOLLETTA = {
   model_used: 'claude-sonnet-5', escalated: false, condominio: null,
 }
 
+// Il contratto d'affitto letto (terzo giro della landing, 26/10): dati inventati, mai dati veri.
+const BILOCALE = { ...CASA, id: 'bilocale', nome: 'Bilocale in affitto', comune: 'Verona', indirizzo: 'Via Mazzini 7', cap: '37121',
+  destinazione: 'affitto', color: '#B5651D', has_condominio: false, unita_condominiale: null }
+const LOCAZIONE = {
+  sottotipo: '4+4', oggetto: 'intero', unita_indicate: [], conduttori: ['Giulia Conti'], decorrenza: '2023-07-01', durata_anni: 4,
+  data_fine: '2027-06-30', canone_mensile: 650, cedolare_secca: true, conduttore: 'Giulia Conti', deposito: 1300, giorno_pagamento: 5,
+  modalita_pagamento: 'bonifico', istat: false, spese_condominiali_a_carico: 'conduttore', spese_importo: null, spese_periodicita: null,
+  spese_natura: null, spese_rapporto: null, registrazione_data: '2023-07-10', registrazione_estremi: null,
+}
+const CONTRATTO = {
+  tipo_documento: 'contratto_locazione', titolo: 'Contratto di locazione 4+4 — Bilocale di via Mazzini', fornitore: null,
+  amount: null, doc_date: '2023-06-20', due_date: null, periodo: null, categoria: 'Affitto',
+  property_hint: 'Via Mazzini 7, Verona', indirizzo_immobile: null, locazione: LOCAZIONE,
+  extra: { decorrenza: '2023-07-01', canone_mensile: 650, cedolare_secca: true }, soggiorno: null, cin: null,
+  nota: 'Locazione abitativa 4+4, cedolare secca, deposito di due mensilità.', mutuo: null, catastale: null, catastale_unita: [],
+  proprietari: [], dati_rilevanti: [], document_subtype: null, document_subtype_label: null, confidence: 'high', check_fields: [],
+  model_used: 'claude-sonnet-5', escalated: false, condominio: null,
+}
+
 export default function Vista({ vista }: { vista: string }) {
   const [pronto, setPronto] = useState(false)
   useLayoutEffect(() => { document.documentElement.dataset.veste = 'nuova' }, [])
@@ -47,6 +66,15 @@ export default function Vista({ vista }: { vista: string }) {
             <div className="px-8 pt-7 pb-10 max-w-[820px]">
               <h1 className="font-titoli text-[26px] mb-4" style={{ color: 'var(--c-testo)' }}>Scadenze</h1>
               <ScadenzeListClient deadlines={(vista === 'scadenze-prima' ? SCADENZE.filter(x => x.id !== 's1') : SCADENZE) as never} in10str={OGGI} todayStr={OGGI} todayYear={2026} filterPropertyId={undefined} />
+            </div>
+          )}
+          {vista === 'contratto' && (
+            <div className="px-4 lg:px-8 pt-5 pb-28">
+              <DaFotoFlow
+                properties={[BILOCALE] as never}
+                userName="Mario Rossi"
+                resume={{ docId: 'doc-contratto', extraction: CONTRATTO as never, fileUrl: '/foto-landing-contratto.webp', fileMime: 'image/webp', fileName: 'Contratto di locazione.webp', lettura: null } as never}
+              />
             </div>
           )}
           {vista === 'bolletta' && (

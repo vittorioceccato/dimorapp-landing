@@ -8,6 +8,9 @@ mare, il bilocale in affitto; la bolletta è quella di `assets/img/foto-bolletta
   sequenza dell'apertura (vista `scadenze-prima` di `scena/Vista.tsx`);
 - `assets/img/app-telefono.webp` (780×1688): la bolletta appena letta, dal telefono, nell'apertura;
 - `assets/img/app-bolletta-computer.webp` (1280×800): la stessa lettura dal computer, nel passo delle bollette.
+- `assets/img/app-contratto-computer.webp` (1280×800): la lettura di un contratto d'affitto 4+4 (Giulia Conti, 650 €, dal
+  2023 al 2027), nel passo «Il contratto, letto per te.»; il foglio del contratto è inventato e lo scrive
+  `contratto-finto.mjs` (`node contratto-finto.mjs <copia-dell-app> <copia-dell-app>/public/foto-landing-contratto.webp`).
 
 ## Come si rifanno
 

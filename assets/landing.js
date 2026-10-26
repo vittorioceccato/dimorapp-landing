@@ -137,10 +137,20 @@
       tutto.insertBefore(fermo, tutto.firstChild);
       Array.prototype.forEach.call(tutto.children, function (c) { if (c !== fermo) c.setAttribute('aria-hidden', 'true'); });
       el.style.minWidth = el.getBoundingClientRect().width + 'px';
-      el.textContent = '0';
+      // La cifra resta al suo valore finché non sta per entrare nello schermo (quarto giro, 26/10): chi legge il testo
+      // della pagina senza scorrere, o la prima schermata, trova sempre «Più di 120», mai «Più di 0».
+      var partito = false;
+      var vicino = new IntersectionObserver(function (voci) {
+        if (!voci[0].isIntersecting) return;
+        vicino.disconnect();
+        if (!partito) el.textContent = '0';
+      }, { rootMargin: '0px 0px 20% 0px' });
+      vicino.observe(el);
       var osserva = new IntersectionObserver(function (voci) {
         if (!voci[0].isIntersecting) return;
         osserva.disconnect();
+        vicino.disconnect();
+        partito = true;
         var inizio = null;
         function passo(t) {
           if (inizio === null) inizio = t;
@@ -160,6 +170,7 @@
      suo turno (--i nello stile), il tocco ambra è l'ultimo. Lo script prende il disegno solo quando l'ha preparato
      (data-segue): senza, è già tutto disegnato. */
   var disegni = [];
+  var CORSA = 2.4;
   dopo('disegni', function () {
     if (!vivo) return;
     document.querySelectorAll('[data-disegno]').forEach(function (d) {
@@ -173,11 +184,14 @@
       disegni.push(function (vh) {
         var r = d.getBoundingClientRect();
         if (r.bottom < -vh || r.top > vh * 2) return;
-        var p = Math.round(limita((vh - r.top) / (vh * 0.5 + r.height * 0.5)) * 1000) / 1000;
+        // 0 quando il bordo alto è ancora a un ventesimo dal fondo dello schermo, 1 quando il centro arriva a metà.
+        var p = Math.round(limita((vh * 0.95 - r.top) / (vh * 0.45 + r.height * 0.5)) * 1000) / 1000;
         if (p === prima) return;
         prima = p;
         tratti.forEach(function (t) {
-          var x = limita(p * (ultimo + 1.6) - t.i);
+          // Ogni tratto cresce lungo CORSA turni della corsa (quarto giro, 26/10: il tratto si vede
+          // crescere e calare); l'ultimo, il tocco ambra, si chiude solo a p = 1.
+          var x = limita((p * (ultimo + CORSA) - t.i) / CORSA);
           t.el.style.strokeDashoffset = String(1 - x);
           if (t.porta) t.el.style.fillOpacity = String(limita(x * 2 - 1));
         });

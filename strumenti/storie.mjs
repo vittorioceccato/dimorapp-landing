@@ -205,12 +205,13 @@ export const PAGINA_NOVITA = {
   altre: 'Le altre novità',
 };
 
-// «In arrivo» (terzo giro di Vitto, 25/10): due righe sole. Senza date e senza pulsanti.
+// «In arrivo» (quarto giro, 26/10): tre righe, in quest'ordine. Senza date e senza pulsanti.
 export const IN_ARRIVO = {
   titolo: 'In arrivo',
   voci: [
+    { titolo: "I canoni e le spese, abbinati dall'estratto conto.", testo: "Carichi l'estratto conto del mese: Dimora riconosce i canoni arrivati e le spese già pagate, e tu confermi con un tocco." },
     { titolo: "L'adeguamento ISTAT del canone, automatico.", testo: "Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda." },
-    { titolo: 'Quando cambiano le regole, te lo diciamo noi.', testo: 'Con la legge di bilancio Dimora ti dice che cosa cambia per ognuna delle tue case.' },
+    { titolo: 'Quando cambiano le regole, te lo diciamo noi.', testo: 'Dimora tiene d\'occhio le novità per chi possiede immobili e ti dice che cosa cambia per ognuna delle tue case.' },
   ],
 };
 
@@ -225,7 +226,7 @@ export const PASSI = {
     titolo: 'Il contratto, letto per te.',
     // I tipi e le scadenze verificati nel codice dell'app (lib/locazione.ts, lib/templates.ts, 25/10).
     testo: "Carichi il contratto d'affitto: Dimora riconosce il tipo di contratto (4+4, 3+2 a canone concordato, transitorio, studenti, commerciale 6+6 e 9+9), compila inquilino, canone, durata, deposito e regime fiscale, e prepara le scadenze che contano: disdetta, scadenza del contratto, registrazione, cedolare.",
-    immagine: '/assets/img/app-affitto-computer.webp',
+    immagine: '/assets/img/app-contratto-computer.webp' // la conferma della lettura di un contratto, dati di prova (26/10),
   },
   'affitto-chiaro': {
     titolo: "L'affitto in chiaro, dalla scheda della casa.",

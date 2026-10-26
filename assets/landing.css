@@ -131,6 +131,14 @@ button { font: inherit; color: inherit; }
 .apertura-sotto { margin-top: 18px; font-size: clamp(17px, 2.1vw, 19px); color: var(--c-secondario); max-width: 32em; }
 .apertura-azioni { margin-top: 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
 .apertura-nota { font-size: var(--text-piccolo); color: var(--c-etichetta); }
+/* Quarto giro (26/10): il motto in carattere dei titoli, coi punti in ambra; sotto la nota, il lucchetto che porta alla
+   sezione «A chi affidi i tuoi documenti». */
+.apertura-motto { margin-top: 16px; font-family: var(--font-titoli); font-weight: 600; letter-spacing: var(--spaziatura-titoli); font-size: clamp(20px, 2.6vw, 25px); line-height: 1.2; color: var(--c-testo); }
+.apertura-motto .punto { color: var(--c-accento); }
+.apertura-sicuro { flex-basis: 100%; margin-top: -4px; font-size: var(--text-piccolo); }
+.apertura-sicuro a { display: inline-flex; gap: 8px; align-items: flex-start; color: var(--c-secondario); text-decoration: none; padding: 4px 0; }
+.apertura-sicuro a:hover span { text-decoration: underline; text-underline-offset: 3px; }
+.apertura-sicuro svg { flex: none; margin-top: 2px; color: var(--c-principale); }
 
 /* I due schermi: il portatile dietro (schermo e, sotto, la base con la tastiera), davanti a destra il telefono, accanto
    la bolletta di carta che il telefono fotografa. */
@@ -192,7 +200,7 @@ button { font: inherit; color: inherit; }
 .vivo .titolo-apertura .riga > span { transform: translateY(105%); animation: sale .8s cubic-bezier(.2, .7, .2, 1) forwards; }
 .vivo .titolo-apertura .riga:nth-child(2) > span { animation-delay: .12s; }
 .vivo .titolo-apertura .riga:nth-child(3) > span { animation-delay: .24s; }
-.vivo .occhiello, .vivo .apertura-sotto, .vivo .apertura-azioni, .vivo .legame, .vivo .didascalia, .vivo .vantaggi { opacity: 0; animation: compare .7s ease .45s forwards; }
+.vivo .occhiello, .vivo .apertura-sotto, .vivo .apertura-motto, .vivo .apertura-azioni, .vivo .legame, .vivo .didascalia, .vivo .vantaggi { opacity: 0; animation: compare .7s ease .45s forwards; }
 .vivo .apertura-azioni { animation-delay: .6s; }
 .vivo .portatile-schermo, .vivo .portatile-base { opacity: 0; animation: compare .9s cubic-bezier(.2, .7, .2, 1) .3s forwards; }
 .vivo .telefono { animation: entra-telefono 1s cubic-bezier(.2, .7, .2, 1) .7s both; }
@@ -523,7 +531,18 @@ button { font: inherit; color: inherit; }
 .sicura-icona { color: var(--c-principale); }
 .sicurezza-nota { margin-top: 32px; font-size: var(--text-piccolo); color: var(--c-secondario); }
 .sicurezza-nota a { color: var(--c-principale); font-weight: 600; }
-@media (min-width: 48rem) { .sicurezza-elenco { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 48rem) { .sicurezza-elenco { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 72rem) { .sicurezza-elenco { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.sicurezza-evidenza { margin-top: 14px; font-family: var(--font-titoli); font-weight: 600; letter-spacing: var(--spaziatura-titoli); font-size: clamp(20px, 2.6vw, 25px); line-height: 1.25; max-width: 26em; text-wrap: balance; }
+
+/* Le risposte (quarto giro, 26/10): la domanda in corsivo a sinistra e la risposta a destra; al telefono una sotto
+   l'altra. Nessuna animazione. */
+.risposte { padding-top: 0; }
+.risposte-elenco { border-top: 1px solid var(--c-riga); }
+.risposta { display: grid; gap: 6px 40px; padding: 20px 0; border-bottom: 1px solid var(--c-riga); }
+.risposta dt { font-family: var(--font-titoli); font-weight: 600; font-style: italic; font-size: var(--t-storia); line-height: 1.25; }
+.risposta dd { margin: 0; color: var(--c-secondario); font-size: var(--text-sezione); }
+@media (min-width: 48rem) { .risposta { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: baseline; } }
 
 /* ── Domande ── */
 .domande { display: grid; gap: 10px; }
