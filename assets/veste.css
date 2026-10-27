@@ -87,7 +87,8 @@
   --t-storia: clamp(24px, 4.2vw, 30px);
   --spazio-sezione: clamp(72px, 12vw, 136px);
   --margine: 16px;               /* il margine laterale al telefono */
-  --larghezza: 1180px;           /* la colonna dal computer */
+  --larghezza: 1344px;           /* la colonna dal computer: 1280 di contenuto più i margini (sesto giro, 27/10) */
+  --riga-max: 30em;              /* la riga più lunga di un paragrafo: con questo carattere circa 68 caratteri */
   /* L'ombra della finestra del racconto e dei pannelli che galleggiano: lo stesso colore dell'ombra della scheda,
      più ampia e più morbida. */
   --ombra-finestra: 0 28px 56px -28px rgb(74 52 16 / 0.32), 0 1px 2px rgb(74 52 16 / 0.06);

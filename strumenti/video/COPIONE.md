@@ -56,3 +56,20 @@ testo.
 dell'app (`next dev` su 127.0.0.1:3292, variabili finte, nessun dato vero) e monta i fotogrammi nel browser con
 WebCodecs (H.264) e mp4-muxer. Si lancia con `node gira-affitti.mjs <cartella con node_modules di puppeteer-core e
 mp4-muxer> <copia-dell-app> <uscita>`. Dati tutti inventati: Giulia Conti, il bilocale di via Mazzini, € 650.
+
+## I cinque video delle novità, rigirati nella veste nuova (sesto giro, 27/10)
+
+`assets/novita/` (imu-calcolata, rate-condominio, pacchetto-commercialista, bonus-casa, carichi-al-resto: mp4, jpg e
+webp) vengono ora da `strumenti/video/gira-novita.mjs`, senza ffmpeg: le scene e le tappe sono quelle di
+`scripts/novita-video/gira.ts` dell'app (stessi dati inventati, stessa sequenza, stessa durata), su una copia di `main`
+(0.9.48, con la cornice nuova); il montaggio è quello di `gira-affitti.mjs` (WebCodecs e mp4-muxer).
+
+1. `git -C <app> archive origin/main | tar -x -C <copia>`, `npm ci` nella copia.
+2. `node gira-novita.mjs prepara <copia>`: la veste nuova sulle scene (accendi-veste.mjs) e gira.ts che scrive
+   fotografie e tappe invece di chiamare ffmpeg.
+3. Nella copia: `VIDEO_DUMP=<cartella> node --import tsx scripts/novita-video/gira.ts <id>...`
+4. `node gira-novita.mjs monta <moduli> <copia> <cartella> <uscita>`, poi si copiano i file in `assets/novita/`.
+
+Una cosa cambiata a mano nella copia, perché l'app è cambiata dopo il copione: nella scena dell'IMU le parole sono ora
+«Acconto (16 giugno)» e «Saldo (16 dicembre)», e la delibera sta sotto «Come l'ho calcolata»: prima della fotografia si
+apre «Mostra». Nel repository dell'app `gira.ts` va aggiornato allo stesso modo (da fare lì).

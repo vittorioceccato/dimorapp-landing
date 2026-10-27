@@ -21,7 +21,7 @@ export const STORIE = [
       rigaSotto: 'Sai per tempo quanto pagherai, casa per casa, e anno dopo anno vedi quanto hai speso.',
       perche: [
         "Ogni anno, a giugno e a dicembre, torna la stessa domanda: quanto devo pagare di IMU per la casa al mare? E per il box? Per molti la risposta arriva solo con l'F24 del commercialista o del CAF, pochi giorni prima della scadenza. Così è difficile mettere da parte la cifra per tempo, e quasi nessuno sa dire quanto ha pagato l'anno scorso o se quest'anno paga di più.",
-        "Eppure non è una spesa piccola: per una seconda casa nei capoluoghi si pagano in media 977 euro l'anno, da 391 euro a Palermo fino a 3.499 euro a Roma. E non è un conto semplice: in Italia ci sono 7.894 Comuni e ognuno decide le sue aliquote. Fino al 2024 le combinazioni possibili erano circa 250.000; dal 2025 i Comuni scelgono fra 128 casi fissati dal Ministero dell'Economia. Più ordine, ma il conto resta da fare.",
+        "Eppure non è una spesa piccola: per una seconda casa nei capoluoghi si pagano in media 977 euro l'anno, da 391 euro a Palermo fino a 3.499 euro a Roma. E non è un conto semplice: in Italia ci sono 7.894 Comuni e ognuno decide le sue aliquote. Fino al 2024 le combinazioni possibili erano circa 250.000; dal 2025 i Comuni scelgono fra 128 casi fissati dal Ministero dell'Economia. Più ordine, ma il conto resta da fare.",
       ],
       passi: [
         'Dimora prende le aliquote dal prospetto ufficiale del tuo Comune.',
@@ -157,7 +157,7 @@ export const STORIE = [
     articolo: {
       rigaSotto: "Se l'inquilino paga solo una parte, Dimora tiene il conto di quello che manca.",
       perche: [
-        "Il bonifico arriva, ma è di 400 euro invece di 600. «Il resto a fine mese», dice l'inquilino. Poi passa un mese, poi un altro, e ricordarsi chi deve cosa diventa un esercizio di memoria fra estratto conto e messaggi. Chi affitta lo sa: un ritardo piccolo, se nessuno lo segue, diventa grande.",
+        "Il bonifico arriva, ma è di 400 euro invece di 600. «Il resto a fine mese», dice l'inquilino. Poi passa un mese, poi un altro, e ricordarsi chi deve cosa diventa un esercizio di memoria fra estratto conto e messaggi. Chi affitta lo sa: un ritardo piccolo, se nessuno lo segue, diventa grande.",
         'Non è un caso raro: nel 2024 in Italia sono stati convalidati 40.158 sfratti, e tre su quattro erano per morosità.',
       ],
       passi: [
@@ -258,7 +258,7 @@ export const PASSI = {
 // Un dato vero sotto la storia, con la fonte piccola. Le fonti sono quelle degli articoli.
 export const DATI = {
   'imu-calcolata': {
-    testo: 'Una spesa importante, ogni anno: in media € 977 di IMU per una seconda casa nei capoluoghi. Dimora la calcola e la mette a budget, così non ti coglie di sorpresa.',
+    testo: 'Una spesa importante, ogni anno: in media € 977 di IMU per una seconda casa nei capoluoghi. Dimora la calcola e la mette a budget, così non ti coglie di sorpresa.',
     fonte: 'UIL, «Studio su saldo IMU 2025»',
     indirizzo: 'https://www.uil.it/documents/Uil_%20su_Imu_saldodicembre2025.pdf',
   },
