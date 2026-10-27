@@ -745,7 +745,3 @@ button { font: inherit; color: inherit; }
 }
 .video-avvia:hover { opacity: 1; }
 .video-avvia[hidden] { display: none; }
-
-/* Le sezioni in fondo alla pagina si impaginano quando ci si avvicinano (quinto giro, 27/10): la prima schermata
-   arriva prima. Lo spazio che occupano intanto è una stima, poi il browser ricorda la misura vera. */
-.novita, .telefono-sezione, .prezzi, .sicurezza, #domande, .finale, .piede { content-visibility: auto; contain-intrinsic-size: auto 900px; }

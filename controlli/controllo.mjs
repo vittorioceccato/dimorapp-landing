@@ -393,7 +393,6 @@ verifica(JS.includes('scritture.forEach(function (w) { parte(w[0], w[1]); });'),
 verifica(['contratto-letto', 'carta-contratto', 'canoni-mese'].every((v) => esiste(`assets/video/${v}.mp4`) && esiste(`assets/video/${v}.webp`) && fs.statSync(path.join(RADICE, `assets/video/${v}.mp4`)).size < 1024 * 1024 && HTML.includes(`data-video="/assets/video/${v}.mp4"`)), 'Se affitti: tre minivideo nuovi (sotto 1 MB), con la locandina, che partono dallo script');
 verifica(PASSI['affitto-chiaro'].titolo === 'Il tuo contratto, in una carta sola.' && PASSI['affitto-chiaro'].testo === 'Quando scade, entro quando dare la disdetta, regime fiscale e deposito: tutto nella scheda della casa.', 'Se affitti: la carta del contratto, parola per parola');
 verifica(PASSI.canoni.titolo === 'I canoni, mese per mese.' && PASSI.canoni.testo === "Dal contratto Dimora prepara i canoni di ogni mese. Quando arriva il bonifico confermi l'incasso con un tocco, intero o in parte, e hai tutto sotto controllo.", 'Se affitti: i canoni, parola per parola');
-verifica(/\.novita, \.telefono-sezione, \.prezzi, \.sicurezza, #domande, \.finale, \.piede \{ content-visibility: auto; contain-intrinsic-size: auto 900px; \}/.test(CSS), 'le sezioni in fondo si impaginano quando ci si avvicinano');
 
 console.log(`\n${passati} controlli passati, ${falliti} falliti.`);
 process.exit(falliti ? 1 : 0);
