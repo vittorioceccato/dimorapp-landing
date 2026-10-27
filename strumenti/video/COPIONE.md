@@ -48,3 +48,11 @@ testo.
   nella veste nuova: `strumenti/foto-app/` le rifà.
 - Il passo delle bollette nella sezione della seconda casa non ha un video: se si vuole, un settimo video con la stessa
   scena delle schermate (la bolletta letta, il bottone «Registra la spesa e il promemoria»).
+
+## I tre minivideo di «Se affitti» (quinto giro, 27/10)
+
+`assets/video/contratto-letto`, `carta-contratto` e `canoni-mese` (mp4 e locandina webp) non vengono dall'app ma da
+`strumenti/video/gira-affitti.mjs`, che gira senza ffmpeg: fotografa le scene di `strumenti/foto-app/` su una copia
+dell'app (`next dev` su 127.0.0.1:3292, variabili finte, nessun dato vero) e monta i fotogrammi nel browser con
+WebCodecs (H.264) e mp4-muxer. Si lancia con `node gira-affitti.mjs <cartella con node_modules di puppeteer-core e
+mp4-muxer> <copia-dell-app> <uscita>`. Dati tutti inventati: Giulia Conti, il bilocale di via Mazzini, € 650.

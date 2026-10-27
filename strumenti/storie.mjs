@@ -226,17 +226,21 @@ export const PASSI = {
     titolo: 'Il contratto, letto per te.',
     // I tipi e le scadenze verificati nel codice dell'app (lib/locazione.ts, lib/templates.ts, 25/10).
     testo: "Carichi il contratto d'affitto: Dimora riconosce il tipo di contratto (4+4, 3+2 a canone concordato, transitorio, studenti, commerciale 6+6 e 9+9), compila inquilino, canone, durata, deposito e regime fiscale, e prepara le scadenze che contano: disdetta, scadenza del contratto, registrazione, cedolare.",
-    immagine: '/assets/img/app-contratto-computer.webp' // la conferma della lettura di un contratto, dati di prova (26/10),
+    // La lettura di un contratto 4+4 inventato fino alla conferma (quinto giro, 27/10): minivideo e la sua locandina.
+    immagine: '/assets/video/contratto-letto.webp',
+    video: '/assets/video/contratto-letto.mp4',
   },
   'affitto-chiaro': {
-    titolo: "L'affitto in chiaro, dalla scheda della casa.",
-    testo: 'Date del contratto, entro quando dare la disdetta, regime e deposito, tutto in una carta sola.',
-    immagine: '/assets/img/app-affitto-computer.webp',
+    titolo: 'Il tuo contratto, in una carta sola.',
+    testo: 'Quando scade, entro quando dare la disdetta, regime fiscale e deposito: tutto nella scheda della casa.',
+    immagine: '/assets/video/carta-contratto.webp',
+    video: '/assets/video/carta-contratto.mp4',
   },
   canoni: {
-    titolo: 'I canoni, sempre sotto gli occhi.',
-    testo: 'Segni gli incassi con un tocco e vedi subito quali mesi mancano.',
-    immagine: '/assets/img/app-computer.webp',
+    titolo: 'I canoni, mese per mese.',
+    testo: "Dal contratto Dimora prepara i canoni di ogni mese. Quando arriva il bonifico confermi l'incasso con un tocco, intero o in parte, e hai tutto sotto controllo.",
+    immagine: '/assets/video/canoni-mese.webp',
+    video: '/assets/video/canoni-mese.mp4',
   },
   'rogito-visura': {
     titolo: 'Dal rogito alla visura, i dati della casa compilati per te.',
@@ -254,12 +258,12 @@ export const PASSI = {
 // Un dato vero sotto la storia, con la fonte piccola. Le fonti sono quelle degli articoli.
 export const DATI = {
   'imu-calcolata': {
-    testo: "€ 977 l'anno, in media, per una seconda casa nei capoluoghi",
+    testo: 'Una spesa importante, ogni anno: in media € 977 di IMU per una seconda casa nei capoluoghi. Dimora la calcola e la mette a budget, così non ti coglie di sorpresa.',
     fonte: 'UIL, «Studio su saldo IMU 2025»',
     indirizzo: 'https://www.uil.it/documents/Uil_%20su_Imu_saldodicembre2025.pdf',
   },
   'rate-condominio': {
-    testo: 'Oltre 45 milioni di persone vivono in condominio',
+    testo: "Più di 45 milioni di italiani hanno a che fare con bilanci, preventivi e rate del condominio.",
     fonte: 'Notariato con ANACI, guida «Vivere in condominio»',
     indirizzo: 'https://www.italpress.com/vivere-in-condominio-arriva-la-guida-del-notariato/',
   },

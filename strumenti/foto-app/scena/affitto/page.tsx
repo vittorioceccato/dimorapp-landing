@@ -6,12 +6,16 @@ import { locazioneLabel } from '@/lib/locazione'
 
 // Pagina di prova SOLO nella copia temporanea dell'app: la carta dell'affitto della scheda (0.9.44), dati inventati,
 // righe composte con le funzioni vere della pagina dell'immobile.
-const OGGI = '2026-10-20'
+const OGGI = '2026-10-03'
 
-export default async function Pagina() {
+// ?stato=da_incassare | parziale (per il minivideo dei canoni, 27/10); senza, la rata di ottobre incassata.
+export default async function Pagina({ searchParams }: { searchParams: Promise<{ stato?: string }> }) {
+  const { stato: scelta } = await searchParams
+  const daIncassare = scelta === 'da_incassare', parziale = scelta === 'parziale'
   const r = {
-    id: 'rata-ottobre', due_date: '2026-10-05', amount: 650, amount_incassato: 650, data_incasso: '2026-10-04',
-    status: 'done', importo_da_confermare: false, override_mora: false, note: null,
+    id: 'rata-ottobre', due_date: '2026-10-05', amount: 650,
+    amount_incassato: daIncassare ? null : parziale ? 400 : 650, data_incasso: daIncassare ? null : '2026-10-04',
+    status: daIncassare || parziale ? 'pending' : 'done', importo_da_confermare: false, override_mora: false, note: null,
   }
   const { stato: s, giorniMora } = statoRataCanone(r, false, OGGI)
   const d = {

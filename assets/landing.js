@@ -123,45 +123,28 @@
     });
   });
 
-  /* ---------- Il numero dei documenti: conta quando arriva sullo schermo ----------
+  /* ---------- Il numero dei documenti: segue la corsa della casa grande (scena B) ----------
      Senza script (e con «meno animazioni») il numero è già al suo valore. Chi usa un lettore di schermo sente il
-     valore finale, non il conto; lo spazio della cifra resta quello del valore finale. */
+     valore finale, non il conto; lo spazio della cifra resta quello del valore finale. Finché la scena non è sullo
+     schermo la cifra resta «120»: chi legge il testo della pagina senza scorrere non trova mai «Più di 0». */
+  var contatore = null;
   dopo('numero', function () {
-    if (!vivo || !('IntersectionObserver' in window)) return;
-    document.querySelectorAll('[data-conta]').forEach(function (el) {
-      var fine = +el.getAttribute('data-conta');
-      var tutto = el.closest('[data-numero]') || el;
-      var fermo = document.createElement('span');
-      fermo.className = 'nascosto';
-      fermo.textContent = tutto.textContent.replace(/\s+/g, ' ').trim();
-      tutto.insertBefore(fermo, tutto.firstChild);
-      Array.prototype.forEach.call(tutto.children, function (c) { if (c !== fermo) c.setAttribute('aria-hidden', 'true'); });
-      el.style.minWidth = el.getBoundingClientRect().width + 'px';
-      // La cifra resta al suo valore finché non sta per entrare nello schermo (quarto giro, 26/10): chi legge il testo
-      // della pagina senza scorrere, o la prima schermata, trova sempre «Più di 120», mai «Più di 0».
-      var partito = false;
-      var vicino = new IntersectionObserver(function (voci) {
-        if (!voci[0].isIntersecting) return;
-        vicino.disconnect();
-        if (!partito) el.textContent = '0';
-      }, { rootMargin: '0px 0px 20% 0px' });
-      vicino.observe(el);
-      var osserva = new IntersectionObserver(function (voci) {
-        if (!voci[0].isIntersecting) return;
-        osserva.disconnect();
-        vicino.disconnect();
-        partito = true;
-        var inizio = null;
-        function passo(t) {
-          if (inizio === null) inizio = t;
-          var x = limita((t - inizio) / 1300);
-          el.textContent = String(Math.round(fine * (1 - Math.pow(1 - x, 3))));
-          if (x < 1) requestAnimationFrame(passo);
-        }
-        requestAnimationFrame(passo);
-      }, { threshold: 0.6 });
-      osserva.observe(el);
-    });
+    if (!vivo) return;
+    var el = document.querySelector('[data-conta]');
+    if (!el) return;
+    var fine = +el.getAttribute('data-conta');
+    var tutto = el.closest('[data-numero]') || el;
+    var fermo = document.createElement('span');
+    fermo.className = 'nascosto';
+    fermo.textContent = tutto.textContent.replace(/\s+/g, ' ').trim();
+    tutto.insertBefore(fermo, tutto.firstChild);
+    Array.prototype.forEach.call(tutto.children, function (c) { if (c !== fermo) c.setAttribute('aria-hidden', 'true'); });
+    el.style.minWidth = el.getBoundingClientRect().width + 'px';
+    var scritto = String(fine);
+    contatore = function (p, inVista) {
+      var t = inVista ? String(Math.round(fine * p)) : String(fine);
+      if (t !== scritto) { el.textContent = t; scritto = t; }
+    };
   });
 
   /* ---------- I disegni delle sezioni: il tratto segue lo scorrimento ----------
@@ -180,14 +163,26 @@
       });
       var ultimo = tratti.reduce(function (x, t) { return Math.max(x, t.i); }, 0);
       var prima = -1;
+      var scena = d.closest('[data-casa-scena]');
       d.setAttribute('data-segue', '');
       disegni.push(function (vh) {
-        var r = d.getBoundingClientRect();
+        var r = (scena || d).getBoundingClientRect();
         if (r.bottom < -vh || r.top > vh * 2) return;
-        // 0 quando il bordo alto è ancora a un ventesimo dal fondo dello schermo, 1 quando il centro arriva a metà.
-        var p = Math.round(limita((vh * 0.95 - r.top) / (vh * 0.45 + r.height * 0.5)) * 1000) / 1000;
+        var p;
+        if (scena) {
+          // La scena B: 0 un quarto di schermo prima che la scena si fermi, 1 alla fine della corsa da ferma.
+          var corsa = r.height - scena.firstElementChild.offsetHeight;
+          p = limita((64 + vh * 0.25 - r.top) / (corsa + vh * 0.25));
+          var conta = contatore, inVista = r.top < vh, pc = p;
+        } else {
+          // 0 quando il bordo alto è ancora a un ventesimo dal fondo dello schermo, 1 quando il centro arriva a metà.
+          p = limita((vh * 0.95 - r.top) / (vh * 0.45 + r.height * 0.5));
+        }
+        p = Math.round(p * 1000) / 1000;
         if (p === prima) return;
         prima = p;
+        return function () {
+        if (conta) conta(pc, inVista);
         tratti.forEach(function (t) {
           // Ogni tratto cresce lungo CORSA turni della corsa (quarto giro, 26/10: il tratto si vede
           // crescere e calare); l'ultimo, il tocco ambra, si chiude solo a p = 1.
@@ -195,6 +190,7 @@
           t.el.style.strokeDashoffset = String(1 - x);
           if (t.porta) t.el.style.fillOpacity = String(limita(x * 2 - 1));
         });
+        };
       });
     });
   });
@@ -274,18 +270,19 @@
         var slide = storie.map(function (s, i) {
           var id = s.getAttribute('data-storia');
           var immagine = s.getAttribute('data-immagine');
+          var videoPasso = s.getAttribute('data-video');
           var d = document.createElement('div');
           d.className = 'slide';
           var img = document.createElement('img');
           img.src = immagine || '/assets/novita/' + id + '.webp'; img.alt = '';
-          img.width = immagine ? 1280 : 960; img.height = immagine ? 800 : 600;
+          img.width = immagine && !videoPasso ? 1280 : 960; img.height = immagine && !videoPasso ? 800 : 600;
           img.decoding = 'async'; img.loading = i < 1 ? 'eager' : 'lazy';
           d.appendChild(img);
-          if (!immagine) {
+          if (!immagine || videoPasso) {
             var v = nuovoVideo();
             v.className = 'schermo-video';
             d.appendChild(v);
-            iscrivi({ video: v, mp4: '/assets/novita/' + id + '.mp4', peso: function () { return i === attiva && inVista ? 2 : 0; } });
+            iscrivi({ video: v, mp4: videoPasso || '/assets/novita/' + id + '.mp4', peso: function () { return i === attiva && inVista ? 2 : 0; } });
           }
           schermo.appendChild(d);
           var seg = document.createElement('span');
@@ -312,8 +309,9 @@
 
         racconti.push(function (vh) {
           var g = griglia.getBoundingClientRect();
-          finestra.style.setProperty('--entrata', limita((vh - g.top) / (vh * 0.55)).toFixed(3));
-          if (slide.length === 1) return;
+          if (g.bottom < -vh || g.top > vh * 2) return;
+          var entrata = limita((vh - g.top) / (vh * 0.55)).toFixed(3);
+          if (slide.length === 1) return function () { finestra.style.setProperty('--entrata', entrata); };
           // La linea di riferimento: al computer il centro dello schermo; al telefono il centro di quello che resta
           // sotto la finestra ferma.
           var linea = vh / 2;
@@ -325,7 +323,7 @@
             var d = r.top <= linea && r.bottom >= linea ? 0 : Math.min(Math.abs(r.top - linea), Math.abs(r.bottom - linea));
             if (d < distanza) { distanza = d; migliore = i; }
           });
-          scegli(migliore);
+          return function () { finestra.style.setProperty('--entrata', entrata); scegli(migliore); };
         });
       });
     });
@@ -348,6 +346,99 @@
     });
   });
 
+  /* ---------- Scena A, «dal cassetto al fascicolo»: la sezione ferma e lo scorrimento che manda avanti la scena ----------
+     p va da 0 (la sezione arriva sotto la testata) a 1 (fine della corsa). I tempi, in p:
+       0-0,10    le carte sparse, coi posti dove stanno oggi («nella mail», «nel cassetto», «nei download»);
+       0,05-0,12 compaiono le tre cartelle;
+       0,10-0,45 le carte volano nelle cartelle, una dopo l'altra;
+       0,42-0,54 la cartella di via Roma si apre fino a riempire il palco, le altre se ne vanno;
+       0,52-0,66 i gruppi di documenti, uno dopo l'altro;
+       0,66-0,92 dal contratto escono i tre cartellini, l'ultimo (la scadenza, col punto ambra) per ultimo.
+     I testi: il primo fino a 0,18, il secondo da 0,23 a 0,65, il terzo da 0,65. Si scrivono solo trasformazioni e
+     opacità: l'impaginazione non si muove. Risalendo, gli stessi conti all'indietro. */
+  var cassetto = null;
+  dopo('cassetto', function () {
+    if (!vivo) return;
+    var sezione = document.querySelector('[data-cassetto]');
+    if (!sezione) return;
+    var fermo = sezione.querySelector('.cassetto-fermo');
+    var palco = sezione.querySelector('[data-palco]');
+    var testi = Array.prototype.slice.call(sezione.querySelectorAll('.cassetto-testo'));
+    var carte = Array.prototype.slice.call(sezione.querySelectorAll('[data-carta]')).map(function (el) {
+      var da = el.getAttribute('data-da').split(',').map(Number);
+      return { el: el, x: da[0], y: da[1], r: da[2], dove: sezione.querySelector('[data-cartella="' + el.getAttribute('data-in') + '"]') };
+    });
+    var cartelle = Array.prototype.slice.call(sezione.querySelectorAll('[data-cartella]'));
+    var roma = sezione.querySelector('[data-cartella="roma"]');
+    var aperto = sezione.querySelector('[data-aperto]');
+    var testa = aperto.querySelector('.fa-testa');
+    var righe = Array.prototype.slice.call(aperto.querySelectorAll('[data-riga]'));
+    var fonte = aperto.querySelector('[data-fonte]');
+    var cartellini = Array.prototype.slice.call(sezione.querySelectorAll('[data-cartellino]'));
+    var morbido = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+    var tra = function (p, a, b) { return limita((p - a) / (b - a)); };
+    var prima = -1, primaL = -1, primaA = -1;
+    sezione.setAttribute('data-segue', '');
+    cassetto = function (vh) {
+      var r = sezione.getBoundingClientRect();
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      var corsa = r.height - fermo.offsetHeight;
+      var p = Math.round(limita((64 - r.top) / (corsa > 0 ? corsa : 1)) * 1000) / 1000;
+      var L = palco.clientWidth, A = palco.clientHeight;
+      if (p === prima && L === primaL && A === primaA) return;
+      prima = p; primaL = L; primaA = A;
+      // Letture prima delle scritture: le misure di riposo (offset) non dipendono dalle trasformazioni.
+      var cw = carte[0].el.offsetWidth, ch = carte[0].el.offsetHeight;
+      var dove = carte.map(function (c) { return { x: c.dove.offsetLeft + c.dove.offsetWidth / 2 - cw / 2, y: c.dove.offsetTop + c.dove.offsetHeight * 0.45 - ch / 2 }; });
+      var R = { x: roma.offsetLeft, y: roma.offsetTop, w: roma.offsetWidth, h: roma.offsetHeight };
+      var P = { x: aperto.offsetLeft, y: aperto.offsetTop, w: aperto.offsetWidth, h: aperto.offsetHeight };
+      var F = { x: P.x + fonte.offsetLeft + fonte.offsetWidth / 2, y: P.y + fonte.offsetTop + fonte.offsetHeight / 2 };
+      var T = cartellini.map(function (t) { return { x: t.offsetLeft + t.offsetWidth / 2, y: t.offsetTop + t.offsetHeight / 2 }; });
+
+      return function () {
+      // Le carte.
+      carte.forEach(function (c, i) {
+        var k = morbido(tra(p, 0.10 + i * 0.035, 0.27 + i * 0.035));
+        var x = c.x * L + (dove[i].x - c.x * L) * k;
+        var y = c.y * A + (dove[i].y - c.y * A) * k;
+        var s = 1 - 0.78 * k;
+        c.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + (c.r * (1 - k)).toFixed(2) + 'deg) scale(' + s.toFixed(3) + ')';
+        c.el.style.opacity = String(limita((1 - k) * 5));
+      });
+      // Le cartelle: compaiono, poi lasciano il posto alla cartella aperta.
+      var compare = morbido(tra(p, 0.05, 0.12));
+      var apre = morbido(tra(p, 0.42, 0.54));
+      cartelle.forEach(function (el) {
+        var via = el === roma ? limita(apre * 4) : apre;
+        el.style.opacity = String(compare * (1 - via));
+        el.style.transform = 'translateY(' + ((1 - compare) * 24 + (el === roma ? 0 : via * 18)).toFixed(1) + 'px)';
+      });
+      // La cartella di via Roma che si apre.
+      aperto.style.opacity = String(limita(apre * 8));
+      aperto.style.transform = 'translate(' + ((R.x - P.x) * (1 - apre)).toFixed(1) + 'px,' + ((R.y - P.y) * (1 - apre)).toFixed(1) + 'px) scale(' +
+        (R.w / P.w + (1 - R.w / P.w) * apre).toFixed(4) + ',' + (R.h / P.h + (1 - R.h / P.h) * apre).toFixed(4) + ')';
+      testa.style.opacity = String(tra(p, 0.50, 0.55));
+      righe.forEach(function (riga, j) {
+        var o = morbido(tra(p, 0.52 + j * 0.03, 0.58 + j * 0.03));
+        riga.style.opacity = String(o);
+        riga.style.transform = 'translateY(' + ((1 - o) * 10).toFixed(1) + 'px)';
+      });
+      // I cartellini escono dal contratto e si posano.
+      cartellini.forEach(function (t, j) {
+        var k = morbido(tra(p, 0.66 + j * 0.08, 0.78 + j * 0.08));
+        t.style.opacity = String(limita(k * 3));
+        t.style.transform = 'translate(' + ((F.x - T[j].x) * (1 - k)).toFixed(1) + 'px,' + ((F.y - T[j].y) * (1 - k)).toFixed(1) + 'px) scale(' + (0.5 + 0.5 * k).toFixed(3) + ')';
+      });
+      // I tre testi.
+      var o1 = 1 - tra(p, 0.18, 0.23), o2 = tra(p, 0.23, 0.28) * (1 - tra(p, 0.60, 0.65)), o3 = tra(p, 0.65, 0.70);
+      [o1, o2, o3].forEach(function (o, j) {
+        testi[j].style.opacity = String(o);
+        testi[j].style.transform = 'translateY(' + ((1 - o) * 14).toFixed(1) + 'px)';
+      });
+      };
+    };
+  });
+
   /* ---------- Come funziona: il foglio scende nella casa e ne escono le scadenze ---------- */
   var scena = null;
   parte('scena', function () {
@@ -360,6 +451,7 @@
       var r = el.getBoundingClientRect();
       var inizio = vh * 0.92, fine = vh * 0.42 - r.height / 2;
       var p = limita((inizio - r.top) / (inizio - fine));
+      return function () {
       el.style.setProperty('--foglio', morbido(limita(p / 0.42)).toFixed(3));
       var c = (p - 0.36) / 0.2;
       el.style.setProperty('--casa', (c > 0 && c < 1 ? Math.sin(Math.PI * c) : 0).toFixed(3));
@@ -368,6 +460,7 @@
       el.style.setProperty('--r3', morbido(limita((p - 0.74) / 0.14)).toFixed(3));
       var passo = p < 0.4 ? 0 : p < 0.7 ? 1 : 2;
       passi.forEach(function (li, i) { li.toggleAttribute('data-attivo', i === passo); });
+      };
     };
   });
 
@@ -377,9 +470,21 @@
     if (!vivo) return;
     var sezione = document.querySelector('.apertura');
     if (!sezione) return;
+    var prima = '';
+    var oggetti = [['.portatile', -16], ['.telefono', -40], ['.foto-carta', -28, 'rotate(-7deg) ']].map(function (x) {
+      return { el: sezione.querySelector(x[0]), su: x[1], prima: x[2] };
+    }).filter(function (o) { return o.el; });
     apertura = function () {
       var h = sezione.offsetHeight || 1;
-      sezione.style.setProperty('--p-apertura', limita(window.scrollY / h).toFixed(3));
+      var v = limita(window.scrollY / h).toFixed(3);
+      if (v === prima) return;
+      prima = v;
+      // Le trasformazioni si scrivono sui tre oggetti, non una variabile sulla sezione: una variabile sulla sezione
+      // farebbe ricalcolare lo stile di tutto quello che c'è dentro, a ogni fotogramma.
+      return function () {
+        var q = +v;
+        oggetti.forEach(function (o) { o.el.style.transform = (o.prima || '') + 'translateY(' + (q * o.su).toFixed(1) + 'px)'; });
+      };
     };
   });
 
@@ -392,19 +497,62 @@
     new IntersectionObserver(function (voci) { quota = voci[0].intersectionRatio; aggiornaVideo(); }, { threshold: [0, 0.35, 1] }).observe(v);
   });
 
+  /* ---------- L'apertura: la sequenza bolletta, foto, app riparte quando l'apertura torna sullo schermo ----------
+     Le animazioni stanno dietro data-sequenza="gira": tolto quando l'apertura esce dallo schermo e rimesso quando ci
+     torna, la sequenza riparte dall'inizio (quinto giro, 27/10). */
+  dopo('sequenza', function () {
+    var seq = document.querySelector('[data-sequenza]');
+    if (!vivo || !seq || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(function (voci) {
+      var dentro = voci[0].isIntersecting;
+      if (!dentro) seq.setAttribute('data-sequenza', '');
+      else if (seq.getAttribute('data-sequenza') !== 'gira') seq.setAttribute('data-sequenza', 'gira');
+    }).observe(seq);
+  });
+
+  /* ---------- Le risposte: le righe entrano una dopo l'altra con lo scorrimento, e risalendo tornano indietro ---------- */
+  var risposte = [];
+  dopo('risposte', function () {
+    if (!vivo) return;
+    document.querySelectorAll('.risposta').forEach(function (riga) {
+      var prima = -1;
+      riga.setAttribute('data-segue', '');
+      risposte.push(function (vh) {
+        var r = riga.getBoundingClientRect();
+        if (r.bottom < -vh || r.top > vh * 2) return;
+        // Entra fra il 95% e il 75% dello schermo.
+        var o = Math.round(limita((vh * 0.95 - r.top) / (vh * 0.2)) * 100) / 100;
+        if (o === prima) return;
+        prima = o;
+        return function () {
+          riga.style.opacity = String(o);
+          riga.style.transform = 'translateY(' + ((1 - o) * 28).toFixed(1) + 'px)';
+        };
+      });
+    });
+  });
+
   /* ---------- La testata: la riga sotto compare quando la pagina scorre ---------- */
   var testata = document.querySelector('[data-testata]');
 
-  /* Un solo giro per fotogramma, su scorrimento e ridimensionamento. */
+  /* Un solo giro per fotogramma, su scorrimento e ridimensionamento. In due tempi (quinto giro, 27/10): prima ogni
+     parte legge le sue misure e restituisce cosa scrivere, poi si scrive tutto insieme. Letture e scritture alternate
+     costringerebbero il browser a ricalcolare lo stile a ogni lettura, e sul telefono i fotogrammi salterebbero. */
   var inCoda = false;
   function giro() {
     inCoda = false;
     var vh = window.innerHeight;
-    if (testata) testata.toggleAttribute('data-sotto', window.scrollY > 8);
-    if (apertura) parte('apertura', apertura);
-    if (scena) parte('scena', function () { scena(vh); });
-    racconti.forEach(function (r) { parte('racconto', function () { r(vh); }); });
-    if (disegni.length) parte('disegni', function () { disegni.forEach(function (f) { f(vh); }); });
+    var sotto = window.scrollY > 8;
+    var scritture = [];
+    var leggi = function (nome, fn) { parte(nome, function () { var w = fn(); if (w) scritture.push([nome, w]); }); };
+    if (apertura) leggi('apertura', apertura);
+    if (cassetto) leggi('cassetto', function () { return cassetto(vh); });
+    if (scena) leggi('scena', function () { return scena(vh); });
+    racconti.forEach(function (r) { leggi('racconto', function () { return r(vh); }); });
+    disegni.forEach(function (f) { leggi('disegni', function () { return f(vh); }); });
+    risposte.forEach(function (f) { leggi('risposte', function () { return f(vh); }); });
+    if (testata) testata.toggleAttribute('data-sotto', sotto);
+    scritture.forEach(function (w) { parte(w[0], w[1]); });
   }
   function chiedi() { if (!inCoda) { inCoda = true; requestAnimationFrame(giro); } }
   window.addEventListener('scroll', chiedi, { passive: true });

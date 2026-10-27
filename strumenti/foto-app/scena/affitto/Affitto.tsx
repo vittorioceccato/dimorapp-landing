@@ -30,7 +30,7 @@ export default function Affitto({ d, carta, deposito }: {
             </header>
             <section className="mb-6" aria-labelledby="titolo-affitto">
               <h2 id="titolo-affitto" className={`${TITOLO_BLOCCO} mb-2.5`}>{T.AFFITTO}</h2>
-              <div className={`${SCHEDA} px-4 py-4`}>
+              <div data-inquadra="carta-affitto" className={`${SCHEDA} px-4 py-4`}>
                 <ContrattoSection
                   propertyId="bilocale"
                   locazioneId="loc-bilocale"

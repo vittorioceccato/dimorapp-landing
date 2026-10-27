@@ -119,7 +119,7 @@
       <!-- La sequenza in tre tempi (terzo giro di Vitto, 25/10): (a) la bolletta di carta; (b) il telefono la inquadra e
            scatta, con un lampo; (c) sul telefono i campi compilati e nel portatile spunta la scadenza nuova, evidenziata un
            attimo. Si ripete con una pausa. Senza «vivo» (e con «meno animazioni») si vede l'ultimo fotogramma, fermo. -->
-      <div class="dispositivi" data-sequenza>
+      <div class="dispositivi" data-sequenza="gira">
         <div class="portatile">
           <div class="portatile-schermo">
             <img class="schermo-prima" src="/assets/img/app-computer-prima.webp" alt="" width="1280" height="800" decoding="async" fetchpriority="high">
@@ -159,19 +159,68 @@
   </div>
 </section>
 
+<!-- 1b. SCENA A, «DAL CASSETTO AL FASCICOLO» (quinto giro, 27/10). La sezione resta ferma sullo schermo e lo scorrimento manda
+     avanti la scena: le carte sparse, le carte che volano nelle tre cartelle, la cartella di via Roma che si apre, i dati
+     che escono da un documento (il tocco ambra per ultimo). Risalendo torna indietro. Senza script e con «meno
+     animazioni» niente si ferma: si vede lo stato finale e i tre testi uno sotto l'altro. -->
+<section class="cassetto" id="fascicolo" data-cassetto aria-labelledby="cassetto-titolo">
+  <div class="cassetto-fermo">
+    <div class="contenitore cassetto-griglia">
+      <div class="cassetto-testi">
+        <h2 class="nascosto" id="cassetto-titolo">Dal cassetto al fascicolo</h2>
+        <p class="cassetto-testo" data-fase="1">Oggi le carte sono ovunque: nella mail, nel cassetto, nei download.</p>
+        <p class="cassetto-testo" data-fase="2">Con Dimora ogni documento va nella sua casa.</p>
+        <p class="cassetto-testo" data-fase="3">E da ogni documento escono i dati che ti servono: canoni, rendite, scadenze.</p>
+      </div>
+      <div class="cassetto-palco" data-palco aria-hidden="true">
+        <div class="cartella" data-cartella="roma"><span class="cartella-linguetta"></span><span class="cartella-nome">Appartamento in via Roma</span></div>
+        <div class="cartella" data-cartella="mare"><span class="cartella-linguetta"></span><span class="cartella-nome">Casa al mare</span></div>
+        <div class="cartella" data-cartella="box"><span class="cartella-linguetta"></span><span class="cartella-nome">Box</span></div>
+
+        <div class="fascicolo-aperto" data-aperto>
+          <div class="fa-testa"><span class="fa-casa"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg></span><span class="fa-titolo">Appartamento in via Roma</span></div>
+          <div class="fa-gruppo" data-riga><span class="fa-gruppo-nome">Contratti</span><span class="fa-doc fa-doc-fonte" data-fonte>Contratto d'affitto · 2023</span></div>
+          <div class="fa-gruppo" data-riga><span class="fa-gruppo-nome">Catasto e rogito</span><span class="fa-doc">Rogito · 2019</span><span class="fa-doc">Visura catastale · 2025</span></div>
+          <div class="fa-gruppo" data-riga><span class="fa-gruppo-nome">Utenze</span><span class="fa-doc">Bolletta luce · ottobre 2026</span><span class="fa-doc">Bolletta gas · settembre 2026</span></div>
+          <div class="fa-gruppo" data-riga><span class="fa-gruppo-nome">Condominio</span><span class="fa-doc">Preventivo 2026 · 4 rate</span></div>
+        </div>
+
+        <span class="cartellino" data-cartellino>Canone € 650</span>
+        <span class="cartellino" data-cartellino>Rendita catastale</span>
+        <span class="cartellino cartellino-scadenza" data-cartellino><i class="cartellino-punto"></i>Prossima scadenza 16 dic</span>
+
+        <div class="carta-doc carta-bolletta" data-carta data-da="0.03,0.05,-8" data-in="roma"><span class="doc-tipo">Bolletta luce</span><span class="doc-riga"></span><span class="doc-riga corta"></span><span class="doc-cifra">€ 96,48</span><span class="doc-dove">nella mail</span></div>
+        <div class="carta-doc carta-contratto" data-carta data-da="0.36,0.01,5" data-in="roma"><span class="doc-tipo">Contratto d'affitto</span><span class="doc-riga"></span><span class="doc-riga"></span><span class="doc-riga corta"></span><span class="doc-firma"></span></div>
+        <div class="carta-doc carta-rogito" data-carta data-da="0.67,0.08,-4" data-in="roma"><span class="doc-tipo">Rogito</span><span class="doc-riga"></span><span class="doc-riga"></span><span class="doc-timbro"></span><span class="doc-dove">nel cassetto</span></div>
+        <div class="carta-doc carta-fattura" data-carta data-da="0.38,0.37,-6" data-in="roma"><span class="doc-tipo">Fattura idraulico</span><span class="doc-riga"></span><span class="doc-riga corta"></span><span class="doc-riga"></span><span class="doc-cifra">€ 180</span></div>
+        <div class="carta-doc carta-f24" data-carta data-da="0.05,0.42,6" data-in="mare"><span class="doc-tipo">F24</span><span class="doc-griglia"><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="doc-dove">nei download</span></div>
+        <div class="carta-doc carta-foto" data-carta data-da="0.68,0.45,9" data-in="box"><span class="doc-tipo">Foto</span><span class="doc-scatto"><i></i></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 2. COME FUNZIONA, il cuore (testi della landing di prima: Come funziona e Che cosa fa per te). La casa grande si
      traccia quando la sezione arriva, accanto il numero dei documenti che conta; il foglio scende nella casa e ne escono
      le scadenze (dati di esempio). -->
 <section class="sezione" id="come">
   <div class="contenitore">
-    <div class="testa-grande">
-      <div class="testa-grande-testo">
-        <h2 class="titolo-sezione" data-parole>Fotografi il documento. Dimora si ricorda il resto.</h2>
-        <p class="sezione-sotto">Dal documento alla scadenza, in tre passi.</p>
-        <p class="numero-documenti" data-numero><span class="numero-grande">Più di <span class="numero-cifra" data-conta="120">120</span></span> <span class="numero-frase">tipi di documenti della casa, riconosciuti: dal rogito alla bolletta, dal contratto d'affitto al preventivo del condominio.</span></p>
-      </div>
-      <div class="disegno-grande" data-disegno aria-hidden="true">
-        <svg class="casa-grande" viewBox="0 0 220 110" fill="none" stroke="#27302A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path pathLength="1" style="--i:0" d="M10 100h200"></path><path pathLength="1" style="--i:1" d="M72 50l34-26 34 26"></path><rect pathLength="1" style="--i:2" x="78" y="48" width="56" height="52"></rect><rect pathLength="1" style="--i:3" x="134" y="58" width="40" height="42"></rect><rect pathLength="1" style="--i:4" x="86" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:4.4" x="115" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:5" x="141" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.3" x="158" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.6" x="141" y="80" width="9" height="8"></rect><rect pathLength="1" style="--i:5.9" x="158" y="80" width="9" height="8"></rect><path pathLength="1" style="--i:6.4" d="M40 100V52q0-8 8-8h6"></path><circle pathLength="1" style="--i:7" cx="57" cy="47" r="3"></circle><path class="porta" pathLength="1" style="--i:7.6" d="M100 100V86a6 6 0 0 1 12 0v14z" fill="#CE7F33"></path></svg>
+    <!-- Scena B (quinto giro, 27/10): la casa grande, senza riquadro e col tratto spesso. Con «vivo» la parte interna resta
+         ferma sotto la testata per circa un'altezza di schermo, e la casa si disegna con lo scorrimento (e si cancella
+         risalendo); il numero dei documenti segue la stessa corsa. Senza script e con «meno animazioni»: la casa disegnata,
+         il numero al suo valore, niente di fermo. -->
+    <div class="casa-scena" data-casa-scena>
+      <div class="casa-fermo">
+        <div class="casa-testo">
+          <div class="casa-titoli">
+            <h2 class="titolo-sezione" data-parole>Fotografi il documento. Dimora si ricorda il resto.</h2>
+            <p class="sezione-sotto">Dal documento alla scadenza, in tre passi.</p>
+          </div>
+          <p class="numero-documenti" data-numero><span class="numero-grande">Più di <span class="numero-cifra" data-conta="120">120</span></span> <span class="numero-frase">tipi di documenti della casa, riconosciuti: dal rogito alla bolletta, dal contratto d'affitto al preventivo del condominio.</span></p>
+        </div>
+        <div class="casa-disegno" data-disegno aria-hidden="true">
+          <svg class="casa-grande" viewBox="0 0 220 110" fill="none" stroke="#27302A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path pathLength="1" style="--i:0" d="M10 100h200"></path><path pathLength="1" style="--i:1" d="M72 50l34-26 34 26"></path><rect pathLength="1" style="--i:2" x="78" y="48" width="56" height="52"></rect><rect pathLength="1" style="--i:3" x="134" y="58" width="40" height="42"></rect><rect pathLength="1" style="--i:4" x="86" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:4.4" x="115" y="58" width="11" height="12"></rect><rect pathLength="1" style="--i:5" x="141" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.3" x="158" y="65" width="9" height="8"></rect><rect pathLength="1" style="--i:5.6" x="141" y="80" width="9" height="8"></rect><rect pathLength="1" style="--i:5.9" x="158" y="80" width="9" height="8"></rect><path pathLength="1" style="--i:6.4" d="M40 100V52q0-8 8-8h6"></path><circle pathLength="1" style="--i:7" cx="57" cy="47" r="3"></circle><path class="porta" pathLength="1" style="--i:7.6" d="M100 100V86a6 6 0 0 1 12 0v14z" fill="#CE7F33"></path></svg>
+        </div>
       </div>
     </div>
     <div class="come-griglia">
@@ -231,9 +280,10 @@
   </div>
 </section>
 
-<!-- 2b. LE RISPOSTE (quarto giro, 26/10): quattro domande e dove le trovi in Dimora. Ogni risposta è una schermata vera
-     dell'app (verificato nel codice il 26/10: costi dell'anno della scheda, riga del contratto nella carta dell'affitto,
-     documenti della pertinenza «Pertinenza di …», saldo IMU fra le scadenze). -->
+<!-- 2b. LE RISPOSTE (quarto giro, 26/10; quinto, 27/10): cinque domande e dove le trovi in Dimora. Ogni risposta è una schermata vera
+     dell'app (verificato nel codice: costi dell'anno della scheda, scadenze del contratto e saldo IMU fra le scadenze,
+     documenti della casa; il 27/10 l'ultima: i canoni nascono dal contratto, il Portafoglio mostra incassi meno spese
+     per casa e per anno). Le righe entrano una dopo l'altra con lo scorrimento. -->
 <section class="sezione risposte" id="risposte">
   <div class="contenitore">
     <div class="sezione-testa">
@@ -241,10 +291,11 @@
       <p class="sezione-sotto">Quello che oggi cerchi fra mail, estratti conto e cartelle, in Dimora lo trovi in un colpo d'occhio.</p>
     </div>
     <dl class="risposte-elenco">
-      <div class="risposta"><dt>Quanto ho speso per la casa al mare nel 2025?</dt><dd>Nella scheda della casa, ai costi dell'anno: € 3.240, in 14 spese, ognuna con la sua fattura.</dd></div>
-      <div class="risposta"><dt>Entro quando posso dare la disdetta in via Roma?</dt><dd>Nella carta dell'affitto: entro il 31 marzo 2027, e Dimora te lo ricorda prima.</dd></div>
-      <div class="risposta"><dt>Dov'è il rogito del box?</dt><dd>Nei documenti del box, legato alla sua casa: si apre con un tocco.</dd></div>
-      <div class="risposta"><dt>Quanta IMU pago a dicembre?</dt><dd>Fra le scadenze: € 828,67 per la casa al mare, con le aliquote del tuo Comune.</dd></div>
+      <div class="risposta"><dt>Quanto mi è costata la casa al mare quest'anno?</dt><dd>Apri la scheda della casa: € 3.240 fra condominio, bollette e lavori, ogni spesa con il suo documento.</dd></div>
+      <div class="risposta"><dt>Quanta IMU pago a dicembre sull'appartamento in affitto?</dt><dd>€ 828,67. È già fra le scadenze, calcolata con le aliquote del tuo Comune.</dd></div>
+      <div class="risposta"><dt>Entro quando devo dare la disdetta all'inquilino?</dt><dd>Entro il 31 marzo 2027. È fra le scadenze, e Dimora te lo ricorda per tempo.</dd></div>
+      <div class="risposta"><dt>Dov'è il rogito di casa mia?</dt><dd>Nei documenti della casa, insieme a visura, mutuo e polizza. Lo apri con un tocco.</dd></div>
+      <div class="risposta"><dt>Quanto mi rende davvero l'appartamento che affitto?</dt><dd>Dal contratto Dimora prepara i canoni di ogni mese. Tu confermi l'incasso e lei li mette accanto alle spese della casa: vedi quanto ti resta, anno per anno.</dd></div>
     </dl>
   </div>
 </section>
@@ -284,20 +335,20 @@
       <div class="racconto-griglia">
         <div class="racconto-storie">
 <!--RACCONTO-AFFITTO-->
-        <article class="storia" data-storia="contratto" data-immagine="/assets/img/app-contratto-computer.webp">
-          <figure class="storia-locandina"><img src="/assets/img/app-contratto-computer.webp" alt="" width="1280" height="800" loading="lazy" decoding="async"></figure>
+        <article class="storia" data-storia="contratto" data-immagine="/assets/video/contratto-letto.webp" data-video="/assets/video/contratto-letto.mp4">
+          <figure class="storia-locandina"><img src="/assets/video/contratto-letto.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
           <h3 class="storia-titolo">Il contratto, letto per te.</h3>
           <p>Carichi il contratto d'affitto: Dimora riconosce il tipo di contratto (4+4, 3+2 a canone concordato, transitorio, studenti, commerciale 6+6 e 9+9), compila inquilino, canone, durata, deposito e regime fiscale, e prepara le scadenze che contano: disdetta, scadenza del contratto, registrazione, cedolare.</p>
         </article>
-        <article class="storia" data-storia="affitto-chiaro" data-immagine="/assets/img/app-affitto-computer.webp">
-          <figure class="storia-locandina"><img src="/assets/img/app-affitto-computer.webp" alt="" width="1280" height="800" loading="lazy" decoding="async"></figure>
-          <h3 class="storia-titolo">L'affitto in chiaro, dalla scheda della casa.</h3>
-          <p>Date del contratto, entro quando dare la disdetta, regime e deposito, tutto in una carta sola.</p>
+        <article class="storia" data-storia="affitto-chiaro" data-immagine="/assets/video/carta-contratto.webp" data-video="/assets/video/carta-contratto.mp4">
+          <figure class="storia-locandina"><img src="/assets/video/carta-contratto.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">Il tuo contratto, in una carta sola.</h3>
+          <p>Quando scade, entro quando dare la disdetta, regime fiscale e deposito: tutto nella scheda della casa.</p>
         </article>
-        <article class="storia" data-storia="canoni" data-immagine="/assets/img/app-computer.webp">
-          <figure class="storia-locandina"><img src="/assets/img/app-computer.webp" alt="" width="1280" height="800" loading="lazy" decoding="async"></figure>
-          <h3 class="storia-titolo">I canoni, sempre sotto gli occhi.</h3>
-          <p>Segni gli incassi con un tocco e vedi subito quali mesi mancano.</p>
+        <article class="storia" data-storia="canoni" data-immagine="/assets/video/canoni-mese.webp" data-video="/assets/video/canoni-mese.mp4">
+          <figure class="storia-locandina"><img src="/assets/video/canoni-mese.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
+          <h3 class="storia-titolo">I canoni, mese per mese.</h3>
+          <p>Dal contratto Dimora prepara i canoni di ogni mese. Quando arriva il bonifico confermi l'incasso con un tocco, intero o in parte, e hai tutto sotto controllo.</p>
         </article>
         <article class="storia" data-storia="pacchetto-commercialista">
           <figure class="storia-locandina"><img src="/assets/novita/pacchetto-commercialista.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
@@ -355,14 +406,14 @@
           <figure class="storia-locandina"><img src="/assets/novita/imu-calcolata.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
           <h3 class="storia-titolo">L'IMU, calcolata.</h3>
           <p>Per la seconda casa, i box e le cantine, con le aliquote del tuo Comune.</p>
-          <p class="storia-dato"><span class="storia-dato-testo">€ 977 l'anno, in media, per una seconda casa nei capoluoghi</span> <span class="storia-dato-fonte">Fonte: <a href="https://www.uil.it/documents/Uil_%20su_Imu_saldodicembre2025.pdf" rel="noopener">UIL, «Studio su saldo IMU 2025»</a></span></p>
+          <p class="storia-dato"><span class="storia-dato-testo">Una spesa importante, ogni anno: in media € 977 di IMU per una seconda casa nei capoluoghi. Dimora la calcola e la mette a budget, così non ti coglie di sorpresa.</span> <span class="storia-dato-fonte">Fonte: <a href="https://www.uil.it/documents/Uil_%20su_Imu_saldodicembre2025.pdf" rel="noopener">UIL, «Studio su saldo IMU 2025»</a></span></p>
           <a class="collegamento" href="/novita/imu-calcolata">Leggi l'articolo</a>
         </article>
         <article class="storia" data-storia="rate-condominio">
           <figure class="storia-locandina"><img src="/assets/novita/rate-condominio.webp" alt="" width="960" height="600" loading="lazy" decoding="async"></figure>
           <h3 class="storia-titolo">Le rate del condominio, in ordine.</h3>
           <p>Carichi il preventivo: Dimora trova le tue rate e le mette nelle scadenze.</p>
-          <p class="storia-dato"><span class="storia-dato-testo">Oltre 45 milioni di persone vivono in condominio</span> <span class="storia-dato-fonte">Fonte: <a href="https://www.italpress.com/vivere-in-condominio-arriva-la-guida-del-notariato/" rel="noopener">Notariato con ANACI, guida «Vivere in condominio»</a></span></p>
+          <p class="storia-dato"><span class="storia-dato-testo">Più di 45 milioni di italiani hanno a che fare con bilanci, preventivi e rate del condominio.</span> <span class="storia-dato-fonte">Fonte: <a href="https://www.italpress.com/vivere-in-condominio-arriva-la-guida-del-notariato/" rel="noopener">Notariato con ANACI, guida «Vivere in condominio»</a></span></p>
           <a class="collegamento" href="/novita/rate-condominio">Leggi l'articolo</a>
         </article>
         <article class="storia" data-storia="bollette" data-immagine="/assets/img/app-bolletta-computer.webp">
@@ -496,7 +547,7 @@
     <div class="sicurezza-elenco">
       <div class="sicura"><svg class="sicura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg><h3>Dove stanno</h3><p>I tuoi documenti sono conservati in un archivio privato e cifrato, accessibile dal tuo account. Puoi scaricarli o eliminarli quando vuoi.</p></div>
       <div class="sicura"><svg class="sicura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><h3>Letti solo per te</h3><p>L'AI legge i tuoi documenti per aiutarti a mettere in ordine dati e scadenze. Non vengono usati per addestrare modelli.</p></div>
-      <div class="sicura"><svg class="sicura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M10 13h5"/><path d="M10 16.5h3"/></svg><h3>Ogni dato ha la sua fonte</h3><p>Ogni documento resta collegato alla sua casa e ai dati che ne sono stati ricavati. Se un dato manca, Dimora te lo chiede e non lo inventa.</p></div>
+      <div class="sicura"><svg class="sicura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M14 3.5V8h4"/><path d="M10 13h5"/><path d="M10 16.5h3"/></svg><h3>Ogni documento al suo posto.</h3><p>Ogni documento resta collegato alla sua casa e ai dati che ne sono stati ricavati. Se un dato manca, Dimora te lo chiede e non lo inventa.</p></div>
       <div class="sicura"><svg class="sicura-icona" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19.5h14"/></svg><h3>Li porti via quando vuoi</h3><p>Dalle Impostazioni scarichi i tuoi dati in un file ed elimini l'account. Ogni documento si scarica dalla sua pagina.</p></div>
     </div>
     <p class="sicurezza-nota">I dettagli sono nell'<a href="https://app.dimorapp.com/privacy">informativa sulla privacy</a> e nei <a href="https://app.dimorapp.com/termini">Termini del servizio</a>.</p>

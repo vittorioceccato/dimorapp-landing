@@ -57,7 +57,9 @@ function passo(p) {
   if (p.passo) {
     const x = PASSI[p.passo];
     if (!x) throw new Error(`Passo ${p.passo} non trovato`);
-    return `        <article class="storia" data-storia="${p.passo}" data-immagine="${x.immagine}">
+    // Un passo può avere un minivideo suo (quinto giro, 27/10): la sua locandina è l'immagine ferma.
+    const video = x.video ? ` data-video="${x.video}"` : '';
+    return `        <article class="storia" data-storia="${p.passo}" data-immagine="${x.immagine}"${video}>
           <figure class="storia-locandina"><img src="${x.immagine}" alt="" ${misure(x.immagine)} loading="lazy" decoding="async"></figure>
           <h3 class="storia-titolo">${esc(x.titolo)}</h3>
           <p>${esc(x.testo)}</p>

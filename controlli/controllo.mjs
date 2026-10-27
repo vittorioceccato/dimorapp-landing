@@ -142,7 +142,8 @@ for (const [id, d] of Object.entries(DATI)) {
   const storia = blocco.slice(0, blocco.indexOf('</article>'));
   verifica(testo(storia).includes(d.testo) && storia.includes(`href="${d.indirizzo.replace(/&/g, '&amp;')}"`) && testo(storia).includes(d.fonte), `immobili: il dato «${d.testo.slice(0, 30)}…» con la sua fonte`);
 }
-verifica(Object.values(DATI)[0].testo.startsWith('€ 977'), "gli importi come nell'app: «€ 977»");
+verifica(DATI['imu-calcolata'].testo === 'Una spesa importante, ogni anno: in media € 977 di IMU per una seconda casa nei capoluoghi. Dimora la calcola e la mette a budget, così non ti coglie di sorpresa.' && DATI['imu-calcolata'].fonte.startsWith('UIL'), "i numeri (quinto giro): l'IMU media, fonte UIL");
+verifica(DATI['rate-condominio'].testo === 'Più di 45 milioni di italiani hanno a che fare con bilanci, preventivi e rate del condominio.' && DATI['rate-condominio'].fonte.startsWith('Notariato con ANACI'), 'i numeri (quinto giro): il condominio, fonte Notariato con ANACI');
 const scenaHtml = HTML.slice(HTML.indexOf('data-scena'), HTML.indexOf('</section>', HTML.indexOf('data-scena')));
 const importiScena = [...scenaHtml.matchAll(/class="scadenza-importo">([^<]+)</g)].map((m) => m[1]);
 verifica(importiScena.length === 3 && importiScena.every((x) => /^€ \d+(,\d\d)?$/.test(x)) && ['€ 312', '€ 828,67'].every((x) => importiScena.includes(x)), "le scadenze di esempio: importi come nell'app («€ 312», «€ 828,67»)");
@@ -158,7 +159,7 @@ for (const [pg, h] of Object.entries(PAGINE)) {
 // Il commercialista e il CAF
 for (const t of ['Tutto pronto per il commercialista o il CAF', 'Segni la spesa da portare al commercialista o al CAF', 'Al commercialista o al CAF, un pacchetto pronto.', 'i documenti da portare al commercialista o al CAF']) verifica(testoPagina.includes(t), `CAF: «${t}»`);
 // I disegni grandi: la casa in Come funziona, l'appartamento in Se affitti
-verifica(/class="disegno-grande" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="come"'), HTML.indexOf('id="storia"'))), 'Come funziona: la casa grande');
+verifica(/class="casa-disegno" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="come"'), HTML.indexOf('id="storia"'))), 'Come funziona: la casa grande, nella scena ferma (quinto giro)');
 verifica(/class="disegno-grande" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="affitti"'), HTML.indexOf('id="immobili"'))), "Se affitti: l'appartamento grande");
 // L'apertura: come la landing di prima, nella veste nuova (le schermate dell'app con dati inventati).
 const apertura = HTML.slice(HTML.indexOf('class="apertura"'), HTML.indexOf('id="come"'));
@@ -249,21 +250,22 @@ const fascicolo = HTML.slice(HTML.indexOf('class="funzioni"'), HTML.indexOf('id=
 verifica(testo(fascicolo).includes('Un fascicolo per ogni casa, che si compila da solo. Non una cartella di file: i documenti diventano dati in ordine. Rendite, canoni, rate, scadenze e spese di ogni casa, sempre aggiornati e collegati al documento da cui vengono.') && (fascicolo.match(/class="funzione"/g) || []).length === 6 && !testoPagina.includes('Tre cose in meno'), 'il fascicolo: titolo, riga e le sei voci');
 const risposte = HTML.slice(HTML.indexOf('id="risposte"'), HTML.indexOf('</section>', HTML.indexOf('id="risposte"')));
 const RISPOSTE = [
-  ['Quanto ho speso per la casa al mare nel 2025?', "Nella scheda della casa, ai costi dell'anno: € 3.240, in 14 spese, ognuna con la sua fattura."],
-  ['Entro quando posso dare la disdetta in via Roma?', "Nella carta dell'affitto: entro il 31 marzo 2027, e Dimora te lo ricorda prima."],
-  ["Dov'è il rogito del box?", 'Nei documenti del box, legato alla sua casa: si apre con un tocco.'],
-  ['Quanta IMU pago a dicembre?', 'Fra le scadenze: € 828,67 per la casa al mare, con le aliquote del tuo Comune.'],
+  ["Quanto mi è costata la casa al mare quest'anno?", 'Apri la scheda della casa: € 3.240 fra condominio, bollette e lavori, ogni spesa con il suo documento.'],
+  ["Quanta IMU pago a dicembre sull'appartamento in affitto?", '€ 828,67. È già fra le scadenze, calcolata con le aliquote del tuo Comune.'],
+  ["Entro quando devo dare la disdetta all'inquilino?", 'Entro il 31 marzo 2027. È fra le scadenze, e Dimora te lo ricorda per tempo.'],
+  ["Dov'è il rogito di casa mia?", 'Nei documenti della casa, insieme a visura, mutuo e polizza. Lo apri con un tocco.'],
+  ['Quanto mi rende davvero l\'appartamento che affitto?', 'Dal contratto Dimora prepara i canoni di ogni mese. Tu confermi l\'incasso e lei li mette accanto alle spese della casa: vedi quanto ti resta, anno per anno.'],
 ];
 verifica(HTML.indexOf('id="risposte"') > HTML.indexOf('class="funzioni"') && HTML.indexOf('id="risposte"') < HTML.indexOf('id="storia"'), 'le risposte subito dopo il fascicolo');
 verifica(testo(risposte).includes("Le risposte, senza cercare nei cassetti. Quello che oggi cerchi fra mail, estratti conto e cartelle, in Dimora lo trovi in un colpo d'occhio."), 'le risposte: titolo e riga');
-verifica(RISPOSTE.every(([d, a]) => risposte.includes(`<dt>${d.replace(/&/g, '&amp;')}</dt><dd>${a}</dd>`)) && (risposte.match(/<dt>/g) || []).length === 4, 'le risposte: le quattro righe, domanda e risposta');
+verifica(RISPOSTE.every(([d, a]) => risposte.includes(`<dt>${d.replace(/&/g, '&amp;')}</dt><dd>${a}</dd>`)) && (risposte.match(/<dt>/g) || []).length === 5, 'le risposte: le cinque righe, domanda e risposta (quinto giro)');
 verifica(CSS.includes('.risposta dt { font-family: var(--font-titoli); font-weight: 600; font-style: italic;') && /@media \(min-width: 48rem\) \{ \.risposta \{ grid-template-columns/.test(CSS) && !/<video|data-video/.test(risposte), 'le risposte: domanda in corsivo, a fianco solo dal tablet, nessun video');
 verifica(testoPagina.includes('Mia mamma segue da sola più di una casa, compresa quella di mia nonna: tiene tutto a mano, nel quaderno della foto, con una cura che rispetto. Io ho voluto togliere la fatica di rimettere insieme i pezzi.'), 'la storia: la frase nuova');
 const sicurezza = HTML.slice(HTML.indexOf('id="sicurezza"'), HTML.indexOf('</section>', HTML.indexOf('id="sicurezza"')));
 verifica(sicurezza.includes('<p class="sicurezza-evidenza">Rogiti, contratti ed estratti conto sono carte personali: le trattiamo così.</p>') && !sicurezza.includes('Ecco dove stanno'), 'sicurezza: la riga in evidenza');
 const vociSicure = [...sicurezza.matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1]);
-verifica(JSON.stringify(vociSicure) === JSON.stringify(['Dove stanno', 'Letti solo per te', 'Ogni dato ha la sua fonte', 'Li porti via quando vuoi']), 'sicurezza: la voce nuova fra «Letti solo per te» e «Li porti via quando vuoi»', vociSicure.join(' | '));
-verifica(testo(sicurezza).includes('Ogni dato ha la sua fonte Ogni documento resta collegato alla sua casa e ai dati che ne sono stati ricavati. Se un dato manca, Dimora te lo chiede e non lo inventa.'), 'sicurezza: la frase di riserva (dalla scheda la fonte si vede solo per i dati catastali)');
+verifica(JSON.stringify(vociSicure) === JSON.stringify(['Dove stanno', 'Letti solo per te', 'Ogni documento al suo posto.', 'Li porti via quando vuoi']), 'sicurezza: la voce nuova fra «Letti solo per te» e «Li porti via quando vuoi»', vociSicure.join(' | '));
+verifica(testo(sicurezza).includes('Ogni documento al suo posto. Ogni documento resta collegato alla sua casa e ai dati che ne sono stati ricavati. Se un dato manca, Dimora te lo chiede e non lo inventa.'), 'sicurezza: la frase di riserva (dalla scheda la fonte si vede solo per i dati catastali)');
 verifica(!/Unione Europea|a prova di hacker|sicurezza bancaria|militare/i.test(testoPagina), 'sicurezza: nessuna frase non verificata (niente «Unione Europea», niente parole grosse)');
 
 /* ---------- 5. Le risorse ---------- */
@@ -363,12 +365,35 @@ verifica(["v.setAttribute('muted', '')", "v.setAttribute('playsinline', '')", "v
 verifica(JS.includes('p.catch(function () { pulsante(c); })') && JS.includes("b.className = 'video-avvia'") && JS.includes('if (risparmio && !c.voluto) pulsante(c)') && CSS.includes('.video-avvia {') && /\.schermo-video \{ opacity: 0;/.test(CSS), "se il telefono blocca la partenza resta l'immagine col pulsante ▶, mai un riquadro nero");
 verifica(JS.includes("v.preload = 'none'"), 'i video del racconto non si scaricano prima del loro turno');
 verifica(!/cursor:\s*(none|url)/.test(CSS), 'nessun cursore personalizzato');
-verifica(JS.includes("document.querySelectorAll('[data-disegno]')") && JS.includes('t.el.style.strokeDashoffset = String(1 - x)') && JS.includes('var CORSA = 2.4;') && JS.includes('(p * (ultimo + CORSA) - t.i) / CORSA') && JS.includes('t.porta) t.el.style.fillOpacity') && JS.includes("parte('disegni', function () { disegni.forEach") && !JS.includes("{ threshold: 0.5 }"), 'i disegni seguono lo scorrimento: si disegnano scendendo e si cancellano risalendo, il tocco ambra per ultimo');
+verifica(JS.includes("document.querySelectorAll('[data-disegno]')") && JS.includes('t.el.style.strokeDashoffset = String(1 - x)') && JS.includes('var CORSA = 2.4;') && JS.includes('(p * (ultimo + CORSA) - t.i) / CORSA') && JS.includes('t.porta) t.el.style.fillOpacity') && JS.includes("disegni.forEach(function (f) { leggi('disegni'") && !JS.includes("{ threshold: 0.5 }"), 'i disegni seguono lo scorrimento: si disegnano scendendo e si cancellano risalendo, il tocco ambra per ultimo');
 // L'apertura: il portatile con la tastiera e la sequenza in tre tempi (terzo giro di Vitto, 25/10)
 verifica(/class="portatile"[\s\S]*class="portatile-schermo"[\s\S]*<svg class="portatile-base"[\s\S]*class="tastiera-tasto"[\s\S]*class="tastiera-trackpad"/.test(apertura), 'apertura: il portatile ha lo schermo e, sotto, la base con la tastiera');
 verifica(apertura.includes('data-sequenza') && ['class="fotocamera"', 'class="mirino"', 'class="lampo"', 'class="schermo-campi"', 'class="schermo-prima"', 'class="schermo-dopo"', 'class="riga-nuova"', 'class="foto-carta"'].every((x) => apertura.includes(x)), 'apertura: la bolletta, la fotocamera col lampo, i campi e la scadenza nuova');
-verifica(['fotocamera', 'mirino', 'lampo', 'schermo-campi', 'schermo-dopo', 'riga-nuova'].every((x) => CSS.includes(`.vivo [data-sequenza] .${x} { animation: seq-`)) && CSS.includes('11s linear 2s infinite') && /\n\.fotocamera \{[^}]*opacity: 0;/.test(CSS) && !/\n\.portatile-schermo \.schermo-dopo \{[^}]*opacity/.test(CSS), "la sequenza si ripete; senza «vivo» resta l'ultimo fotogramma (i campi e la scadenza nuova)");
-verifica(JS.includes("dopo('numero'") && JS.includes("document.querySelectorAll('[data-conta]')") && JS.includes('osserva.disconnect()'), 'il numero dei documenti conta quando arriva sullo schermo, una volta');
+verifica(['fotocamera', 'mirino', 'lampo', 'schermo-campi', 'schermo-dopo', 'riga-nuova'].every((x) => CSS.includes(`.vivo [data-sequenza="gira"] .${x} { animation: seq-`)) && CSS.includes('11s linear 2s infinite') && /\n\.fotocamera \{[^}]*opacity: 0;/.test(CSS) && !/\n\.portatile-schermo \.schermo-dopo \{[^}]*opacity/.test(CSS), "la sequenza si ripete; senza «vivo» resta l'ultimo fotogramma (i campi e la scadenza nuova)");
+verifica(JS.includes("dopo('numero'") && JS.includes('contatore = function (p, inVista)') && JS.includes('if (contatore) contatore(p, r.top < vh)') === false && JS.includes('if (conta) conta(pc, inVista);'), 'il numero dei documenti segue la corsa della casa grande (quinto giro)');
+
+// 9. Il quinto giro (27/10): le scene che seguono lo scorrimento
+sezione('9. Il quinto giro');
+const ordine = ['class="apertura"', 'data-cassetto', 'data-casa-scena', 'class="funzioni"', 'id="risposte"', 'id="storia"'].map((x) => HTML.indexOf(x));
+verifica(ordine.every((x, i) => x > 0 && (i === 0 || x > ordine[i - 1])), "l'ordine: apertura, scena A, «Fotografi…» con la casa, il fascicolo, le risposte, la storia", ordine.join(' '));
+const scenaA = HTML.slice(HTML.indexOf('data-cassetto'), HTML.indexOf('</section>', HTML.indexOf('data-cassetto')));
+verifica(['Oggi le carte sono ovunque: nella mail, nel cassetto, nei download.', 'Con Dimora ogni documento va nella sua casa.', 'E da ogni documento escono i dati che ti servono: canoni, rendite, scadenze.'].every((t, i) => scenaA.includes(`data-fase="${i + 1}">${t}</p>`)), 'scena A: i tre testi, parola per parola');
+verifica(['Bolletta luce', "Contratto d'affitto", 'Rogito', 'F24', 'Fattura idraulico', 'Foto'].every((t) => scenaA.includes(`<span class="doc-tipo">${t}</span>`)) && (scenaA.match(/data-carta /g) || []).length === 6, 'scena A: le sei carte (bolletta, contratto, rogito, F24, fattura, foto)');
+verifica(['nella mail', 'nel cassetto', 'nei download'].every((t) => scenaA.includes(`<span class="doc-dove">${t}</span>`)), 'scena A: i tre posti di oggi');
+verifica(['Appartamento in via Roma', 'Casa al mare', 'Box'].every((t) => scenaA.includes(`<span class="cartella-nome">${t}</span>`)), 'scena A: le tre cartelle');
+verifica(['Contratti', 'Catasto e rogito', 'Utenze', 'Condominio'].every((t) => scenaA.includes(`<span class="fa-gruppo-nome">${t}</span>`)), 'scena A: la cartella aperta, per tipo e per anno');
+verifica(scenaA.includes('data-cartellino>Canone € 650</span>') && scenaA.includes('data-cartellino>Rendita catastale</span>') && /cartellino-scadenza" data-cartellino><i class="cartellino-punto"><\/i>Prossima scadenza 16 dic<\/span>/.test(scenaA), "scena A: i tre cartellini, la scadenza col punto ambra per ultima");
+verifica(CSS.includes('.vivo .cassetto { height: 360vh; height: 360svh;') && CSS.includes('.vivo .cassetto-fermo { position: sticky; top: 64px;') && CSS.includes('.carta-doc, .cartella { opacity: 0; }'), 'scena A: ferma per tre schermi e mezzo solo con «vivo»; senza, lo stato finale');
+verifica(JS.includes("dopo('cassetto'") && JS.includes('var p = Math.round(limita((64 - r.top) / (corsa > 0 ? corsa : 1)) * 1000) / 1000;') && JS.includes('return function () {\n      // Le carte.'), 'scena A: lo scorrimento manda avanti la scena, e risalendo torna indietro (solo trasformazioni)');
+verifica(CSS.includes('.vivo .casa-scena { height: calc(200vh - 64px); height: calc(200svh - 64px);') && CSS.includes('.vivo .casa-fermo { position: sticky; top: 64px;') && CSS.includes('stroke-width: 2.3; }') && !/\.disegno-grande \{[^}]*border/.test(CSS), 'scena B: la casa grande senza riquadro, tratto più spesso, ferma per uno schermo con «vivo»');
+verifica(JS.includes("var scena = d.closest('[data-casa-scena]');") && JS.includes('p = limita((64 + vh * 0.25 - r.top) / (corsa + vh * 0.25));'), 'scena B: si disegna con lo scorrimento e si cancella risalendo; il contatore segue la stessa corsa');
+verifica(JS.includes("dopo('sequenza'") && JS.includes("seq.setAttribute('data-sequenza', '')") && JS.includes("seq.setAttribute('data-sequenza', 'gira')") && apertura.includes('data-sequenza="gira"'), "l'apertura riparte dall'inizio quando torna sullo schermo");
+verifica(JS.includes("dopo('risposte'") && JS.includes("document.querySelectorAll('.risposta')") && JS.includes("riga.style.transform = 'translateY(' + ((1 - o) * 28).toFixed(1) + 'px)';"), "le risposte entrano una dopo l'altra con lo scorrimento, e tornano indietro risalendo");
+verifica(JS.includes('scritture.forEach(function (w) { parte(w[0], w[1]); });'), 'un giro per fotogramma in due tempi: prima le letture, poi le scritture');
+verifica(['contratto-letto', 'carta-contratto', 'canoni-mese'].every((v) => esiste(`assets/video/${v}.mp4`) && esiste(`assets/video/${v}.webp`) && fs.statSync(path.join(RADICE, `assets/video/${v}.mp4`)).size < 1024 * 1024 && HTML.includes(`data-video="/assets/video/${v}.mp4"`)), 'Se affitti: tre minivideo nuovi (sotto 1 MB), con la locandina, che partono dallo script');
+verifica(PASSI['affitto-chiaro'].titolo === 'Il tuo contratto, in una carta sola.' && PASSI['affitto-chiaro'].testo === 'Quando scade, entro quando dare la disdetta, regime fiscale e deposito: tutto nella scheda della casa.', 'Se affitti: la carta del contratto, parola per parola');
+verifica(PASSI.canoni.titolo === 'I canoni, mese per mese.' && PASSI.canoni.testo === "Dal contratto Dimora prepara i canoni di ogni mese. Quando arriva il bonifico confermi l'incasso con un tocco, intero o in parte, e hai tutto sotto controllo.", 'Se affitti: i canoni, parola per parola');
+verifica(/\.novita, \.telefono-sezione, \.prezzi, \.sicurezza, #domande, \.finale, \.piede \{ content-visibility: auto; contain-intrinsic-size: auto 900px; \}/.test(CSS), 'le sezioni in fondo si impaginano quando ci si avvicinano');
 
 console.log(`\n${passati} controlli passati, ${falliti} falliti.`);
 process.exit(falliti ? 1 : 0);

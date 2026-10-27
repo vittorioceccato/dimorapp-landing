@@ -213,12 +213,12 @@ button { font: inherit; color: inherit; }
    lampo dello scatto; 31-35% compaiono i campi compilati; 38-43% nel portatile spunta la scadenza nuova, 44-64% il
    riquadro ambra; fino al 90% tutto fermo (la pausa), poi si torna alla fotocamera. Senza «vivo» resta l'ultimo
    fotogramma: i campi sul telefono, la scadenza nel portatile. */
-.vivo [data-sequenza] .fotocamera { animation: seq-fotocamera 11s linear 2s infinite both; }
-.vivo [data-sequenza] .mirino { animation: seq-mirino 11s ease-out 2s infinite both; }
-.vivo [data-sequenza] .lampo { animation: seq-lampo 11s linear 2s infinite both; }
-.vivo [data-sequenza] .schermo-campi { animation: seq-campi 11s linear 2s infinite both; }
-.vivo [data-sequenza] .schermo-dopo { animation: seq-dopo 11s linear 2s infinite both; }
-.vivo [data-sequenza] .riga-nuova { animation: seq-riga 11s ease-in-out 2s infinite both; }
+.vivo [data-sequenza="gira"] .fotocamera { animation: seq-fotocamera 11s linear 2s infinite both; }
+.vivo [data-sequenza="gira"] .mirino { animation: seq-mirino 11s ease-out 2s infinite both; }
+.vivo [data-sequenza="gira"] .lampo { animation: seq-lampo 11s linear 2s infinite both; }
+.vivo [data-sequenza="gira"] .schermo-campi { animation: seq-campi 11s linear 2s infinite both; }
+.vivo [data-sequenza="gira"] .schermo-dopo { animation: seq-dopo 11s linear 2s infinite both; }
+.vivo [data-sequenza="gira"] .riga-nuova { animation: seq-riga 11s ease-in-out 2s infinite both; }
 @keyframes seq-fotocamera { 0%, 30% { opacity: 1; } 34%, 91% { opacity: 0; } 97%, 100% { opacity: 1; } }
 @keyframes seq-mirino { 0%, 8% { transform: scale(1.12); } 22%, 100% { transform: scale(1); } }
 @keyframes seq-lampo { 0%, 26% { opacity: 0; } 28% { opacity: .95; } 33%, 100% { opacity: 0; } }
@@ -240,21 +240,141 @@ button { font: inherit; color: inherit; }
    maiuscolo (misurato). ── */
 .testa-disegno { display: grid; gap: 8px 40px; align-items: end; margin-bottom: clamp(32px, 6vw, 56px); }
 .testa-disegno .sezione-testa { margin-bottom: 0; }
-.disegno-sezione { width: min(220px, 60vw); order: -1; }
-.disegno-sezione svg { width: 100%; height: auto; overflow: visible; }
+.disegno-sezione { width: min(100%, 520px); order: -1; }
+.disegno-sezione svg { width: 100%; height: auto; overflow: visible; stroke-width: 2.4; }
 @media (min-width: 48rem) {
   .testa-disegno { grid-template-columns: minmax(0, 1fr) auto; }
-  .disegno-sezione { order: 0; width: 240px; }
+  .disegno-sezione { order: 0; width: 440px; }
 }
 .vivo [data-disegno][data-segue] svg > * { stroke-dasharray: 1; }
+
+/* ── SCENA A, «DAL CASSETTO AL FASCICOLO» (quinto giro, 27/10) ──
+   Senza «vivo» (e senza script) la sezione è una sezione normale: i tre testi uno sotto l'altro e, accanto, lo stato
+   finale (la cartella di via Roma aperta, coi tre cartellini). Con «vivo» la sezione è alta tre altezze e mezzo di
+   schermo e la sua parte interna resta ferma sotto la testata: lo scorrimento lo traduce landing.js in posizioni (le
+   carte, le cartelle, la cartella che si apre, i cartellini) scritte come trasformazioni, cioè senza toccare
+   l'impaginazione. Il palco misura con le sue unità (cqw, cqh): le posizioni valgono al telefono e al computer. */
+.cassetto { padding: clamp(24px, 5vw, 56px) 0 clamp(56px, 9vw, 96px); }
+.cassetto-griglia { display: grid; gap: 20px; }
+.cassetto-testi { display: grid; gap: 14px; align-content: center; }
+.cassetto-testo { font-family: var(--font-titoli); font-weight: 600; letter-spacing: var(--spaziatura-titoli); font-size: var(--t-sezione-grande); line-height: 1.12; text-wrap: balance; max-width: 15em; }
+.cassetto-palco { position: relative; container-type: size; height: clamp(360px, 62vw, 520px); }
+@media (min-width: 64rem) {
+  .cassetto-griglia { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: center; gap: 56px; }
+}
+
+/* Le carte: fogli panna disegnati a tratto. */
+.carta-doc {
+  position: absolute; left: 0; top: 0; width: 30cqmin; height: 37cqmin; padding: 3.2cqmin 3cqmin;
+  display: flex; flex-direction: column; gap: 2cqmin; background: var(--c-scheda); border: 1.5px solid var(--c-testo);
+  border-radius: 1.6cqmin; box-shadow: var(--ombra-finestra); transform-origin: 50% 50%; will-change: transform, opacity;
+  font-size: clamp(10px, 3.3cqmin, 15px); line-height: 1.15;
+}
+.doc-tipo { font-weight: 700; color: var(--c-testo); }
+.doc-riga { display: block; height: 1.3cqmin; border-radius: 1cqmin; background: var(--c-riga); }
+.doc-riga.corta { width: 62%; }
+.doc-cifra { margin-top: auto; font-weight: 700; color: var(--c-testo); }
+.doc-firma { margin-top: auto; height: 5cqmin; border-bottom: 1.5px solid var(--c-testo); width: 60%; border-radius: 0 0 50% 30%; }
+.doc-timbro { margin-top: auto; align-self: flex-end; width: 9cqmin; height: 9cqmin; border: 1.5px solid var(--c-testo); border-radius: 50%; }
+.doc-griglia { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2cqmin; }
+.doc-griglia i { display: block; height: 4.5cqmin; border: 1.2px solid var(--c-bordo-campo); border-radius: .6cqmin; }
+.doc-scatto { flex: 1; border-radius: 1.4cqmin; background: var(--c-fondo-tenue); display: grid; place-items: center; }
+.doc-scatto i { display: block; width: 58%; height: 70%; background: var(--c-scheda); border: 1.2px solid var(--c-bordo-campo); transform: rotate(-6deg); }
+.doc-dove {
+  position: absolute; right: -3cqmin; top: -3.6cqmin; transform: rotate(4deg); white-space: nowrap;
+  padding: .8cqmin 2cqmin; border-radius: 99px; background: var(--c-testo); color: var(--c-su-scuro);
+  font-size: clamp(10px, 2.9cqmin, 13px); font-weight: 600;
+}
+
+/* Le tre cartelle, in fila in basso. */
+.cartella {
+  position: absolute; top: 74cqh; width: 30cqw; height: 22cqh; padding: 0 2.4cqmin 2cqmin;
+  display: flex; align-items: flex-end; background: var(--c-fondo-tenue); border: 1.5px solid var(--c-testo);
+  border-radius: 0 1.6cqmin 1.6cqmin 1.6cqmin; will-change: transform, opacity;
+}
+.cartella[data-cartella="roma"] { left: 2cqw; }
+.cartella[data-cartella="mare"] { left: 35cqw; }
+.cartella[data-cartella="box"] { left: 68cqw; }
+.cartella-linguetta { position: absolute; left: -1.5px; top: -3.4cqmin; width: 42%; height: 3.4cqmin; background: var(--c-fondo-tenue); border: 1.5px solid var(--c-testo); border-bottom: 0; border-radius: 1.4cqmin 1.4cqmin 0 0; }
+.cartella-nome { font-weight: 700; font-size: clamp(10px, 3.2cqmin, 15px); line-height: 1.15; }
+
+/* La cartella di via Roma aperta: i documenti in ordine, per tipo e per anno. */
+.fascicolo-aperto {
+  position: absolute; left: 2cqw; top: 3cqh; width: 96cqw; max-height: 92cqh; overflow: hidden; padding: 3.4cqmin;
+  display: flex; flex-direction: column; gap: 2.2cqmin; background: var(--c-scheda); border: 1.5px solid var(--c-testo);
+  border-radius: 2cqmin; box-shadow: var(--ombra-finestra); transform-origin: 0 0; will-change: transform, opacity;
+  font-size: clamp(11px, 3.3cqmin, 15px);
+}
+.fa-testa { display: flex; align-items: center; gap: 8px; padding-bottom: 1.6cqmin; border-bottom: 1px solid var(--c-riga); }
+.fa-casa { color: var(--c-principale); display: inline-flex; }
+.fa-titolo { font-family: var(--font-titoli); font-weight: 600; font-size: clamp(15px, 4.4cqmin, 22px); }
+.fa-gruppo { display: grid; gap: .8cqmin; }
+.fa-gruppo-nome { font-size: clamp(10px, 2.8cqmin, 13px); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-etichetta); }
+.fa-doc { display: block; padding: 1.2cqmin 2cqmin; border-radius: 1.2cqmin; background: var(--c-fondo-tenue); color: var(--c-testo); font-weight: 600; }
+
+/* I cartellini: i dati che escono dal contratto e si posano a destra. L'ultimo, la scadenza, col punto ambra. */
+.cartellino {
+  position: absolute; right: 3cqw; padding: 1.4cqmin 2.6cqmin; border-radius: 1.4cqmin; white-space: nowrap;
+  background: var(--c-scheda); border: 1.5px solid var(--c-testo); box-shadow: var(--ombra-finestra);
+  font-weight: 700; font-size: clamp(11px, 3.4cqmin, 16px); color: var(--c-testo); will-change: transform, opacity;
+  display: inline-flex; align-items: center; gap: 1.6cqmin;
+}
+.cartellino:nth-of-type(1) { top: 16cqh; }
+.cartellino:nth-of-type(2) { top: 29cqh; }
+.cartellino:nth-of-type(3) { top: 42cqh; }
+.cartellino-scadenza { border-color: var(--c-accento); border-width: 2px; }
+/* Al telefono la cartella aperta è stretta: i cartellini si posano sotto, invece che sopra le righe. */
+@media (max-width: 63.99rem) {
+  .fascicolo-aperto { max-height: 60cqh; }
+  /* Senza «vivo» (meno animazioni, niente script) il palco ha un'altezza sua: la cartella aperta si legge tutta. */
+  :root:not(.vivo) .cassetto-palco { height: 600px; }
+  .cartellino { right: auto; left: 5cqw; }
+  .cartellino:nth-of-type(1) { top: 66cqh; }
+  .cartellino:nth-of-type(2) { top: 76cqh; left: 22cqw; }
+  .cartellino:nth-of-type(3) { top: 86cqh; left: 10cqw; }
+}
+.cartellino-punto { width: 2.2cqmin; height: 2.2cqmin; border-radius: 50%; background: var(--c-accento); }
+
+/* Lo stato finale (senza «vivo», senza script, con «meno animazioni»): le carte e le cartelle non ci sono. */
+.carta-doc, .cartella { opacity: 0; }
+
+/* Con «vivo» la sezione si ferma: la parte interna resta sotto la testata per tutta la corsa. */
+.vivo .cassetto { height: 360vh; height: 360svh; padding: 0; }
+.vivo .cassetto-fermo { position: sticky; top: 64px; height: calc(100vh - 64px); height: calc(100svh - 64px); display: flex; align-items: center; overflow: hidden; }
+.vivo .cassetto-griglia { width: 100%; }
+@media (min-width: 64rem) { .vivo .cassetto-palco { height: min(600px, calc(100vh - 200px)); height: min(600px, calc(100svh - 200px)); } }
+.vivo .cassetto-testi { position: relative; }
+.vivo .cassetto-testi .cassetto-testo { will-change: opacity, transform; }
+@media (max-width: 63.99rem) {
+  .vivo .cassetto-fermo { align-items: stretch; padding: 16px 0; }
+  .vivo .cassetto-griglia { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+  .vivo .cassetto-testo { font-size: clamp(24px, 7vw, 30px); }
+  .vivo .cassetto-palco { flex: 1; height: auto; min-height: 0; }
+}
+.vivo .cassetto[data-segue] .cassetto-testi { display: grid; }
+.vivo .cassetto[data-segue] .cassetto-testo { grid-area: 1 / 1; align-self: center; }
 
 /* La testa grande (Come funziona, Se affitti): il titolo e, accanto, il disegno grande in un riquadro, come la casa
    della prima Preview. Sotto il titolo di Come funziona, il numero dei documenti che conta quando arriva. */
 .testa-grande { display: grid; gap: 28px 56px; align-items: center; margin-bottom: clamp(40px, 7vw, 72px); }
 .testa-grande .titolo-sezione { max-width: 15em; }
-.disegno-grande { background: var(--c-fondo-tenue); border-radius: var(--radius-veste); padding: clamp(28px, 7vw, 64px) clamp(16px, 4vw, 32px) clamp(10px, 2vw, 16px); }
-.casa-grande { width: 100%; height: auto; overflow: visible; }
-@media (max-width: 63.99rem) { .casa-grande { stroke-width: 2; } }
+.disegno-grande { padding-top: 8px; }
+.casa-grande { width: 100%; height: auto; overflow: visible; stroke-width: 2.3; }
+@media (max-width: 63.99rem) { .casa-grande { stroke-width: 2.6; } }
+
+/* Scena B (quinto giro, 27/10): la casa di «Fotografi il documento», grande quanto la colonna e senza riquadro. Con
+   «vivo» la sezione è alta un'altezza di schermo in più e la parte interna resta ferma: la casa si disegna lungo quella
+   corsa (landing.js). Senza «vivo» niente si ferma e la casa è disegnata. */
+.casa-scena { margin-bottom: clamp(40px, 7vw, 72px); }
+.casa-fermo { display: grid; gap: clamp(20px, 4vw, 40px); }
+.casa-testo { display: grid; gap: 20px 56px; align-items: end; }
+.casa-testo .numero-documenti { margin-top: 0; }
+.casa-disegno svg { display: block; width: 100%; height: auto; max-width: 980px; margin: 0 auto; overflow: visible; }
+@media (min-width: 64rem) { .casa-testo { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
+.vivo .casa-scena { height: calc(200vh - 64px); height: calc(200svh - 64px); margin-bottom: 0; }
+.vivo .casa-fermo { position: sticky; top: 64px; height: calc(100vh - 64px); height: calc(100svh - 64px); display: flex; flex-direction: column; justify-content: center; padding: 16px 0 24px; }
+.vivo .casa-disegno { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.vivo .casa-disegno svg { width: auto; height: 100%; max-height: 520px; max-width: 100%; }
 @media (min-width: 64rem) { .testa-grande { grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr); } }
 .numero-documenti { margin-top: 28px; display: grid; gap: 6px; max-width: 30em; }
 .numero-grande { font-family: var(--font-titoli); font-weight: 600; letter-spacing: var(--spaziatura-titoli); font-size: clamp(44px, 9vw, 72px); line-height: 1; color: var(--c-principale); }
@@ -625,3 +745,7 @@ button { font: inherit; color: inherit; }
 }
 .video-avvia:hover { opacity: 1; }
 .video-avvia[hidden] { display: none; }
+
+/* Le sezioni in fondo alla pagina si impaginano quando ci si avvicinano (quinto giro, 27/10): la prima schermata
+   arriva prima. Lo spazio che occupano intanto è una stima, poi il browser ricorda la misura vera. */
+.novita, .telefono-sezione, .prezzi, .sicurezza, #domande, .finale, .piede { content-visibility: auto; contain-intrinsic-size: auto 900px; }
