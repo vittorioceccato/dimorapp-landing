@@ -63,6 +63,14 @@
   --c-avviso-fondo: #FBE3C4;
   --c-avviso-testo: #6B3D0C;
 
+  /* Il portatile dell'apertura (settimo giro, 28/10): alluminio grigio, come un portatile vero, non del colore della
+     carta. Solo il disegno del portatile li usa. */
+  --c-alluminio: #C9CBCF;        /* la scocca e la base */
+  --c-alluminio-ombra: #A7AAB0;  /* la cerniera, il bordo davanti, i contorni */
+  --c-alluminio-tasto: #8F9298;  /* i tasti, più scuri della base */
+  --c-alluminio-chiaro: #D6D8DC; /* il trackpad */
+  --c-cornice-schermo: #1E2023;  /* il bordo dello schermo */
+
   /* ── La scala (app/globals.css) ── */
   --m-corpo: 16px;               /* 16 al telefono, 15 dal computer (sotto) */
   --text-piccolo: 14px;

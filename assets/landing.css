@@ -148,7 +148,7 @@ main p, main dd { max-width: var(--riga-max); }
 .dispositivi { position: relative; padding: 4% 0 12%; }
 .portatile { width: 84%; margin: 0 auto 0 6%; transform: translateY(calc(var(--p-apertura, 0) * -16px)); }
 .portatile-schermo {
-  position: relative; border: 7px solid var(--c-testo); border-bottom-width: 9px; border-radius: 14px 14px 4px 4px; overflow: hidden;
+  position: relative; border: 7px solid var(--c-cornice-schermo); border-bottom-width: 9px; border-radius: 14px 14px 4px 4px; overflow: hidden;
   background: var(--c-fondo); box-shadow: var(--ombra-finestra);
 }
 .portatile-schermo img { width: 100%; aspect-ratio: 8 / 5; object-fit: cover; object-position: top left; }
@@ -156,11 +156,13 @@ main p, main dd { max-width: var(--riga-max); }
 /* La scadenza nuova (la bolletta, la prima riga delle Scadenze): un riquadro ambra che compare un attimo. */
 .riga-nuova { position: absolute; left: 20.4%; top: 14%; width: 60%; height: 12%; border: 3px solid var(--c-accento); border-radius: 10px; opacity: 0; }
 .portatile-base { display: block; width: 111.11%; height: auto; aspect-ratio: 1000 / 120; margin: -1px 0 0 -5.555%; overflow: visible; }
-.tastiera-piano { fill: var(--c-riga); }
-.tastiera-cerniera { fill: var(--c-testo); }
-.tastiera-tasto { fill: var(--c-fondo-tenue); stroke: var(--c-bordo-campo); stroke-width: .7; }
-.tastiera-trackpad { fill: var(--c-fondo-tenue); stroke: var(--c-bordo-campo); stroke-width: 1; }
-.tastiera-bordo { fill: var(--c-bordo-campo); }
+/* Settimo giro (28/10): alluminio grigio. La base chiara, la cerniera e il bordo davanti più scuri, i tasti più scuri
+   ancora, il trackpad appena più chiaro della base. */
+.tastiera-piano { fill: var(--c-alluminio); stroke: var(--c-alluminio-ombra); stroke-width: 1; }
+.tastiera-cerniera { fill: var(--c-alluminio-ombra); }
+.tastiera-tasto { fill: var(--c-alluminio-tasto); stroke: var(--c-alluminio-ombra); stroke-width: .7; }
+.tastiera-trackpad { fill: var(--c-alluminio-chiaro); stroke: var(--c-alluminio-ombra); stroke-width: 1; }
+.tastiera-bordo { fill: var(--c-alluminio-ombra); }
 .telefono {
   position: absolute; right: 0; bottom: 0; width: 27%; padding: 5px; border-radius: 22px; background: var(--c-testo);
   box-shadow: var(--ombra-finestra); transform: translateY(calc(var(--p-apertura, 0) * -40px));
@@ -253,7 +255,7 @@ main p, main dd { max-width: var(--riga-max); }
 
 /* ── SCENA A, «DAL CASSETTO AL FASCICOLO» (quinto giro, 27/10) ──
    Senza «vivo» (e senza script) la sezione è una sezione normale: i tre testi uno sotto l'altro e, accanto, lo stato
-   finale (la cartella di via Roma aperta, coi tre cartellini). Con «vivo» la sezione è alta tre altezze e mezzo di
+   finale (la cartella di via Mazzini aperta, coi tre cartellini). Con «vivo» la sezione è alta tre altezze e mezzo di
    schermo e la sua parte interna resta ferma sotto la testata: lo scorrimento lo traduce landing.js in posizioni (le
    carte, le cartelle, la cartella che si apre, i cartellini) scritte come trasformazioni, cioè senza toccare
    l'impaginazione. Il palco misura con le sue unità (cqw, cqh): le posizioni valgono al telefono e al computer. */
@@ -296,16 +298,19 @@ main p, main dd { max-width: var(--riga-max); }
 /* Le tre cartelle, in fila in basso. */
 .cartella {
   position: absolute; top: 74cqh; width: 30cqw; height: 22cqh; padding: 0 2.4cqmin 2cqmin;
-  display: flex; align-items: flex-end; background: var(--c-fondo); border: 1.5px solid var(--c-testo);
+  display: flex; flex-direction: column; justify-content: flex-end; gap: .6cqmin; background: var(--c-fondo); border: 1.5px solid var(--c-testo);
   border-radius: 0 1.6cqmin 1.6cqmin 1.6cqmin; will-change: transform, opacity; transform-origin: 50% 100%;
 }
-.cartella[data-cartella="roma"] { left: 2cqw; }
+.cartella[data-cartella="mazzini"] { left: 2cqw; }
 .cartella[data-cartella="mare"] { left: 35cqw; }
 .cartella[data-cartella="box"] { left: 68cqw; }
 .cartella-linguetta { position: absolute; left: -1.5px; top: -3.4cqmin; width: 42%; height: 3.4cqmin; background: var(--c-fondo); border: 1.5px solid var(--c-testo); border-bottom: 0; border-radius: 1.4cqmin 1.4cqmin 0 0; }
 .cartella-nome { font-weight: 700; font-size: clamp(10px, 3.2cqmin, 15px); line-height: 1.15; }
+/* Il contatore (settimo giro, 28/10): quanti documenti sono entrati nella cartella. Sale di uno a ogni carta che entra
+   e scende risalendo; senza carte entrate non si vede. */
+.cartella-conta { font-weight: 600; font-size: clamp(10px, 2.8cqmin, 13px); line-height: 1.15; color: var(--c-etichetta); font-variant-numeric: tabular-nums; }
 
-/* La cartella di via Roma aperta: i documenti in ordine, per tipo e per anno. */
+/* La cartella di via Mazzini aperta: i documenti in ordine, per tipo e per anno. */
 .fascicolo-aperto {
   position: absolute; left: 4cqw; top: 4cqh; width: 84cqw; max-height: 60cqh; overflow: hidden; padding: 3.4cqmin;
   display: flex; flex-direction: column; gap: 2.2cqmin; background: var(--c-scheda); border: 1.5px solid var(--c-testo);
@@ -370,6 +375,17 @@ main p, main dd { max-width: var(--riga-max); }
 }
 .vivo .cassetto[data-segue] .cassetto-testi { display: grid; }
 .vivo .cassetto[data-segue] .cassetto-testo { grid-area: 1 / 1; align-self: center; }
+
+/* «Meno animazioni» (settimo giro, 28/10): la scena in tre quadri fermi, uno sotto l'altro, ognuno col suo testo accanto
+   (al computer) o sopra (al telefono). Li prepara lo script (data-quadri): 1) le carte sparse, coi posti di oggi;
+   2) le tre cartelle con le loro carte dentro e il contatore; 3) la cartella aperta, coi cartellini e le loro linee.
+   Niente si ferma sullo schermo e niente si muove. */
+.cassetto[data-quadri] .cassetto-quadro + .cassetto-quadro { margin-top: clamp(40px, 7vw, 72px); }
+.cassetto[data-quadri] [data-quadro="1"] .cassetto-palco { height: clamp(360px, 40vw, 480px); }
+.cassetto[data-quadri] [data-quadro="2"] .cassetto-palco { height: clamp(250px, 30vw, 360px); }
+.cassetto[data-quadri] [data-quadro="2"] .cartella { top: 34cqh; height: 48cqh; z-index: 2; }
+.cassetto[data-quadri] [data-quadro="2"] .carta-doc { z-index: 1; box-shadow: none; }
+.cassetto[data-quadri] [data-quadro="2"] .doc-dove { display: none; }
 
 /* La testa grande (Come funziona, Se affitti): il titolo e, accanto, il disegno grande in un riquadro, come la casa
    della prima Preview. Sotto il titolo di Come funziona, il numero dei documenti che conta quando arriva. */

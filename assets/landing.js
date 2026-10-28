@@ -15,8 +15,47 @@
   }
   function limita(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
   // Quello che serve più in basso si prepara quando il browser è libero: la prima schermata si disegna prima.
-  var inAttesa = [];
-  function dopo(nome, fn) { inAttesa.push([nome, fn]); }
+  // Settimo giro (28/10): la coda non parte all'apertura della pagina. Parte al primo gesto (scorrimento, tocco, tasto,
+  // clic) e le scene solo quando la loro sezione si avvicina allo schermo (vicino): prima di allora lo script non fa
+  // altro che l'apertura. Un salto a un'ancora prepara tutto subito, perché il salto trovi le altezze vere.
+  var inAttesa = [], vicine = [], coda = { partita: false, gira: false, finita: false, subito: false };
+  var quando = window.requestIdleCallback || function (f) { return setTimeout(f, 120); };
+  function dopo(nome, fn) { inAttesa.push([nome, fn]); if (coda.partita && !coda.subito) prossima(); }
+  // Una parte per volta, ognuna nel suo momento libero: nessun compito lungo che blocchi la pagina.
+  function prossima() {
+    if (coda.gira) return;
+    var x = inAttesa.shift();
+    if (!x) {
+      aggiornaVideo(); chiedi();
+      if (!coda.finita) { coda.finita = true; if (metaIniziale && !scorsoDaSe) metaIniziale.scrollIntoView(); }
+      return;
+    }
+    coda.gira = true;
+    quando(function () { coda.gira = false; parte(x[0], x[1]); chiedi(); prossima(); }, { timeout: 1500 });
+  }
+  function avviaCoda() { if (!coda.partita) { coda.partita = true; prossima(); } }
+  // Una scena: si prepara quando la sua sezione arriva a mezzo schermo dal fondo dello schermo, subito (non aspetta un
+  // momento libero: durante uno scorrimento veloce potrebbe arrivare tardi).
+  function vicino(sel, nome, fn) {
+    var el = document.querySelector(sel);
+    var v = { nome: nome, fn: fn, fatto: false };
+    var via = function () { if (v.fatto) return; v.fatto = true; avviaCoda(); parte(nome, fn); chiedi(); };
+    if (!el) return;
+    if (!('IntersectionObserver' in window)) { dopo(nome, fn); return; }
+    vicine.push(v);
+    var o = new IntersectionObserver(function (voci) {
+      if (voci.some(function (x) { return x.isIntersecting; })) { o.disconnect(); via(); }
+    }, { rootMargin: '0px 0px 50% 0px' });
+    o.observe(el);
+  }
+  // Tutto adesso: la coda e le scene che aspettano.
+  function subito() {
+    coda.partita = true; coda.subito = true;
+    vicine.forEach(function (v) { if (!v.fatto) { v.fatto = true; inAttesa.push([v.nome, v.fn]); } });
+    while (inAttesa.length) { var x = inAttesa.shift(); parte(x[0], x[1]); }
+    coda.subito = false;
+    aggiornaVideo(); chiedi();
+  }
 
   /* ---------- Le statistiche (Vercel Web Analytics, come dall'8/10) ----------
      Lo script /_vercel/insights/script.js è servito dal sito stesso e legge la coda window.vaq della testa.
@@ -69,7 +108,7 @@
     }
     document.addEventListener('click', function (e) {
       var a = e.target && e.target.closest ? e.target.closest('a[href*="#"]') : null;
-      if (a && a.pathname === location.pathname && a.hash) pieno();
+      if (a && a.pathname === location.pathname && a.hash) { pieno(); subito(); }
     }, true);
   });
 
@@ -353,54 +392,55 @@
      p va da 0 (la sezione arriva sotto la testata) a 1 (fine della corsa). I tempi, in p:
        0-0,10    le carte sparse, coi posti dove stanno oggi («nella mail», «nel cassetto», «nei download»);
        0,05-0,12 compaiono le tre cartelle;
-       0,10-0,45 le carte volano nelle cartelle, una dopo l'altra;
-       0,42-0,54 la cartella di via Roma si apre fino a riempire il palco, le altre se ne vanno;
+       0,10-0,45 le carte volano nelle cartelle, una dopo l'altra; il contatore di ogni cartella sale di uno a ogni carta
+                 che entra (settimo giro, 28/10), e risalendo scende;
+       0,42-0,54 la cartella di via Mazzini si apre fino a riempire il palco, le altre se ne vanno;
        0,52-0,66 i gruppi di documenti, uno dopo l'altro;
        0,66-0,92 escono i tre cartellini, ognuno dalla sua riga (il canone dal contratto, la rendita e la scadenza
                  dalla visura: la scadenza è l'IMU), e si posano a fianco della cartella, legati da una linea sottile;
                  l'ultimo (la scadenza, col punto ambra) per ultimo.
-     Le carte: la bolletta e la foto nella casa al mare, il rogito nel box, il resto in via Roma (sesto giro, 27/10).
+     Le carte: la bolletta e la foto nella casa al mare, il rogito nel box, il resto in via Mazzini (sesto giro, 27/10).
      I testi: il primo fino a 0,18, il secondo da 0,23 a 0,65, il terzo da 0,65. Si scrivono solo trasformazioni e
      opacità: l'impaginazione non si muove. Risalendo, gli stessi conti all'indietro. p segue lo scorrimento con un
-     piccolo ritardo morbido (vedi il giro per fotogramma, in fondo). */
-  var cassetto = null;
-  dopo('cassetto', function () {
-    if (!vivo) return;
-    var sezione = document.querySelector('[data-cassetto]');
-    if (!sezione) return;
-    var fermo = sezione.querySelector('.cassetto-fermo');
-    var palco = sezione.querySelector('[data-palco]');
-    var testi = Array.prototype.slice.call(sezione.querySelectorAll('.cassetto-testo'));
-    var carte = Array.prototype.slice.call(sezione.querySelectorAll('[data-carta]')).map(function (el) {
-      var da = el.getAttribute('data-da').split(',').map(Number);
-      return { el: el, x: da[0], y: da[1], r: da[2], dove: sezione.querySelector('[data-cartella="' + el.getAttribute('data-in') + '"]') };
+     piccolo ritardo morbido (vedi il giro per fotogramma, in fondo).
+     Con «meno animazioni» (settimo giro, 28/10) niente si ferma e niente si muove, ma il racconto resta: tre quadri
+     fermi, uno sotto l'altro, ognuno col suo testo accanto (al computer) o sopra (al telefono). Li disegna la stessa
+     funzione, a tre punti fermi della corsa. */
+  function quanti(n) { return n === 1 ? '1 documento' : n + ' documenti'; }
+  // Il palco della scena: le sue misure e la funzione che lo disegna a un punto p della corsa.
+  function palcoCassetto(palco) {
+    var tutti = function (sel) { return Array.prototype.slice.call(palco.querySelectorAll(sel)); };
+    var cartelle = tutti('[data-cartella]').map(function (el) {
+      var conta = el.querySelector('[data-documenti]');
+      return { el: el, conta: conta, scritto: null, quante: 0 };
     });
-    var cartelle = Array.prototype.slice.call(sezione.querySelectorAll('[data-cartella]'));
-    var roma = sezione.querySelector('[data-cartella="roma"]');
-    var aperto = sezione.querySelector('[data-aperto]');
+    var carte = tutti('[data-carta]').map(function (el) {
+      var da = el.getAttribute('data-da').split(',').map(Number);
+      var dove = el.getAttribute('data-in'), f = 0;
+      cartelle.forEach(function (c, i) { if (c.el.getAttribute('data-cartella') === dove) f = i; });
+      return { el: el, x: da[0], y: da[1], r: da[2], f: f, j: cartelle[f].quante++ };
+    });
+    var mazzini = palco.querySelector('[data-cartella="mazzini"]');
+    var aperto = palco.querySelector('[data-aperto]');
     var testa = aperto.querySelector('.fa-testa');
     var righe = Array.prototype.slice.call(aperto.querySelectorAll('[data-riga]'));
     // Ogni cartellino ha la sua riga (data-a): esce da lì e una linea sottile ce lo lega.
-    var cartellini = Array.prototype.slice.call(sezione.querySelectorAll('[data-cartellino]')).map(function (el) {
+    var cartellini = tutti('[data-cartellino]').map(function (el) {
       return { el: el, riga: aperto.querySelector('[data-lega="' + el.getAttribute('data-a') + '"]') };
     });
-    var linee = Array.prototype.slice.call(sezione.querySelectorAll('[data-linea]'));
-    var tela = sezione.querySelector('[data-linee]');
+    var linee = tutti('[data-linea]');
+    var tela = palco.querySelector('[data-linee]');
     // Le curve (sesto giro, 27/10): le carte partono piano e arrivano rallentando, i cartellini si posano rallentando.
     var morbido = function (t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
     var rallenta = function (t) { return 1 - Math.pow(1 - t, 3); };
     var parte_ = function (t) { return t * t * (3 - 2 * t); };
     var tra = function (p, a, b) { return limita((p - a) / (b - a)); };
-    var prima = -1, primaL = -1, primaA = -1, primaD = '', firmaMisure = '', misurePrima = null;
-    sezione.setAttribute('data-segue', '');
-    cassetto = function (vh, scarto) {
-      var r = sezione.getBoundingClientRect();
-      if (r.bottom < -vh || r.top > vh * 2) return;
-      var corsa = r.height - fermo.offsetHeight;
-      var p = Math.round(limita((64 - r.top - scarto) / (corsa > 0 ? corsa : 1)) * 1000) / 1000;
+    var firmaMisure = '', misurePrima = null, primaD = '';
+    // Legge le misure e restituisce che cosa scrivere al punto p: { fn } oppure, quando prima vanno sistemate le
+    // posizioni di riposo, { fn, riposo: true } (e poi si rimisura). Con «dentro» le carte restano nelle loro cartelle,
+    // ferme e visibili: il secondo quadro di «meno animazioni».
+    return function (p, dentro) {
       var L = palco.clientWidth, A = palco.clientHeight;
-      if (p === prima && L === primaL && A === primaA) return;
-      prima = p; primaL = L; primaA = A;
       // Letture prima delle scritture: le misure di riposo (offset) non dipendono dalle trasformazioni. Si rifanno solo
       // quando cambia qualcosa che le muove (il palco, la cartella aperta, i cartellini): a ogni fotogramma si usa quelle.
       var firma = L + 'x' + A + ':' + aperto.offsetTop + ':' + aperto.offsetHeight + ':' + cartellini.map(function (t) { return t.el.offsetTop + '/' + t.el.offsetWidth; }).join(',');
@@ -409,10 +449,12 @@
         var cw = carte[0].el.offsetWidth, ch = carte[0].el.offsetHeight;
         var P = { x: aperto.offsetLeft, y: aperto.offsetTop, w: aperto.offsetWidth, h: aperto.offsetHeight };
         var telefono = L < 660; // il palco stretto: i cartellini sotto (lo stesso confine del foglio di stile)
+        var scatola = function (el) { return { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight }; };
         misure = {
-          telefono: telefono,
-          dove: carte.map(function (c) { return { x: c.dove.offsetLeft + c.dove.offsetWidth / 2 - cw / 2, y: c.dove.offsetTop + c.dove.offsetHeight * 0.45 - ch / 2 }; }),
-          R: { x: roma.offsetLeft, y: roma.offsetTop, w: roma.offsetWidth, h: roma.offsetHeight },
+          telefono: telefono, cw: cw, ch: ch,
+          cart: cartelle.map(function (c) { return scatola(c.el); }),
+          dove: carte.map(function (c) { var d = cartelle[c.f].el; return { x: d.offsetLeft + d.offsetWidth / 2 - cw / 2, y: d.offsetTop + d.offsetHeight * 0.45 - ch / 2 }; }),
+          R: scatola(mazzini),
           P: P,
           // Dove sta la riga di ogni cartellino a cartella aperta, e dove si posa il cartellino.
           lega: cartellini.map(function (t) {
@@ -420,14 +462,10 @@
             // riferimento alle loro righe).
             var g = t.riga, gx = 0, gy = 0;
             for (var e = g; e && e !== aperto; e = e.offsetParent) { gx += e.offsetLeft; gy += e.offsetTop; }
-            return {
-              riga: { x: P.x + gx, y: P.y + gy, w: g.offsetWidth, h: g.offsetHeight },
-              t: { x: t.el.offsetLeft, y: t.el.offsetTop, w: t.el.offsetWidth, h: t.el.offsetHeight },
-            };
+            return { riga: { x: P.x + gx, y: P.y + gy, w: g.offsetWidth, h: g.offsetHeight }, t: scatola(t.el) };
           }),
         };
         firmaMisure = firma; misurePrima = misure;
-        misure.telefono = telefono;
         misure.d = misure.lega.map(function (m, j) {
           var a = m.riga, b = m.t, ax, ay = a.y + a.h / 2, bx, by = b.y + b.h / 2;
           if (!telefono) {
@@ -457,45 +495,60 @@
         if (Math.abs(su - P.y) > 1 || tops.some(function (y, j) { return Math.abs(y - misure.lega[j].t.y) > 1; })) riposo = { su: su, tops: tops };
       } else if (aperto.style.top) riposo = { su: '', tops: cartellini.map(function () { return ''; }) };
       if (riposo) {
-        prima = -1;
-        return function () {
+        return { riposo: true, fn: function () {
           aperto.style.top = riposo.su === '' ? '' : riposo.su + 'px';
           cartellini.forEach(function (t, j) { t.el.style.top = riposo.tops[j] === '' ? '' : riposo.tops[j] + 'px'; });
-          chiedi();
-        };
+        } };
       }
       var m = misure, tutteD = m.d.join('|') + '|' + L + 'x' + A, cambiaD = tutteD !== primaD;
       primaD = tutteD;
-      return function () {
+      return { fn: function () {
       if (cambiaD && tela) {
         tela.setAttribute('viewBox', '0 0 ' + L + ' ' + A);
         linee.forEach(function (l, j) { if (m.d[j]) l.setAttribute('d', m.d[j]); });
       }
       // Le carte: volano nella loro cartella con una leggera rotazione, che si raddrizza quando entrano. Ogni cartella
-      // si gonfia un attimo quando una carta ci entra.
-      var gonfia = new Map();
+      // si gonfia un attimo quando una carta ci entra, e conta le carte entrate.
+      var gonfia = cartelle.map(function () { return 0; }), entrate = cartelle.map(function () { return 0; });
       carte.forEach(function (c, i) {
+        if (dentro) {
+          // Ferme nella cartella, a ventaglio, e spuntano da sopra il bordo: larghe poco più di un terzo della cartella.
+          var f = m.cart[c.f], n = cartelle[c.f].quante, s = f.w * 0.38 / m.cw, sp = c.j - (n - 1) / 2;
+          var fx = f.x + f.w / 2 - m.cw / 2 + sp * m.cw * s * 0.62;
+          var fy = f.y - m.ch * s * 0.6 - m.ch / 2 + m.ch * s / 2;
+          c.el.style.transform = 'translate(' + fx.toFixed(1) + 'px,' + fy.toFixed(1) + 'px) rotate(' + (sp * 6).toFixed(1) + 'deg) scale(' + s.toFixed(3) + ')';
+          c.el.style.opacity = '1';
+          entrate[c.f]++;
+          return;
+        }
         var a = 0.10 + i * 0.035, b = 0.27 + i * 0.035;
         var t = tra(p, a, b), k = rallenta(parte_(t));
         var x = c.x * L + (m.dove[i].x - c.x * L) * k;
         var y = c.y * A + (m.dove[i].y - c.y * A) * k;
-        var s = 1 - 0.78 * k;
+        var sc = 1 - 0.78 * k;
         var giro = c.r * (1 - k) + (c.r >= 0 ? -1 : 1) * 7 * Math.sin(Math.PI * k);
-        c.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + giro.toFixed(2) + 'deg) scale(' + s.toFixed(3) + ')';
+        c.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + giro.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
         c.el.style.opacity = String(limita((1 - k) * 6));
-        var entra = Math.sin(Math.PI * tra(p, b - 0.02, b + 0.035));
-        gonfia.set(c.dove, Math.max(gonfia.get(c.dove) || 0, entra));
+        gonfia[c.f] = Math.max(gonfia[c.f], Math.sin(Math.PI * tra(p, b - 0.02, b + 0.035)));
+        // Entrata quando scompare dentro la cartella (l'opacità arriva a zero a k = 5/6).
+        if (k >= 0.83) entrate[c.f]++;
       });
       // Le cartelle: compaiono, poi lasciano il posto alla cartella aperta.
-      var compare = morbido(tra(p, 0.05, 0.12));
-      var apre = morbido(tra(p, 0.42, 0.54));
-      cartelle.forEach(function (el) {
-        var via = el === roma ? limita(apre * 4) : apre;
-        var g = 1 + 0.07 * (gonfia.get(el) || 0);
+      var compare = dentro ? 1 : morbido(tra(p, 0.05, 0.12));
+      var apre = dentro ? 0 : morbido(tra(p, 0.42, 0.54));
+      cartelle.forEach(function (c, i) {
+        var el = c.el;
+        var via = el === mazzini ? limita(apre * 4) : apre;
+        var g = 1 + 0.07 * gonfia[i];
         el.style.opacity = String(compare * (1 - via));
-        el.style.transform = 'translateY(' + ((1 - compare) * 24 + (el === roma ? 0 : via * 18)).toFixed(1) + 'px) scale(' + g.toFixed(3) + ')';
+        el.style.transform = 'translateY(' + ((1 - compare) * 24 + (el === mazzini ? 0 : via * 18)).toFixed(1) + 'px) scale(' + g.toFixed(3) + ')';
+        if (c.conta) {
+          var testo = quanti(entrate[i]);
+          if (testo !== c.scritto) { c.conta.textContent = testo; c.scritto = testo; }
+          c.conta.style.opacity = entrate[i] > 0 ? '1' : '0';
+        }
       });
-      // La cartella di via Roma che si apre.
+      // La cartella di via Mazzini che si apre.
       var R = m.R, P = m.P;
       aperto.style.opacity = String(limita(apre * 8));
       aperto.style.transform = 'translate(' + ((R.x - P.x) * (1 - apre)).toFixed(1) + 'px,' + ((R.y - P.y) * (1 - apre)).toFixed(1) + 'px) scale(' +
@@ -509,25 +562,98 @@
       // I cartellini escono dalla loro riga e si posano rallentando a fianco (al computer) o sotto (al telefono); la
       // linea compare con loro.
       cartellini.forEach(function (t, j) {
-        var k = rallenta(tra(p, 0.66 + j * 0.08, 0.78 + j * 0.08));
+        var k = dentro ? 0 : rallenta(tra(p, 0.66 + j * 0.08, 0.78 + j * 0.08));
         var l = m.lega[j], dx = l.riga.x + l.riga.w * 0.5 - (l.t.x + l.t.w / 2), dy = l.riga.y + l.riga.h / 2 - (l.t.y + l.t.h / 2);
         t.el.style.opacity = String(limita(k * 3));
         t.el.style.transform = 'translate(' + (dx * (1 - k)).toFixed(1) + 'px,' + (dy * (1 - k)).toFixed(1) + 'px) scale(' + (0.5 + 0.5 * k).toFixed(3) + ')';
         if (linee[j]) linee[j].style.opacity = String(limita((k - 0.55) / 0.45));
       });
-      // I tre testi.
-      var o1 = 1 - tra(p, 0.18, 0.23), o2 = tra(p, 0.23, 0.28) * (1 - tra(p, 0.60, 0.65)), o3 = tra(p, 0.65, 0.70);
-      [o1, o2, o3].forEach(function (o, j) {
-        testi[j].style.opacity = String(o);
-        testi[j].style.transform = 'translateY(' + ((1 - o) * 14).toFixed(1) + 'px)';
+      } };
+    };
+  }
+
+  // «Meno animazioni»: i tre quadri fermi. Il primo e il secondo sono copie del palco (nascoste ai lettori di schermo
+  // come il palco); il terzo è il palco della pagina. Ogni testo va nel suo quadro.
+  function quadriFermi(sezione, palco) {
+    var griglia = palco.parentNode;
+    var testi = Array.prototype.slice.call(sezione.querySelectorAll('.cassetto-testo'));
+    if (testi.length !== 3 || !griglia) return;
+    var quadri = [0, 0.45, 1].map(function (p, i) {
+      var q = griglia, pl = palco;
+      if (i < 2) {
+        q = document.createElement('div');
+        q.className = griglia.className;
+        var t = document.createElement('div');
+        t.className = 'cassetto-testi';
+        t.appendChild(testi[i]);
+        pl = palco.cloneNode(true);
+        q.appendChild(t);
+        q.appendChild(pl);
+        griglia.parentNode.insertBefore(q, griglia);
+      }
+      q.classList.add('cassetto-quadro');
+      q.setAttribute('data-quadro', String(i + 1));
+      return { p: p, dentro: i === 1, disegna: palcoCassetto(pl) };
+    });
+    sezione.setAttribute('data-quadri', '');
+    function disegna() {
+      quadri.forEach(function (q) {
+        for (var n = 0; n < 4; n++) { var w = q.disegna(q.p, q.dentro); w.fn(); if (!w.riposo) break; }
       });
+    }
+    disegna();
+    var attesa = false;
+    window.addEventListener('resize', function () {
+      if (attesa) return;
+      attesa = true;
+      requestAnimationFrame(function () { attesa = false; parte('quadri', disegna); });
+    });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { parte('quadri', disegna); });
+  }
+
+  var cassetto = null;
+  parte('quadri', function () {
+    if (vivo) return;
+    var sezione = document.querySelector('[data-cassetto]');
+    var palco = sezione && sezione.querySelector('[data-palco]');
+    if (palco) quadriFermi(sezione, palco);
+  });
+  vicino('[data-cassetto]', 'cassetto', function () {
+    if (!vivo) return;
+    var sezione = document.querySelector('[data-cassetto]');
+    if (!sezione) return;
+    var fermo = sezione.querySelector('.cassetto-fermo');
+    var palco = sezione.querySelector('[data-palco]');
+    var testi = Array.prototype.slice.call(sezione.querySelectorAll('.cassetto-testo'));
+    var disegna = palcoCassetto(palco);
+    var tra = function (p, a, b) { return limita((p - a) / (b - a)); };
+    var prima = -1, primaL = -1, primaA = -1;
+    sezione.setAttribute('data-segue', '');
+    cassetto = function (vh, scarto) {
+      var r = sezione.getBoundingClientRect();
+      if (r.bottom < -vh || r.top > vh * 2) return;
+      var corsa = r.height - fermo.offsetHeight;
+      var p = Math.round(limita((64 - r.top - scarto) / (corsa > 0 ? corsa : 1)) * 1000) / 1000;
+      var L = palco.clientWidth, A = palco.clientHeight;
+      if (p === prima && L === primaL && A === primaA) return;
+      prima = p; primaL = L; primaA = A;
+      var w = disegna(p);
+      if (w.riposo) { prima = -1; return function () { w.fn(); chiedi(); }; }
+      return function () {
+        w.fn();
+        // I tre testi.
+        var o1 = 1 - tra(p, 0.18, 0.23), o2 = tra(p, 0.23, 0.28) * (1 - tra(p, 0.60, 0.65)), o3 = tra(p, 0.65, 0.70);
+        [o1, o2, o3].forEach(function (o, j) {
+          testi[j].style.opacity = String(o);
+          testi[j].style.transform = 'translateY(' + ((1 - o) * 14).toFixed(1) + 'px)';
+        });
       };
     };
   });
 
   /* ---------- Come funziona: il foglio scende nella casa e ne escono le scadenze ---------- */
   var scena = null;
-  parte('scena', function () {
+  vicino('[data-scena]', 'scena', function () {
     if (!vivo) return;
     var el = document.querySelector('[data-scena]');
     var passi = document.querySelectorAll('[data-passi] > li');
@@ -718,13 +844,15 @@
   // lo scorrimento si rimettono al passo anche senza che la pagina scorra.
   if ('ResizeObserver' in window) new ResizeObserver(chiedi).observe(document.body);
   giro();
-  // Una parte per volta, ognuna nel suo momento libero: nessun compito lungo che blocchi la pagina.
-  var quando = window.requestIdleCallback || function (f) { return setTimeout(f, 120); };
-  (function prossima() {
-    var x = inAttesa.shift();
-    if (!x) { aggiornaVideo(); chiedi(); if (metaIniziale && !scorsoDaSe) metaIniziale.scrollIntoView(); return; }
-    quando(function () { parte(x[0], x[1]); chiedi(); prossima(); }, { timeout: 1500 });
-  })();
+  // La coda parte al primo gesto; con un indirizzo che porta a una sezione (/#novita), subito.
+  if (metaIniziale) { subito(); coda.finita = true; requestAnimationFrame(function () { if (!scorsoDaSe) metaIniziale.scrollIntoView(); }); }
+  else {
+    var primoGesto = function () {
+      avviaCoda();
+      ['scroll', 'wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(function (t) { window.removeEventListener(t, primoGesto); });
+    };
+    ['scroll', 'wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(function (t) { window.addEventListener(t, primoGesto, { passive: true }); });
+  }
 
   /* Se il sistema passa a «meno animazioni» mentre la pagina è aperta: i video si fermano. */
   parte('meno animazioni', function () {
