@@ -107,6 +107,15 @@ ${IN_ARRIVO.voci.map((v) => `        <li><span class="in-arrivo-titolo">${esc(v.
       </ul>
     </div>`;
 
+// Il consenso (2/11/2026), in cima alla testata di ogni pagina: prima lo stato di partenza, tutto negato, poi iubenda.
+// Il tag di Google non sta qui: lo carica assets/landing.js, e solo dopo «Accetta».
+const CONSENSO = `<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
+</script>
+<script type="text/javascript" src="https://embeds.iubenda.com/widgets/174daf15-ffb6-44a7-95b9-717a8e59ce4f.js"></script>`;
+
 const piedeNovita = [...NOVITA.map((x) => `      <a href="${indirizzoArticolo(x.id)}">${esc(x.titolo)}</a>`), `      <a href="${INDIRIZZO_NOVITA}">Tutte le novità</a>`].join('\n');
 
 let indice = fs.readFileSync(percorso('index.html'), 'utf8');
@@ -116,6 +125,7 @@ indice = sostituisci(indice, 'RACCONTO-IMMOBILI', racconto(RACCONTI.IMMOBILI));
 indice = sostituisci(indice, 'NOVITA', blocco);
 indice = sostituisci(indice, 'IN-ARRIVO', inArrivo);
 indice = sostituisci(indice, 'PIEDE-NOVITA', piedeNovita);
+indice = sostituisci(indice, 'CONSENSO', CONSENSO);
 fs.writeFileSync(percorso('index.html'), indice);
 
 const TESTATA = estrai(indice, 'TESTATA');
@@ -151,6 +161,7 @@ function pagina(s) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${CONSENSO}
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   try { if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('vivo'); } catch (e) {}
@@ -267,6 +278,7 @@ function paginaNovita() {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${CONSENSO}
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   try { if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('vivo'); } catch (e) {}

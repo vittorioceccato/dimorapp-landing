@@ -9,9 +9,9 @@
 //   3. le storie: racconto, carte, piè di pagina e articoli coincidono con strumenti/storie.mjs (parola per parola),
 //      e negli articoli pubblici non c'è l'azione dell'app né l'etichetta personale;
 //   4. prezzi, prova e pacchetti coincidono con la tabella qui sotto; le domande frequenti sono dieci, nel loro ordine;
-//   5. le risorse caricate vengono solo dal sito stesso (più lo script delle statistiche di Vercel, a quel percorso);
-//      nessuno script di terzi, nessun tag di Google, nessun cookie scritto dallo script;
-//   6. i collegamenti vanno solo all'app (login, termini, privacy), alle pagine e sezioni che esistono, al mailto
+//   5. le risorse caricate vengono solo dal sito stesso (più lo script delle statistiche di Vercel, a quel percorso, e iubenda);
+//      nessun altro script di terzi, il tag di Google solo dopo il consenso (sezione 12), nessun cookie scritto dallo script;
+//   6. i collegamenti vanno solo all'app (login, termini, privacy), alle policy di iubenda, alle pagine e sezioni che esistono, al mailto
 //      dell'assistenza e alle fonti degli articoli; ogni «Prova gratis» porta all'iscrizione di oggi;
 //   7. Google: un titolo, una descrizione, una canonica per pagina; i dati strutturati si leggono; la mappa del sito ha
 //      la landing e gli articoli e nient'altro; robots.txt la indica; vercel.json pulisce gli indirizzi;
@@ -19,6 +19,7 @@
 //      (casa disegnata, immagini delle storie, numeri al loro valore); i video partono solo dallo script.
 // Esce con 1 se un controllo fallisce, dopo averli stampati tutti.
 
+import vm from 'node:vm';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -273,16 +274,20 @@ verifica(!/Unione Europea|a prova di hacker|sicurezza bancaria|militare/i.test(t
 /* ---------- 5. Le risorse ---------- */
 sezione('5. Le risorse');
 const STATISTICHE = '/_vercel/insights/script.js';
+// L'unico script di un altro sito scritto nelle pagine, allargato di proposito il 2/11 (il banner dei cookie).
+const IUBENDA = 'https://embeds.iubenda.com/widgets/174daf15-ffb6-44a7-95b9-717a8e59ce4f.js';
+// Lo stato di partenza del consenso: l'unico gtag( scritto nelle pagine, in testa, e controllato alla sezione 12.
+const CONSENSO_PAGINA = /<script>\n  window\.dataLayer = window\.dataLayer \|\| \[\];\n  function gtag\(\) \{ dataLayer\.push\(arguments\); \}\n  gtag\('consent', 'default', \{ ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' \}\);\n<\/script>\n/;
 for (const [p, h] of Object.entries(PAGINE)) {
   const senzaLink = h.replace(/<a\s[^>]*>/g, '');
   const risorse = [...attributi(senzaLink, 'src'), ...attributi(senzaLink, 'data-src'), ...[...h.matchAll(/<link[^>]+href="([^"]+)"/g)].map((m) => m[1]).filter((u) => !/^https:\/\/dimorapp\.com\//.test(u))];
   const esterne = risorse.filter((u) => /^(https?:)?\/\//.test(u));
-  verifica(esterne.length === 0, `${p}: nessuna risorsa da un altro sito`, esterne.join(' '));
+  verifica(esterne.length === 1 && esterne[0] === IUBENDA, `${p}: da un altro sito solo lo script di iubenda`, esterne.join(' '));
   const mancanti = risorse.filter((u) => u.startsWith('/') && u !== STATISTICHE).map((u) => u.slice(1)).filter((u) => !esiste(u));
   verifica(mancanti.length === 0, `${p}: ogni risorsa è un file del repository`, mancanti.join(' '));
   const script = [...h.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]);
-  verifica(JSON.stringify(script) === JSON.stringify(['/assets/landing.js', STATISTICHE]), `${p}: solo landing.js e le statistiche di Vercel`, script.join(' '));
-  verifica(!/googletagmanager|google-analytics|gtag\(|fbq\(|hotjar|clarity\.ms/i.test(h), `${p}: nessun tag di terzi`);
+  verifica(JSON.stringify(script) === JSON.stringify([IUBENDA, '/assets/landing.js', STATISTICHE]), `${p}: solo iubenda, landing.js e le statistiche di Vercel`, script.join(' '));
+  verifica(!/googletagmanager|google-analytics|gtag\(|fbq\(|hotjar|clarity\.ms/i.test(h.replace(CONSENSO_PAGINA, '')), `${p}: nessun tag di terzi scritto nella pagina`);
 }
 verifica(!/document\.cookie|localStorage|sessionStorage/.test(JS), 'lo script non scrive cookie né memoria del browser');
 verifica(!/\bfetch\(|XMLHttpRequest|sendBeacon/.test(JS), 'lo script non chiama nessun indirizzo');
@@ -290,7 +295,7 @@ verifica(!/\bfetch\(|XMLHttpRequest|sendBeacon/.test(JS), 'lo script non chiama 
 /* ---------- 6. I collegamenti ---------- */
 sezione('6. I collegamenti');
 const FONTI = new Set(STORIE.flatMap((s) => s.articolo.fonti.flatMap((f) => f.indirizzi)));
-const APP = new Set([ISCRIZIONE, 'https://app.dimorapp.com/termini', 'https://app.dimorapp.com/privacy']);
+const APP = new Set([ISCRIZIONE, 'https://app.dimorapp.com/termini', 'https://app.dimorapp.com/privacy', 'https://www.iubenda.com/privacy-policy/83662325', 'https://www.iubenda.com/privacy-policy/83662325/cookie-policy']);
 const SEZIONI = new Set([...HTML.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
 for (const [p, h] of Object.entries(PAGINE)) {
   const hrefs = [...h.matchAll(/<a\s[^>]*href="([^"]+)"/g)].map((m) => entita(m[1]));
@@ -401,7 +406,7 @@ sezione('10. Il sesto giro');
 verifica(JS.includes('var RITARDO = 0.24;') && JS.includes('lisciato += (y - lisciato) * (1 - Math.exp(-dt / RITARDO));') && JS.includes('Math.abs(y - lisciato) > vh * 1.5') && JS.includes('if (scarto !== 0) chiedi();'), 'le scene seguono lo scorrimento con un ritardo morbido (circa 0,7 secondi), un salto grande non si insegue');
 verifica(['cassetto(vh, scarto)', 'scena(vh, scarto)', 'f(vh, scarto)', 'apertura(lisciato)'].every((x) => JS.includes(x)) && JS.includes('return r(vh);'), 'il ritardo vale per le scene, i disegni, le risposte e l\'apertura; la finestra dei racconti segue la pagina com\'è');
 verifica(JS.includes("parte('rotella'") && JS.includes("matchMedia('(hover: hover) and (pointer: fine)')") && JS.includes("{ passive: false }") && JS.includes("Math.abs(dy) < 40 || Math.abs(dy - Math.round(dy)) > 0.01") && JS.includes("['keydown', 'mousedown', 'touchstart'].forEach(function (t) { window.addEventListener(t, lascia, { passive: true }); });") && JS.includes("document.addEventListener('click', lascia, true);") && JS.includes("window.addEventListener('hashchange', lascia);"), 'la rotellina scivola solo al computer con un puntatore preciso; touchpad, telefono, tastiera e ancore restano del browser');
-verifica(!/cdn\.|gsap|lenis/i.test(JS) && !/<script[^>]+src="https?:/.test(HTML.replace(/<script[^>]*_vercel[^>]*>/g, '')), 'nessuno script di terzi: il ritardo e la rotellina sono fatti a mano');
+verifica(!/cdn\.|gsap|lenis/i.test(JS) && !/<script[^>]+src="https?:/.test(HTML.replace(/<script[^>]*_vercel[^>]*>/g, '').replace(`<script type="text/javascript" src="${IUBENDA}"></script>`, '')), 'nessuno script di terzi: il ritardo e la rotellina sono fatti a mano');
 const cartaIn = (t) => (new RegExp(`data-in="([a-z]+)"><span class="doc-tipo">${t}</span>`).exec(scenaA) || [])[1];
 verifica(cartaIn('Bolletta luce') === 'mare' && cartaIn('Foto') === 'mare' && cartaIn('Rogito') === 'box' && ["Contratto d'affitto", 'F24', 'Fattura idraulico'].every((t) => cartaIn(t) === 'mazzini'), 'scena A: la bolletta e la foto nella casa al mare, il rogito nel box, il resto in via Mazzini');
 verifica(JS.includes('var g = 1 + 0.07 * gonfia[i];') && JS.includes("var rallenta = function (t) { return 1 - Math.pow(1 - t, 3); };") && JS.includes('7 * Math.sin(Math.PI * k)'), 'scena A: la cartella si gonfia quando la carta entra; le carte arrivano rallentando, con una rotazione che si raddrizza');
@@ -427,6 +432,53 @@ const scrittoIn = (k) => (new RegExp(`data-cartella="${k}"[^]*?<span class="cart
 verifica([['mazzini', '3 documenti'], ['mare', '2 documenti'], ['box', '1 documento']].every(([k, t]) => scrittoIn(k) === t && t.startsWith(String(contaCartella(k)) + ' ')) && JS.includes("function quanti(n) { return n === 1 ? '1 documento' : n + ' documenti'; }") && JS.includes('if (k >= 0.83) entrate[c.f]++;'), 'ogni cartella conta i suoi documenti: sale di uno a ogni carta che entra, scende risalendo');
 verifica(pagine.every((h) => !/via Roma/.test(h)) && !/via Roma/.test(leggi('strumenti/storie.mjs')) && scenaA.includes('<span class="fa-titolo">Bilocale in via Mazzini</span>'), 'la scena allineata agli esempi dei video: «Bilocale in via Mazzini», nessun «via Roma» nei testi');
 verifica(JS.includes('function vicino(sel, nome, fn)') && JS.includes("vicino('[data-scena]', 'scena'") && !JS.includes('(function prossima() {') && JS.includes("['scroll', 'wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(function (t) { window.addEventListener(t, primoGesto, { passive: true }); });") && JS.includes('pieno(); subito();'), "le scene e il loro script partono solo quando servono: al primo gesto o avvicinandosi; un salto a un'ancora prepara tutto prima");
+
+// 12. Il banner dei cookie e il tag di Google (2/11): il piano è docs/consenso-google-ads.md nel repository dell'app
+sezione('12. Il consenso');
+for (const [p, h] of Object.entries(PAGINE)) {
+  const testa = h.slice(0, h.indexOf('</head>'));
+  const primi = [...testa.matchAll(/<script[^>]*>/g)].slice(0, 2).map((m) => m[0]);
+  verifica(CONSENSO_PAGINA.test(testa) && primi[0] === '<script>' && primi[1] === `<script type="text/javascript" src="${IUBENDA}">` && testa.indexOf('<script') === testa.search(CONSENSO_PAGINA), `${p}: in cima alla testata il consenso di partenza negato, subito dopo iubenda`);
+  verifica(!/<title|<link rel="stylesheet"/.test(testa.slice(0, testa.indexOf(IUBENDA))), `${p}: iubenda sta prima del titolo e degli stili`);
+  verifica(!/granted/.test(h), `${p}: nella pagina nessun consenso concesso in partenza`);
+  const piede = h.slice(h.indexOf('<footer'));
+  verifica(piede.includes('<a href="https://www.iubenda.com/privacy-policy/83662325" target="_blank" rel="noopener noreferrer">Privacy</a>') && piede.includes('<a href="https://www.iubenda.com/privacy-policy/83662325/cookie-policy" target="_blank" rel="noopener noreferrer">Cookie</a>') && piede.includes('<a href="https://www.iubenda.com/privacy-policy/83662325/cookie-policy" data-preferenze-cookie>Preferenze cookie</a>'), `${p}: nel piè Privacy, Cookie e Preferenze cookie`);
+}
+verifica(!/cookie_domain/.test(JS) && !/['"]conversion['"]|send_to/.test(JS), 'il tag non cambia il dominio dei cookie e la landing non manda conversioni');
+verifica((JS.match(/googletagmanager/g) || []).length === 1 && (JS.match(/createElement\('script'\)/g) || []).length === 1, 'lo script carica un solo script di terzi, il tag di Google');
+// Le regole si eseguono: il blocco del consenso di landing.js gira con una finestra finta e si conta che cosa sarebbe partito.
+const aConsenso = JS.indexOf('/* Il consenso (2/11/2026)');
+const bloccoConsenso = JS.slice(aConsenso, JS.indexOf('\n})();', aConsenso) + 6);
+function provaConsenso(hostname, search, voci, prima = []) {
+  const dl = prima.slice(), creati = [], comandi = [], messaggi = [], ascolti = {};
+  const con = { info: (...a) => messaggi.push(a.join(' ')) };
+  vm.runInNewContext(bloccoConsenso, {
+    window: { dataLayer: dl, gtag: (...a) => comandi.push(a), console: con }, console: con, location: { hostname, search }, URLSearchParams, URL, setTimeout,
+    performance: { getEntriesByType: () => [] },
+    document: { addEventListener: (t, f) => { ascolti[t] = f; }, createElement: () => { const e = {}; creati.push(e); return e; }, head: { appendChild() {} } },
+  });
+  voci.forEach((v) => dl.push(v));
+  return { creati, comandi, messaggi, ascolti };
+}
+const SI = ['consent', 'update', { ad_storage: 'granted' }], NO = ['consent', 'update', { ad_storage: 'denied' }];
+const TAG = 'https://www.googletagmanager.com/gtag/js?id=AW-18536196284';
+let e = provaConsenso('dimorapp.com', '', []);
+verifica(e.creati.length === 0 && e.comandi.length === 0, 'prima della scelta niente tag e nessun comando a Google');
+e = provaConsenso('dimorapp.com', '', [NO]);
+verifica(e.creati.length === 0 && e.comandi.length === 0, 'dopo «Rifiuta» niente');
+e = provaConsenso('dimorapp.com', '', [SI, SI]);
+verifica(e.creati.length === 1 && e.creati[0].src === TAG && e.comandi.length === 2 && e.comandi[0][0] === 'js' && JSON.stringify(e.comandi[1]) === JSON.stringify(['config', 'AW-18536196284', { send_page_view: false }]), 'dopo «Accetta» il tag, una volta sola, con send_page_view false');
+e = provaConsenso('dimorapp.com', '', [], [['consent', 'default', { ad_storage: 'denied' }], SI]);
+verifica(e.creati.length === 1, 'una scelta già riletta da iubenda prima dello script conta');
+e = provaConsenso('dimorapp.com', '', [], [['consent', 'default', { ad_storage: 'granted' }]]);
+verifica(e.creati.length === 0, 'il consenso di partenza non vale come scelta');
+e = provaConsenso('dimorapp-landing-abc.vercel.app', '', [SI]);
+verifica(e.creati.length === 0 && e.comandi.length === 0 && e.messaggi.length === 0, 'su una Preview il tag non parte mai, nemmeno dopo «Accetta»');
+e = provaConsenso('dimorapp.com', '?prova_consenso=1', [SI]);
+verifica(e.creati.length === 0 && e.comandi.length === 0 && e.messaggi.some((m) => m.includes('[prova consenso]') && m.includes('Avrei caricato') && m.includes(TAG)), 'con ?prova_consenso=1 scrive che cosa avrebbe fatto e non lo fa, anche su dimorapp.com');
+e = provaConsenso('dimorapp-landing-abc.vercel.app', '?prova_consenso=1', [NO]);
+verifica(e.messaggi.some((m) => m.includes('consenso pubblicitario negato')) && !e.messaggi.some((m) => m.includes('Avrei caricato')), 'la prova dice anche «Rifiuta», e lì non avrebbe caricato niente');
+verifica(typeof provaConsenso('dimorapp.com', '', []).ascolti.click === 'function' && JS.includes('api.openPreferences();') && JS.includes('Le preferenze non si aprono adesso. Riprova fra poco.'), '«Preferenze cookie» riapre il pannello, o lo dice con una frase sola');
 
 console.log(`\n${passati} controlli passati, ${falliti} falliti.`);
 process.exit(falliti ? 1 : 0);

@@ -1,6 +1,83 @@
-/* Dimora, la landing (25/10/2026). Uno script solo, nessuna dipendenza, nessuna chiamata a terzi.
+/* Dimora, la landing (25/10/2026). Uno script solo, nessuna dipendenza. L'unica chiamata a terzi è il tag di Google, dopo «Accetta».
    Ogni parte si accende da sé: se una fallisce, le altre restano, e senza script la pagina si legge tutta.
    Le animazioni partono solo se la testa della pagina ha messo «vivo» sull'<html> (cioè senza «meno animazioni»). */
+
+/* Il consenso (2/11/2026), con le regole dell'app (lib/consenso.ts). La testa della pagina ha già messo il consenso di
+   partenza, tutto negato, e iubenda: iubenda scrive la scelta nel dataLayer, e qui la si guarda passare. Il tag di Google
+   si carica solo con la pubblicità concessa e solo su dimorapp.com; le Preview non lo caricano mai. Serve a salvare il clic
+   sull'annuncio in un cookie che legge anche l'app: nessuna pagina vista e nessuna conversione partono da qui.
+   Con ?prova_consenso=1 la pagina scrive in console che cosa avrebbe fatto, e non lo fa. */
+(function () {
+  'use strict';
+
+  var ID_GOOGLE = 'AW-18536196284';
+  var SCRIPT_GOOGLE = 'https://www.googletagmanager.com/gtag/js?id=' + ID_GOOGLE;
+  var prova = new URLSearchParams(location.search).has('prova_consenso');
+  var produzione = location.hostname === 'dimorapp.com' || location.hostname === 'www.dimorapp.com';
+  var scelta = null, tagCaricato = false;
+
+  function dice() {
+    if (prova && window.console) console.info.apply(console, ['[prova consenso]'].concat([].slice.call(arguments)));
+  }
+  function richiesteGoogle() {
+    return performance.getEntriesByType('resource').filter(function (r) { return /google|doubleclick/i.test(new URL(r.name).hostname); }).length;
+  }
+  function caricaTag() {
+    if (tagCaricato) return;
+    tagCaricato = true;
+    if (prova) { dice('Avrei caricato', SCRIPT_GOOGLE, 'e mandato:', ['config', ID_GOOGLE, { send_page_view: false }], 'Nessuna conversione sulla landing.'); return; }
+    if (!produzione) return;
+    window.gtag('js', new Date());
+    window.gtag('config', ID_GOOGLE, { send_page_view: false });
+    var s = document.createElement('script');
+    s.src = SCRIPT_GOOGLE;
+    s.async = true;
+    document.head.appendChild(s);
+  }
+  // Un aggiornamento del consenso, come lo scrive iubenda: gtag('consent', 'update', {...}), cioè una lista di argomenti.
+  function guarda(voce) {
+    if (!voce || voce[0] !== 'consent' || voce[1] !== 'update' || !voce[2] || !('ad_storage' in voce[2])) return;
+    var ora = voce[2].ad_storage === 'granted' ? 'concesso' : 'negato';
+    if (ora === scelta) return;
+    scelta = ora;
+    dice('Scelta ricevuta da iubenda: consenso pubblicitario ' + ora + '. Richieste a Google finora: ' + richiesteGoogle() + '.');
+    if (ora === 'concesso') caricaTag();
+  }
+
+  var dl = window.dataLayer;
+  if (dl && window.gtag) {
+    dice('Il consenso parte negato. Il tag di Google parte solo dopo «Accetta», e in questa prova non parte. Richieste a Google finora: ' + richiesteGoogle() + '.');
+    // iubenda può aver già riletto una scelta fatta prima di questa pagina: lo script arriva dopo di lui.
+    var viste = dl.slice();
+    var push = dl.push;
+    dl.push = function () {
+      var r = push.apply(dl, arguments);
+      [].forEach.call(arguments, guarda);
+      return r;
+    };
+    viste.forEach(guarda);
+  }
+
+  // «Preferenze cookie» riapre il pannello. Senza script il collegamento porta alla cookie policy, che ha lo stesso comando.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('[data-preferenze-cookie]');
+    if (!a) return;
+    e.preventDefault();
+    var atteso = 0;
+    (function apri() {
+      var api = window._iub && window._iub.cs && window._iub.cs.api;
+      if (api && typeof api.openPreferences === 'function') { api.openPreferences(); return; }
+      if (atteso >= 8000) {
+        if (a.nextElementSibling && a.nextElementSibling.hasAttribute('data-preferenze-esito')) return;
+        a.insertAdjacentHTML('afterend', '<span role="status" data-preferenze-esito>Le preferenze non si aprono adesso. Riprova fra poco.</span>');
+        return;
+      }
+      atteso += 200;
+      setTimeout(apri, 200);
+    })();
+  });
+})();
+
 (function () {
   'use strict';
 
