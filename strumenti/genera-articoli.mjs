@@ -108,13 +108,14 @@ ${IN_ARRIVO.voci.map((v) => `        <li><span class="in-arrivo-titolo">${esc(v.
     </div>`;
 
 // Il consenso (2/11/2026), in cima alla testata di ogni pagina: prima lo stato di partenza, tutto negato, poi iubenda.
+// iubenda è async: costa lo stesso, ma se il suo sito è giù la pagina non resta ferma ad aspettarlo.
 // Il tag di Google non sta qui: lo carica assets/landing.js, e solo dopo «Accetta».
 const CONSENSO = `<script>
   window.dataLayer = window.dataLayer || [];
   function gtag() { dataLayer.push(arguments); }
   gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
 </script>
-<script type="text/javascript" src="https://embeds.iubenda.com/widgets/174daf15-ffb6-44a7-95b9-717a8e59ce4f.js"></script>`;
+<script type="text/javascript" src="https://embeds.iubenda.com/widgets/174daf15-ffb6-44a7-95b9-717a8e59ce4f.js" async></script>`;
 
 const piedeNovita = [...NOVITA.map((x) => `      <a href="${indirizzoArticolo(x.id)}">${esc(x.titolo)}</a>`), `      <a href="${INDIRIZZO_NOVITA}">Tutte le novità</a>`].join('\n');
 
