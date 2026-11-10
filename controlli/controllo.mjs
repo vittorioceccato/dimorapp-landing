@@ -412,7 +412,7 @@ verifica(cartaIn('Bolletta luce') === 'mare' && cartaIn('Foto') === 'mare' && ca
 verifica(JS.includes('var g = 1 + 0.07 * gonfia[i];') && JS.includes("var rallenta = function (t) { return 1 - Math.pow(1 - t, 3); };") && JS.includes('7 * Math.sin(Math.PI * k)'), 'scena A: la cartella si gonfia quando la carta entra; le carte arrivano rallentando, con una rotazione che si raddrizza');
 verifica(scenaA.includes('data-lega="contratto">Contratto d\'affitto · 2023</span>') && scenaA.includes('data-lega="visura">Visura catastale · 2025</span>') && (scenaA.match(/<path data-linea \/>/g) || []).length === 3 && CSS.includes('@container (min-width: 660px)'), 'scena A: i cartellini a fianco (palco largo) o sotto (palco stretto), ognuno con la linea verso la sua riga');
 verifica(/\.apertura \{ padding: 20px 0 clamp\(24px, 3vw, 40px\); \}/.test(CSS), "niente spazio bianco grande fra l'apertura e la scena del fascicolo");
-verifica(VESTE.includes('--larghezza: 1344px;') && VESTE.includes('--riga-max: 30em;') && CSS.includes('.in-arrivo-elenco li, .piani-note li, .articolo-passi li, .articolo-fonti li { max-width: var(--riga-max); }') && CSS.includes('main p, main dd { max-width: var(--riga-max); }'), 'la colonna a 1280 di contenuto; i paragrafi non oltre circa 68 caratteri per riga');
+verifica(VESTE.includes('--larghezza: 1344px;') && VESTE.includes('--riga-max: 30em;') && CSS.includes('.in-arrivo-elenco li, .articolo-passi li, .articolo-fonti li { max-width: var(--riga-max); }') && CSS.includes('main p, main dd { max-width: var(--riga-max); }'), 'la colonna a 1280 di contenuto; i paragrafi non oltre circa 68 caratteri per riga');
 verifica(CSS.includes('.cassetto-palco { margin-left: 0; margin-right: calc(-1 * ((100vw - min(100vw, var(--larghezza))) / 2 + var(--margine))); }') && CSS.includes('.casa-scena { position: relative; margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%); background: var(--c-fondo-tenue); }'), 'la scena del fascicolo e la casa grande usano tutta la larghezza dello schermo');
 const corpoIndex = HTML.slice(HTML.indexOf('<body'));
 const pagine = [corpoIndex, ...Object.values(ARTICOLI).map((h) => h.slice(h.indexOf('<body')))];
@@ -479,6 +479,13 @@ verifica(e.creati.length === 0 && e.comandi.length === 0 && e.messaggi.some((m) 
 e = provaConsenso('dimorapp-landing-abc.vercel.app', '?prova_consenso=1', [NO]);
 verifica(e.messaggi.some((m) => m.includes('consenso pubblicitario negato')) && !e.messaggi.some((m) => m.includes('Avrei caricato')), 'la prova dice anche «Rifiuta», e lì non avrebbe caricato niente');
 verifica(typeof provaConsenso('dimorapp.com', '', []).ascolti.click === 'function' && JS.includes('api.openPreferences();') && JS.includes('Le preferenze non si aprono adesso. Riprova fra poco.'), '«Preferenze cookie» riapre il pannello, o lo dice con una frase sola');
+
+// 13. I piani (11/11): blocchi allineati fra i tre riquadri, le frasi sotto in un blocco solo
+sezione('13. I piani');
+verifica(CSS.includes(".piano { display: grid; grid-row: span 6; grid-template-rows: subgrid; gap: 12px; align-content: start; }") && CSS.includes("[data-periodo='mese'] .piano { grid-row: span 4; }") && (HTML.match(/<article class="piano"/g) || []).length === 3, "i blocchi dei tre piani stanno sulle stesse righe (subgrid), con l'annuale e col mensile");
+verifica(CSS.includes('.funzione { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; align-content: start; }'), 'anche nelle funzioni del fascicolo icona, titolo e frase stanno sulle stesse righe');
+verifica(HTML.includes('<div class="piani-note">\n      <p>Una lettura AI copre fino a 10 pagine. Ti servono più letture? Ci sono i pacchetti aggiuntivi.</p>\n      <p>Nessun addebito automatico: alla fine della prova scegli tu se abbonarti.</p>\n    </div>') && CSS.includes('justify-items: center; text-align: center; font-size: var(--text-minimo); color: var(--c-etichetta);'), 'sotto i piani le due frasi nuove, centrate, piccole e tenui');
+verifica(Object.values(PAGINE).every((h) => !/possono ancora cambiare/.test(h)), 'nessuna pagina dice più che piani e prezzi possono ancora cambiare');
 
 console.log(`\n${passati} controlli passati, ${falliti} falliti.`);
 process.exit(falliti ? 1 : 0);

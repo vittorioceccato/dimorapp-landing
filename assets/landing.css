@@ -115,7 +115,7 @@ button { font: inherit; color: inherit; }
 .sezione-sotto { margin-top: 14px; font-size: var(--text-sezione); color: var(--c-secondario); max-width: var(--riga-max); }
 /* I paragrafi restano leggibili anche con la colonna larga (sesto giro): al massimo circa 68 caratteri per riga. */
 main p, main dd { max-width: var(--riga-max); }
-.in-arrivo-elenco li, .piani-note li, .articolo-passi li, .articolo-fonti li { max-width: var(--riga-max); }
+.in-arrivo-elenco li, .articolo-passi li, .articolo-fonti li { max-width: var(--riga-max); }
 .etichetta {
   display: inline-flex; align-items: center; width: fit-content; padding: 3px 10px; border-radius: 999px;
   background: var(--c-stato-fondo); color: var(--c-stato-testo); font-size: var(--text-minimo); font-weight: 600;
@@ -486,6 +486,10 @@ main p, main dd { max-width: var(--riga-max); }
 .funzione p { color: var(--c-secondario); font-size: var(--text-piccolo); }
 @media (min-width: 40rem) { .griglia-funzioni { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 64rem) { .griglia-funzioni { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* Come i piani (11/11): in ogni fila icona, titolo e frase stanno sulle stesse righe, anche se un titolo va a capo. */
+@supports (grid-template-rows: subgrid) {
+  @media (min-width: 40rem) { .funzione { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; align-content: start; } }
+}
 .nota-sezione { margin-top: 20px; font-size: var(--text-piccolo); color: var(--c-secondario); }
 .affitti .titolo-blocco { margin-top: clamp(16px, 3vw, 32px); }
 .commercialista {
@@ -678,8 +682,20 @@ main p, main dd { max-width: var(--riga-max); }
 .piano-dotazione { display: grid; gap: 6px; padding: 12px 0; border-top: 1px solid var(--c-riga); border-bottom: 1px solid var(--c-riga); font-weight: 600; font-size: var(--text-piccolo); }
 .piano-desc { color: var(--c-secondario); font-size: var(--text-piccolo); }
 .piano-regalo { font-size: var(--text-minimo); color: var(--c-avviso-testo); background: var(--c-avviso-fondo); padding: 8px 12px; border-radius: 10px; }
-.piani-note { margin-top: 24px; display: grid; gap: 6px; font-size: var(--text-piccolo); color: var(--c-secondario); }
+/* Le frasi sotto i piani (11/11): un blocco solo, centrato sotto i tre riquadri, piccolo e tenue. */
+.piani-note { margin-top: 24px; display: grid; gap: 4px; justify-items: center; text-align: center; font-size: var(--text-minimo); color: var(--c-etichetta); }
+.piani-note p { max-width: none; }
 @media (min-width: 56rem) { .piani { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* Affiancati, i blocchi dei tre riquadri stanno sulle stesse righe (11/11): se in un riquadro una riga va a capo, il
+   blocco dopo scende in tutti e tre. Con l'annuale i blocchi visibili sono sei (nome, prezzo, «oppure…», elenco,
+   frase, regalo), col mensile quattro. Dove subgrid non c'è restano le colonne di prima. */
+@supports (grid-template-rows: subgrid) {
+  @media (min-width: 56rem) {
+    .piani { row-gap: 12px; }
+    .piano { display: grid; grid-row: span 6; grid-template-rows: subgrid; gap: 12px; align-content: start; }
+    [data-periodo='mese'] .piano { grid-row: span 4; }
+  }
+}
 
 /* ── Sicurezza ── */
 .sicurezza { background: var(--c-fondo-tenue); }
