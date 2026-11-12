@@ -23,7 +23,8 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STORIE as TUTTE, PARTI, NOVITA_LANDING, PAGINA_NOVITA, IN_ARRIVO, PASSI, DATI, RACCONTI, ORDINE_NOVITA, TIPI_DOCUMENTI, ORIGINE, ISCRIZIONE, indirizzoArticolo, INDIRIZZO_NOVITA } from '../strumenti/storie.mjs';
+import { STORIE as TUTTE, PARTI, NOVITA_LANDING, PAGINA_NOVITA, PASSI, DATI, RACCONTI, ORDINE_NOVITA, TIPI_DOCUMENTI, TIPI_IN_FILA, ORIGINE, ISCRIZIONE, indirizzoArticolo, INDIRIZZO_NOVITA } from '../strumenti/storie.mjs';
+import { CHI_LA_USA } from '../strumenti/chi-la-usa.mjs';
 // Le storie pubblicate: una con `pubblica: false` (il canone a metà, 25/10) non ha né passo né articolo.
 const STORIE = TUTTE.filter((s) => s.pubblica !== false);
 
@@ -106,18 +107,17 @@ for (const id of ['come', 'affitti', 'immobili']) {
 
 /* ---------- 3. Le storie ---------- */
 sezione('3. Le storie');
-// L'ordine della pagina (secondo giro di Vitto, 25/10): apertura, come funziona, lettera, se affitti, per ogni immobile,
-// gli ultimi aggiornamenti, telefono, prezzi, sicurezza, domande, chiusura. La sezione dei numeri a sé non c'è più.
-const ordinePagina = ['come', 'storia', 'affitti', 'immobili', 'novita', 'prezzi', 'sicurezza', 'domande', 'inizia'].map((id) => HTML.indexOf(`id="${id}"`));
+// L'ordine della pagina (ottavo giro, 11/11): apertura, fascicolo, come funziona, se affitti, per ogni immobile, le
+// risposte, la storia del quaderno, (chi la usa), telefono, prezzi, sicurezza, domande, chiusura.
+const ordinePagina = ['fascicolo', 'come', 'affitti', 'immobili', 'risposte', 'storia', 'prezzi', 'sicurezza', 'domande', 'inizia'].map((id) => HTML.indexOf(`id="${id}"`));
 verifica(ordinePagina.every((x, i) => x > 0 && (i === 0 || x > ordinePagina[i - 1])), "l'ordine delle sezioni", ordinePagina.join(' '));
-verifica(HTML.indexOf('class="telefono-sezione"') > HTML.indexOf('id="novita"') && HTML.indexOf('class="telefono-sezione"') < HTML.indexOf('id="prezzi"'), 'il riquadro del telefono fra le novità e i prezzi');
+verifica(HTML.indexOf('class="telefono-sezione"') > HTML.indexOf('id="storia"') && HTML.indexOf('class="telefono-sezione"') < HTML.indexOf('id="prezzi"'), 'il riquadro del telefono fra la storia e i prezzi');
 const testoPagina = testo(HTML);
 verifica(!HTML.includes('id="numeri"') && !testoPagina.includes('Non sono conti da fare a mente'), "la sezione dei numeri non c'è più");
 for (const via of ['Se hai una seconda casa', 'Ogni mese, qualcosa in meno', 'Ottobre 2026', 'Ci stiamo lavorando', 'Il canone, anche quando arriva a metà', 'Decide il commercialista', "L'affitto, dal contratto alla disdetta", 'più di 130', 'Più di 130']) verifica(!testoPagina.includes(via), `nella pagina non c'è più «${via}»`);
 verifica(testoPagina.includes('Per ogni immobile che hai') && testoPagina.includes('Se affitti una casa'), 'i titoli delle due sezioni');
 // I racconti
 const racconti = {
-  COME: HTML.slice(HTML.indexOf('<!--RACCONTO-COME-->'), HTML.indexOf('<!--/RACCONTO-COME-->')),
   AFFITTO: HTML.slice(HTML.indexOf('<!--RACCONTO-AFFITTO-->'), HTML.indexOf('<!--/RACCONTO-AFFITTO-->')),
   IMMOBILI: HTML.slice(HTML.indexOf('<!--RACCONTO-IMMOBILI-->'), HTML.indexOf('<!--/RACCONTO-IMMOBILI-->')),
 };
@@ -126,7 +126,7 @@ const idPasso = (p) => p.storia || p.passo;
 for (const [nome, r] of Object.entries(racconti)) {
   verifica(JSON.stringify(attributi(r, 'data-storia')) === JSON.stringify(RACCONTI[nome].map(idPasso)), `il racconto ${nome}: ${RACCONTI[nome].map(idPasso).join(', ')}`, attributi(r, 'data-storia').join(', '));
 }
-verifica(HTML.indexOf('<!--RACCONTO-COME-->') > HTML.indexOf('id="come"') && HTML.indexOf('<!--RACCONTO-AFFITTO-->') > HTML.indexOf('id="affitti"') && HTML.indexOf('<!--RACCONTO-IMMOBILI-->') > HTML.indexOf('id="immobili"'), 'ogni racconto sta nella sua sezione');
+verifica(HTML.indexOf('<!--RACCONTO-AFFITTO-->') > HTML.indexOf('id="affitti"') && HTML.indexOf('<!--RACCONTO-IMMOBILI-->') > HTML.indexOf('id="immobili"') && !HTML.includes('RACCONTO-COME') && !HTML.includes('racconto-singolo') && Object.keys(RACCONTI).join() === 'AFFITTO,IMMOBILI', 'ogni racconto sta nella sua sezione; «Come funziona» non ha più il blocco dell\'articolo in evidenza');
 for (const p of Object.values(RACCONTI).flat()) {
   const blocco = racconto.slice(racconto.indexOf(`data-storia="${idPasso(p)}"`));
   const art = testo(blocco.slice(0, blocco.indexOf('</article>')));
@@ -153,8 +153,8 @@ verifica(importiScena.length === 3 && importiScena.every((x) => /^€&nbsp;\d+(,
 // Il numero dei documenti: in evidenza, lo stesso in tutta la pagina e negli articoli
 verifica(TIPI_DOCUMENTI === 120, 'il numero dei documenti è 120 (124 righe riconosciute su 136, la decina sotto)');
 const numero = HTML.slice(HTML.indexOf('data-numero'), HTML.indexOf('</p>', HTML.indexOf('data-numero')));
-verifica(HTML.indexOf('data-numero') > HTML.indexOf('id="come"') && HTML.indexOf('data-numero') < HTML.indexOf('<!--RACCONTO-COME-->'), 'il numero sta in Come funziona, accanto alla casa');
-verifica(numero.includes(`data-conta="${TIPI_DOCUMENTI}">${TIPI_DOCUMENTI}<`) && testo(numero).includes(`Più di ${TIPI_DOCUMENTI} tipi di documenti della casa, riconosciuti: dal rogito alla bolletta, dal contratto d'affitto al preventivo del condominio.`), 'il numero e la sua frase, senza script già al valore');
+verifica(HTML.indexOf('data-numero') > HTML.indexOf('id="come"') && HTML.indexOf('data-numero') < HTML.indexOf('data-passi'), 'il numero sta in Come funziona, sopra la casa');
+verifica(numero.includes(`<span class="numero-cifra">${TIPI_DOCUMENTI}</span>`) && testo(numero).includes(`Più di ${TIPI_DOCUMENTI} tipi di documenti della casa, riconosciuti: dal rogito alla bolletta, dal contratto d'affitto al preventivo del condominio.`) && !HTML.includes('data-conta') && !JS.includes('data-conta') && !/contatore\s*=/.test(JS), 'il numero e la sua frase: fermo a 120, nessuno script lo fa contare');
 for (const [pg, h] of Object.entries(PAGINE)) {
   const numeri = [...testo(h).matchAll(/più di (\d+|cento) tipi/gi)].map((m) => m[1]);
   verifica(numeri.every((n) => n === String(TIPI_DOCUMENTI)), `${pg}: «più di ${TIPI_DOCUMENTI} tipi» ovunque`, numeri.join(' '));
@@ -162,7 +162,7 @@ for (const [pg, h] of Object.entries(PAGINE)) {
 // Il commercialista e il CAF
 for (const t of ['Tutto pronto per il commercialista o il CAF', 'Segni la spesa da portare al commercialista o al CAF', 'Al commercialista o al CAF, un pacchetto pronto.', 'i documenti da portare al commercialista o al CAF']) verifica(testoPagina.includes(t), `CAF: «${t}»`);
 // I disegni grandi: la casa in Come funziona, l'appartamento in Se affitti
-verifica(/class="casa-disegno" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="come"'), HTML.indexOf('id="storia"'))), 'Come funziona: la casa grande, nella scena ferma (quinto giro)');
+verifica(/class="casa-disegno" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="come"'), HTML.indexOf('id="affitti"'))), 'Come funziona: la casa grande');
 verifica(/class="disegno-grande" data-disegno[\s\S]{0,80}<svg class="casa-grande"/.test(HTML.slice(HTML.indexOf('id="affitti"'), HTML.indexOf('id="immobili"'))), "Se affitti: l'appartamento grande");
 // L'apertura: come la landing di prima, nella veste nuova (le schermate dell'app con dati inventati).
 const apertura = HTML.slice(HTML.indexOf('class="apertura"'), HTML.indexOf('id="come"'));
@@ -173,21 +173,12 @@ for (const f of ['app-computer.webp', 'app-telefono.webp', 'foto-bolletta.webp',
 const telefono = testo(HTML.slice(HTML.indexOf('class="telefono-sezione"'), HTML.indexOf('id="prezzi"')));
 for (const t of ['Pensata anche per il telefono', 'App Store · in arrivo', 'Google Play · in arrivo', 'Presto anche su App Store e Google Play.']) verifica(telefono.includes(t), `telefono: «${t}»`);
 verifica(testoPagina.includes('Presto anche su App Store e Google Play. Entri con la tua mail'), 'le domande dicono ancora «Presto anche su App Store e Google Play»');
-// Le novità (terzo giro di Vitto, 25/10): un blocco corto, niente fila. I testi del comando, parola per parola.
-const blocco = HTML.slice(HTML.indexOf('<!--NOVITA-->'), HTML.indexOf('<!--/NOVITA-->'));
-verifica(NOVITA_LANDING.titolo === 'Dimora cresce con te.' && NOVITA_LANDING.testo === "Ogni settimana aggiungiamo qualcosa che ti toglie un pensiero sulle tue case. Le novità le trovi nell'app, raccontate una per una." && NOVITA_LANDING.firma === 'Il team di Dimora', 'le novità: titolo, testo e firma del comando');
-verifica(blocco.length > 0 && [NOVITA_LANDING.titolo, NOVITA_LANDING.testo, NOVITA_LANDING.firma].every((t) => testo(blocco).includes(t)), 'le novità: il blocco nella pagina');
-verifica(blocco.includes(`<a class="collegamento" href="${INDIRIZZO_NOVITA}">Leggi tutte le novità</a>`), 'le novità: «Leggi tutte le novità» porta a /novita');
-verifica(!HTML.includes('class="aggiornamento') && !HTML.includes('<!--AGGIORNAMENTI-->') && !testoPagina.includes('Gli ultimi aggiornamenti'), "la fila degli aggiornamenti non c'è più");
+// Ottavo giro (11/11): novità e «In arrivo» fuori dalla pagina. Restano /novita e gli articoli, dal piè di pagina.
 const testata = HTML.slice(HTML.indexOf('<!--TESTATA-->'), HTML.indexOf('<!--/TESTATA-->'));
-verifica((testata.match(/<a href="\/#novita">Novità<\/a>/g) || []).length === 2 && !testata.includes('Aggiornamenti'), 'il menu dice «Novità» e porta al blocco');
-// In arrivo: due righe sole, senza pulsanti
-const inArrivo = HTML.slice(HTML.indexOf('<!--IN-ARRIVO-->'), HTML.indexOf('<!--/IN-ARRIVO-->'));
-// Quarto giro (26/10): tre righe, in quest'ordine.
-const ARRIVO = ["I canoni e le spese, abbinati dall'estratto conto. Carichi l'estratto conto del mese: Dimora riconosce i canoni arrivati e le spese già pagate, e tu confermi con un tocco.", "L'adeguamento ISTAT del canone, automatico. Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda.", "Quando cambiano le regole, te lo diciamo noi. Dimora tiene d'occhio le novità per chi possiede immobili e ti dice che cosa cambia per ognuna delle tue case."];
-const posArrivo = ARRIVO.map((t) => testo(inArrivo).indexOf(t));
-verifica(IN_ARRIVO.titolo === 'In arrivo' && IN_ARRIVO.voci.length === 3 && testo(inArrivo).includes('In arrivo') && posArrivo.every((x, i) => x >= 0 && (i === 0 || x > posArrivo[i - 1])) && (inArrivo.match(/<li>/g) || []).length === 3, '«In arrivo» con le tre righe del comando, nel loro ordine');
-verifica(!/<a |<button/.test(inArrivo), '«In arrivo» senza pulsanti');
+verifica(!HTML.includes('id="novita"') && !HTML.includes('<!--NOVITA-->') && !HTML.includes('<!--IN-ARRIVO-->') && !HTML.includes('class="in-arrivo') && !HTML.includes('class="cresce') && !testoPagina.includes('Dimora cresce con te') && !testoPagina.includes('adeguamento ISTAT del canone, automatico'), 'nella pagina non ci sono più il blocco delle novità né «In arrivo»');
+verifica(!/Novità|novita/.test(testata) && (testata.match(/<a href="\/#prezzi">Prezzi<\/a>/g) || []).length === 2, 'il menu non ha più la voce «Novità»');
+verifica(!/href="\/#novita"/.test(Object.values(PAGINE).join('')), 'nessun collegamento porta più a /#novita');
+verifica(!HTML.includes('class="aggiornamento') && !HTML.includes('<!--AGGIORNAMENTI-->') && !testoPagina.includes('Gli ultimi aggiornamenti'), "la fila degli aggiornamenti non c'è più");
 // La pagina di tutte le novità
 const elenco = ELENCO.slice(ELENCO.indexOf('<main'), ELENCO.indexOf('</main>'));
 verifica(/<h1[^>]*>Le novità di Dimora<\/h1>/.test(elenco) && PAGINA_NOVITA.titolo === 'Le novità di Dimora', '/novita: il titolo');
@@ -236,10 +227,12 @@ for (const [nome, p] of Object.entries(PIANI)) {
 const risparmioMax = Math.max(...Object.values(PIANI).map((p) => (cent(p.mese) * 12 - cent(p.anno)) / (cent(p.mese) * 12)));
 verifica(testo(HTML).includes(`risparmi fino al ${Math.floor(risparmioMax * 100)}%`), "l'interruttore dice il risparmio massimo, arrotondato per difetto");
 verifica(testo(HTML).includes("30 giorni, 20 letture con l'AI e 1 GB di archivio, senza carta e senza addebiti automatici. Tutte le funzioni, senza limite di immobili."), 'la prova gratuita, parola per parola');
-verifica(testo(HTML).includes('10 letture a 4,90 €, 20 a 7,90 €, 100 a 34,90 €'), 'i pacchetti');
-const DOMANDE = ['Per chi è pensata Dimora?', 'Non basta ChatGPT?', 'Che cosa succede alla fine della prova?', 'Quanto costa dopo la prova?', 'Come funzionano le letture AI?', 'Posso avere più letture?', 'Quali documenti legge?', 'Quanto può essere lungo un documento?', 'I miei documenti sono al sicuro?', 'Serve installare qualcosa?', 'Posso portare via i miei dati?'];
+const faqLetture = (/<details class="domanda"><summary><h3>Come funzionano le letture AI\?<\/h3>[\s\S]*?<\/details>/.exec(HTML) || [''])[0];
+const sezionePrezzi = testo(HTML.slice(HTML.indexOf('id="prezzi"'), HTML.indexOf('id="sicurezza"')));
+verifica(testo(faqLetture).includes('Ti servono più letture? Ci sono i pacchetti aggiuntivi: 10 letture a 4,90 €, 20 a 7,90 €, 100 a 34,90 €. Valgono 12 mesi e si comprano con un piano attivo.') && (testoPagina.match(/pacchetti aggiuntivi/g) || []).length === 1 && !sezionePrezzi.includes('pacchetti'), 'i pacchetti: una volta sola, nella domanda «Come funzionano le letture AI?», fuori dalla sezione dei prezzi');
+const DOMANDE = ['Per chi è pensata Dimora?', 'Non basta ChatGPT?', 'Che cosa succede alla fine della prova?', 'Quanto costa dopo la prova?', 'Come funzionano le letture AI?', 'Quali documenti legge?', 'Quanto può essere lungo un documento?', 'I miei documenti sono al sicuro?', 'Serve installare qualcosa?', 'Posso portare via i miei dati?'];
 const domande = [...HTML.matchAll(/<details class="domanda"><summary><h3>([^<]+)<\/h3>/g)].map((m) => entita(m[1]));
-verifica(JSON.stringify(domande) === JSON.stringify(DOMANDE), 'le undici domande nel loro ordine', domande.join(' | '));
+verifica(JSON.stringify(domande) === JSON.stringify(DOMANDE), 'le dieci domande nel loro ordine', domande.join(' | '));
 verifica(!/<details class="domanda" open/.test(HTML), 'le domande partono chiuse');
 /* Quarto giro (26/10): i testi del comando, parola per parola. */
 const domandeTesto = testo(HTML.slice(HTML.indexOf('id="domande"'), HTML.indexOf('</section>', HTML.indexOf('id="domande"'))));
@@ -249,8 +242,9 @@ verifica(!/FAQPage/.test(HTML), 'le domande non sono nei dati strutturati (nient
 verifica(testo(apertura).includes('Contratti, canoni incassati e mesi che mancano') && !testoPagina.includes('incassi e pagamenti in ritardo'), 'apertura: «Contratti, canoni incassati e mesi che mancano»');
 verifica(/<p class="apertura-motto">Archivia<span class="punto">\.<\/span> Compila<span class="punto">\.<\/span> Ricorda<span class="punto">\.<\/span> Fa i conti<span class="punto">\.<\/span><\/p>/.test(apertura) && CSS.includes('.apertura-motto .punto { color: var(--c-accento); }') && apertura.indexOf('apertura-motto') < apertura.indexOf('data-posizione="apertura"'), 'apertura: il motto prima del pulsante, coi punti in ambra');
 verifica(/<p class="apertura-sicuro"><a href="#sicurezza"><svg[\s\S]*?<\/svg><span>I tuoi documenti in un archivio privato e cifrato\. Non li usiamo per addestrare modelli\.<\/span><\/a><\/p>/.test(apertura) && apertura.indexOf('apertura-sicuro') > apertura.indexOf('apertura-nota'), 'apertura: il lucchetto sotto la nota porta alla sezione');
-const fascicolo = HTML.slice(HTML.indexOf('class="funzioni"'), HTML.indexOf('id="risposte"'));
-verifica(testo(fascicolo).includes('Un fascicolo per ogni casa, che si compila da solo. Non una cartella di file: i documenti diventano dati in ordine. Rendite, canoni, rate, scadenze e spese di ogni casa, sempre aggiornati e collegati al documento da cui vengono.') && (fascicolo.match(/class="funzione"/g) || []).length === 6 && !testoPagina.includes('Tre cose in meno'), 'il fascicolo: titolo, riga e le sei voci');
+const fascicolo = HTML.slice(HTML.indexOf('class="funzioni"'), HTML.indexOf('id="affitti"'));
+const vociFascicolo = [...fascicolo.matchAll(/<h4>([^<]+)<\/h4>/g)].map((m) => m[1]);
+verifica(testo(fascicolo).includes('Un fascicolo per ogni casa, che si compila da solo. Non una cartella di file: i documenti diventano dati in ordine. Rendite, canoni, rate, scadenze e spese di ogni casa, sempre aggiornati e collegati al documento da cui vengono.') && JSON.stringify(vociFascicolo) === JSON.stringify(['Le scadenze te le ricorda Dimora', 'Costi e rendimento, casa per casa', 'Tutto pronto per il commercialista o il CAF']) && !testoPagina.includes('Tre cose in meno'), 'il fascicolo: titolo, riga e le tre voci (scadenze, costi e rendimento, commercialista)', vociFascicolo.join(' | '));
 const risposte = HTML.slice(HTML.indexOf('id="risposte"'), HTML.indexOf('</section>', HTML.indexOf('id="risposte"')));
 const RISPOSTE = [
   ["Quanto mi è costata la casa al mare quest'anno?", 'Apri la scheda della casa: € 3.240 fra condominio, bollette e lavori, ogni spesa con il suo documento.'],
@@ -259,7 +253,7 @@ const RISPOSTE = [
   ["Dov'è il rogito di casa mia?", 'Nei documenti della casa, insieme a visura, mutuo e polizza. Lo apri con un tocco.'],
   ['Quanto mi rende davvero l\'appartamento che affitto?', 'Dal contratto Dimora prepara i canoni di ogni mese. Tu confermi l\'incasso e lei li mette accanto alle spese della casa: vedi quanto ti resta, anno per anno.'],
 ];
-verifica(HTML.indexOf('id="risposte"') > HTML.indexOf('class="funzioni"') && HTML.indexOf('id="risposte"') < HTML.indexOf('id="storia"'), 'le risposte subito dopo il fascicolo');
+verifica(HTML.indexOf('id="risposte"') > HTML.indexOf('id="immobili"') && HTML.indexOf('id="risposte"') < HTML.indexOf('id="storia"'), 'le risposte dopo «Per ogni immobile che hai», prima della storia');
 verifica(testo(risposte).includes("Le risposte, senza cercare nei cassetti. Quello che oggi cerchi fra mail, estratti conto e cartelle, in Dimora lo trovi in un colpo d'occhio."), 'le risposte: titolo e riga');
 verifica(RISPOSTE.every(([d, a]) => risposte.includes(`<dt>${d.replace(/&/g, '&amp;')}</dt><dd>${a.replace(/€ /g, '€&nbsp;')}</dd>`)) && (risposte.match(/<dt>/g) || []).length === 5, 'le risposte: le cinque righe, domanda e risposta (quinto giro)');
 verifica(CSS.includes('.risposta dt { font-family: var(--font-titoli); font-weight: 600; font-style: italic;') && /@media \(min-width: 48rem\) \{ \.risposta \{ grid-template-columns/.test(CSS) && !/<video|data-video/.test(risposte), 'le risposte: domanda in corsivo, a fianco solo dal tablet, nessun video');
@@ -365,24 +359,23 @@ const fuoriVivo = regoleAnimate.filter((r) => !/^\.vivo\b/.test(r) && !/animatio
 verifica(fuoriVivo.length === 0, 'ogni animazione sta dietro «vivo»', fuoriVivo.map((r) => r.slice(0, 60)).join(' | '));
 verifica(CSS.includes('.racconto[data-pronto] .storia-locandina { display: none; }'), 'il racconto nasconde le immagini delle storie solo quando lo script ha preparato la finestra');
 verifica((racconto.match(/class="storia-locandina"/g) || []).length === Object.values(RACCONTI).flat().length && numero.includes('>120<'), 'senza script ogni passo dei racconti ha la sua immagine ferma');
-verifica(CSS.includes('.vivo [data-disegno][data-segue] svg > * { stroke-dasharray: 1; }') && !/stroke-dashoffset:\s*1/.test(CSS), 'senza script (o con «meno animazioni») i disegni sono già tracciati: lo spostamento lo scrive lo script');
+verifica(CSS.includes('.vivo [data-disegno][data-traccia] svg > * { stroke-dasharray: 1; stroke-dashoffset: 1; }') && !/\n\[data-disegno\]|\n\.casa-grande[^{]*\{[^}]*dash/.test(CSS) && !/stroke-dash/.test(HTML), 'senza script (o con «meno animazioni») i disegni sono già tracciati: il tratto si nasconde solo quando lo script li ha presi');
 verifica(!/<video/.test(HTML), 'nella landing nessun video senza lo script (li crea lui, senza indirizzo finché non servono)');
-verifica(JS.includes('if (c === scelto && !fermi)') && JS.includes('c.video.pause()') && JS.includes('return i === attiva && inVista ? 2 : 0;'), 'gira un video solo alla volta: quello della storia sullo schermo col racconto in vista, o della carta più visibile');
+verifica(JS.includes('if (c === scelto && !fermi)') && JS.includes('c.video.pause()') && JS.includes('return i === attiva && inVista && largo.matches ? 2 : 0;') && JS.includes('return !largo.matches && q >= 0.6 ? q : 0;'), 'gira un video solo alla volta: quello della storia sullo schermo (nella finestra da 768 px, sulla sua immagine sotto), o della carta più visibile');
 verifica(["v.setAttribute('muted', '')", "v.setAttribute('playsinline', '')", "v.setAttribute('autoplay', '')", 'v.autoplay = true'].every((x) => JS.includes(x)), 'ogni video muto, in linea e in autoplay insieme');
 verifica(JS.includes('p.catch(function () { pulsante(c); })') && JS.includes("b.className = 'video-avvia'") && JS.includes('if (risparmio && !c.voluto) pulsante(c)') && CSS.includes('.video-avvia {') && /\.schermo-video \{ opacity: 0;/.test(CSS), "se il telefono blocca la partenza resta l'immagine col pulsante ▶, mai un riquadro nero");
 verifica(JS.includes("v.preload = 'none'"), 'i video del racconto non si scaricano prima del loro turno');
 verifica(!/cursor:\s*(none|url)/.test(CSS), 'nessun cursore personalizzato');
-verifica(JS.includes("document.querySelectorAll('[data-disegno]')") && JS.includes('t.el.style.strokeDashoffset = String(1 - x)') && JS.includes('var CORSA = 2.4;') && JS.includes('(p * (ultimo + CORSA) - t.i) / CORSA') && JS.includes('t.porta) t.el.style.fillOpacity') && JS.includes("disegni.forEach(function (f) { leggi('disegni'") && !JS.includes("{ threshold: 0.5 }"), 'i disegni seguono lo scorrimento: si disegnano scendendo e si cancellano risalendo, il tocco ambra per ultimo');
+verifica(JS.includes("document.querySelectorAll('[data-disegno]').forEach(function (d) { d.setAttribute('data-traccia', ''); o.observe(d); });") && !JS.includes('strokeDashoffset') && !JS.includes('var CORSA') && CSS.includes('.vivo [data-disegno][data-traccia][data-visto] svg > * { animation: traccia .42s ease-out both; animation-delay: calc(var(--i, 0) * 62ms); }'), 'i disegni si tracciano una volta sola quando entrano, il tocco ambra per ultimo: niente segue lo scorrimento');
 // L'apertura: il portatile con la tastiera e la sequenza in tre tempi (terzo giro di Vitto, 25/10)
 verifica(/class="portatile"[\s\S]*class="portatile-schermo"[\s\S]*<svg class="portatile-base"[\s\S]*class="tastiera-tasto"[\s\S]*class="tastiera-trackpad"/.test(apertura), 'apertura: il portatile ha lo schermo e, sotto, la base con la tastiera');
-verifica(apertura.includes('data-sequenza') && ['class="fotocamera"', 'class="mirino"', 'class="lampo"', 'class="schermo-campi"', 'class="schermo-prima"', 'class="schermo-dopo"', 'class="riga-nuova"', 'class="foto-carta"'].every((x) => apertura.includes(x)), 'apertura: la bolletta, la fotocamera col lampo, i campi e la scadenza nuova');
-verifica(['fotocamera', 'mirino', 'lampo', 'schermo-campi', 'schermo-dopo', 'riga-nuova'].every((x) => CSS.includes(`.vivo [data-sequenza="gira"] .${x} { animation: seq-`)) && CSS.includes('11s linear 2s infinite') && /\n\.fotocamera \{[^}]*opacity: 0;/.test(CSS) && !/\n\.portatile-schermo \.schermo-dopo \{[^}]*opacity/.test(CSS), "la sequenza si ripete; senza «vivo» resta l'ultimo fotogramma (i campi e la scadenza nuova)");
-verifica(JS.includes("dopo('numero'") && JS.includes('contatore = function (p, inVista)') && JS.includes('if (contatore) contatore(p, r.top < vh)') === false && JS.includes('if (conta) conta(pc, inVista);'), 'il numero dei documenti segue la corsa della casa grande (quinto giro)');
+verifica(apertura.includes('data-sequenza') && ['class="fotocamera"', 'class="mirino"', 'class="lampo"', 'class="schermo-campi"', 'class="campi-vuoti"', 'class="schermo-prima"', 'class="schermo-dopo"', 'class="riga-nuova"', 'class="foto-carta"'].every((x) => apertura.includes(x)), 'apertura: la bolletta, la fotocamera col lampo, i quattro campi che si compilano e la scadenza nuova');
+verifica(['fotocamera', 'mirino', 'lampo', 'campi-vuoti i', 'campi-vuoti b', 'schermo-prima', 'riga-nuova'].every((x) => CSS.includes(`.vivo [data-sequenza="gira"] .${x} { animation: seq-`)) && (CSS.match(/animation: seq-[a-z]+ 8s [a-z-]+ infinite both;/g) || []).length === 7 && /\n\.fotocamera \{[^}]*opacity: 0;/.test(CSS) && /\n\.portatile-schermo \.schermo-prima \{[^}]*opacity: 0;/.test(CSS) && /\n\.campi-vuoti i \{[^}]*transform: scaleX\(0\);/.test(CSS) && !/\n\.portatile-schermo \.schermo-dopo \{/.test(CSS), 'il ciclo dura 8 secondi e si ripete; fermo (senza «vivo») è il quadro completo: i campi compilati e la scadenza nuova');
 
-// 9. Il quinto giro (27/10): le scene che seguono lo scorrimento
+// 9. Il quinto giro (27/10): le scene. Dall'ottavo giro (11/11) solo il fascicolo segue lo scorrimento.
 sezione('9. Il quinto giro');
-const ordine = ['class="apertura"', 'data-cassetto', 'data-casa-scena', 'class="funzioni"', 'id="risposte"', 'id="storia"'].map((x) => HTML.indexOf(x));
-verifica(ordine.every((x, i) => x > 0 && (i === 0 || x > ordine[i - 1])), "l'ordine: apertura, scena A, «Fotografi…» con la casa, il fascicolo, le risposte, la storia", ordine.join(' '));
+const ordine = ['class="apertura"', 'data-cassetto', 'data-casa-scena', 'data-tipi', 'data-passi', 'class="funzioni"', 'id="affitti"'].map((x) => HTML.indexOf(x));
+verifica(ordine.every((x, i) => x > 0 && (i === 0 || x > ordine[i - 1])), "l'ordine: apertura, scena A, «Fotografi…» col numero e la casa, la fila dei nomi, i tre passi, il fascicolo, poi «Se affitti»", ordine.join(' '));
 const scenaA = HTML.slice(HTML.indexOf('data-cassetto'), HTML.indexOf('</section>', HTML.indexOf('data-cassetto')));
 verifica(['Oggi le carte sono ovunque: nella mail, nel cassetto, nei download.', 'Con Dimora ogni documento va nella sua casa.', 'E da ogni documento escono i dati che ti servono: canoni, rendite, scadenze.'].every((t, i) => scenaA.includes(`data-fase="${i + 1}">${t}</p>`)), 'scena A: i tre testi, parola per parola');
 verifica(['Bolletta luce', "Contratto d'affitto", 'Rogito', 'F24', 'Fattura idraulico', 'Foto'].every((t) => scenaA.includes(`<span class="doc-tipo">${t}</span>`)) && (scenaA.match(/data-carta /g) || []).length === 6, 'scena A: le sei carte (bolletta, contratto, rogito, F24, fattura, foto)');
@@ -390,12 +383,12 @@ verifica(['nella mail', 'nel cassetto', 'nei download'].every((t) => scenaA.incl
 verifica(['Bilocale in via Mazzini', 'Casa al mare', 'Box'].every((t) => scenaA.includes(`<span class="cartella-nome">${t}</span>`)), 'scena A: le tre cartelle');
 verifica(['Contratti', 'Catasto e rogito', 'Utenze', 'Condominio'].every((t) => scenaA.includes(`<span class="fa-gruppo-nome">${t}</span>`)), 'scena A: la cartella aperta, per tipo e per anno');
 verifica(scenaA.includes('data-cartellino data-a="contratto">Canone €&nbsp;650</span>') && scenaA.includes('data-cartellino data-a="visura">Rendita catastale</span>') && /cartellino-scadenza" data-cartellino data-a="visura"><i class="cartellino-punto"><\/i>Prossima scadenza 16 dic<\/span>/.test(scenaA), "scena A: i tre cartellini, la scadenza col punto ambra per ultima (sesto giro: ognuno legato alla sua riga)");
-verifica(CSS.includes('.vivo .cassetto { height: 360vh; height: 360svh;') && CSS.includes('.vivo .cassetto-fermo { position: sticky; top: 64px;') && CSS.includes('.carta-doc, .cartella { opacity: 0; }'), 'scena A: ferma per tre schermi e mezzo solo con «vivo»; senza, lo stato finale');
-verifica(JS.includes("vicino('[data-cassetto]', 'cassetto'") && JS.includes('var p = Math.round(limita((64 - r.top - scarto) / (corsa > 0 ? corsa : 1)) * 1000) / 1000;') && JS.includes('return { fn: function () {\n      if (cambiaD && tela)'), 'scena A: lo scorrimento manda avanti la scena, e risalendo torna indietro (solo trasformazioni)');
-verifica(CSS.includes('.vivo .casa-scena { height: calc(200vh - 64px); height: calc(200svh - 64px);') && CSS.includes('.vivo .casa-fermo { position: sticky; top: 64px;') && CSS.includes('stroke-width: 2.3; }') && !/\.disegno-grande \{[^}]*border/.test(CSS), 'scena B: la casa grande senza riquadro, tratto più spesso, ferma per uno schermo con «vivo»');
-verifica(JS.includes("var scena = d.closest('[data-casa-scena]');") && JS.includes('p = limita((64 + vh * 0.25 - r.top) / (corsa + vh * 0.25));'), 'scena B: si disegna con lo scorrimento e si cancella risalendo; il contatore segue la stessa corsa');
-verifica(JS.includes("dopo('sequenza'") && JS.includes("seq.setAttribute('data-sequenza', '')") && JS.includes("seq.setAttribute('data-sequenza', 'gira')") && apertura.includes('data-sequenza="gira"'), "l'apertura riparte dall'inizio quando torna sullo schermo");
-verifica(JS.includes("dopo('risposte'") && JS.includes("document.querySelectorAll('.risposta')") && JS.includes("riga.style.transform = 'translateY(' + ((1 - o) * 28).toFixed(1) + 'px)';"), "le risposte entrano una dopo l'altra con lo scorrimento, e tornano indietro risalendo");
+verifica(CSS.includes('  .vivo .cassetto:not([data-quadri]) { height: 150vh; height: 150svh; padding: 0; }') && CSS.includes('  .vivo .cassetto:not([data-quadri]) .cassetto-fermo { position: sticky; top: 64px;') && !/\n\.vivo \.cassetto[^{]*\{[^}]*(height: \d+s?vh|position: sticky)/.test(CSS) && CSS.includes('.carta-doc, .cartella { opacity: 0; }'), 'scena A: ferma per una schermata e mezza, solo con «vivo» e solo da 768 px; senza, lo stato finale');
+verifica(JS.includes("vicino('[data-cassetto]', 'cassetto'") && JS.includes('var p = Math.round(limita((64 + anticipo - r.top - scarto) / ((corsa > 0 ? corsa : 1) + anticipo - vh * 0.06)) * 1000) / 1000;') && JS.includes('return { fn: function () {\n      if (cambiaD && tela)'), 'scena A: lo scorrimento manda avanti la scena, e risalendo torna indietro (solo trasformazioni)');
+verifica(!/casa-fermo/.test(CSS + HTML) && !/\.casa-scena[^{]*\{[^}]*(height:|position: sticky)/.test(CSS) && CSS.includes('stroke-width: 2.3; }') && !/\.disegno-grande \{[^}]*border/.test(CSS), 'la casa grande: senza riquadro, tratto più spesso, e non si ferma più sullo schermo');
+verifica(JS.includes("parte('sequenza'") && /<div class="dispositivi" data-sequenza>/.test(apertura) && JS.includes("window.addEventListener('load', parti, { once: true });") && JS.includes("var gira = pronta && dentro && !fermi && !document.hidden;") && JS.includes("seq.setAttribute('data-sequenza', gira ? 'gira' : '')"), "il ciclo dell'apertura non è nella pagina: lo accende lo script dopo il caricamento, e lo spegne fuori dallo schermo");
+verifica(/<img class="schermo-prima" data-src="\/assets\/img\/app-computer-prima\.webp"/.test(apertura) && /<img class="schermo-dopo" src="\/assets\/img\/app-computer\.webp"[^>]*fetchpriority="high"/.test(apertura) && JS.includes("prima.setAttribute('src', src);"), 'la schermata «prima» si scarica solo quando parte il ciclo; quella ferma ha la precedenza');
+verifica(JS.includes("dopo('risposte'") && JS.includes("b.setAttribute('aria-expanded', String(aperta));") && JS.includes("b.setAttribute('aria-controls', dd.id);") && JS.includes('metti(i === 0, false);') && JS.includes('var SCRITTURA = 700;') && JS.includes("elenco.setAttribute('data-apri', '');") && !/<dd[^>]*hidden/.test(risposte) && !/<button/.test(risposte), 'le risposte: nella pagina tutte aperte; con lo script la prima aperta, le altre si aprono con un pulsante (clic, tocco, tastiera) e si scrivono in 0,7 secondi');
 verifica(JS.includes('scritture.forEach(function (w) { parte(w[0], w[1]); });'), 'un giro per fotogramma in due tempi: prima le letture, poi le scritture');
 verifica(['contratto-letto', 'carta-contratto', 'canoni-mese'].every((v) => esiste(`assets/video/${v}.mp4`) && esiste(`assets/video/${v}.webp`) && fs.statSync(path.join(RADICE, `assets/video/${v}.mp4`)).size < 1024 * 1024 && HTML.includes(`data-video="/assets/video/${v}.mp4"`)), 'Se affitti: tre minivideo nuovi (sotto 1 MB), con la locandina, che partono dallo script');
 verifica(PASSI['affitto-chiaro'].titolo === 'Il tuo contratto, in una carta sola.' && PASSI['affitto-chiaro'].testo === 'Quando scade, entro quando dare la disdetta, regime fiscale e deposito: tutto nella scheda della casa.', 'Se affitti: la carta del contratto, parola per parola');
@@ -404,7 +397,7 @@ verifica(PASSI.canoni.titolo === 'I canoni, mese per mese.' && PASSI.canoni.test
 // 10. Il sesto giro (27/10): fluidità, la scena del fascicolo, la larghezza, gli esempi coerenti, gli importi, i video
 sezione('10. Il sesto giro');
 verifica(JS.includes('var RITARDO = 0.24;') && JS.includes('lisciato += (y - lisciato) * (1 - Math.exp(-dt / RITARDO));') && JS.includes('Math.abs(y - lisciato) > vh * 1.5') && JS.includes('if (scarto !== 0) chiedi();'), 'le scene seguono lo scorrimento con un ritardo morbido (circa 0,7 secondi), un salto grande non si insegue');
-verifica(['cassetto(vh, scarto)', 'scena(vh, scarto)', 'f(vh, scarto)', 'apertura(lisciato)'].every((x) => JS.includes(x)) && JS.includes('return r(vh);'), 'il ritardo vale per le scene, i disegni, le risposte e l\'apertura; la finestra dei racconti segue la pagina com\'è');
+verifica(JS.includes('cassetto(vh, scarto)') && JS.includes('return r(vh);') && !/apertura\(lisciato\)|scena\(vh, scarto\)|f\(vh, scarto\)/.test(JS) && (JS.match(/leggi\('/g) || []).length === 2, 'lo scorrimento muove una scena sola, il fascicolo (col ritardo morbido); dei racconti sceglie solo la schermata');
 verifica(JS.includes("parte('rotella'") && JS.includes("matchMedia('(hover: hover) and (pointer: fine)')") && JS.includes("{ passive: false }") && JS.includes("Math.abs(dy) < 40 || Math.abs(dy - Math.round(dy)) > 0.01") && JS.includes("['keydown', 'mousedown', 'touchstart'].forEach(function (t) { window.addEventListener(t, lascia, { passive: true }); });") && JS.includes("document.addEventListener('click', lascia, true);") && JS.includes("window.addEventListener('hashchange', lascia);"), 'la rotellina scivola solo al computer con un puntatore preciso; touchpad, telefono, tastiera e ancore restano del browser');
 verifica(!/cdn\.|gsap|lenis/i.test(JS) && !/<script[^>]+src="https?:/.test(HTML.replace(/<script[^>]*_vercel[^>]*>/g, '').replace(`<script type="text/javascript" src="${IUBENDA}" async></script>`, '')), 'nessuno script di terzi: il ritardo e la rotellina sono fatti a mano');
 const cartaIn = (t) => (new RegExp(`data-in="([a-z]+)"><span class="doc-tipo">${t}</span>`).exec(scenaA) || [])[1];
@@ -412,8 +405,8 @@ verifica(cartaIn('Bolletta luce') === 'mare' && cartaIn('Foto') === 'mare' && ca
 verifica(JS.includes('var g = 1 + 0.07 * gonfia[i];') && JS.includes("var rallenta = function (t) { return 1 - Math.pow(1 - t, 3); };") && JS.includes('7 * Math.sin(Math.PI * k)'), 'scena A: la cartella si gonfia quando la carta entra; le carte arrivano rallentando, con una rotazione che si raddrizza');
 verifica(scenaA.includes('data-lega="contratto">Contratto d\'affitto · 2023</span>') && scenaA.includes('data-lega="visura">Visura catastale · 2025</span>') && (scenaA.match(/<path data-linea \/>/g) || []).length === 3 && CSS.includes('@container (min-width: 660px)'), 'scena A: i cartellini a fianco (palco largo) o sotto (palco stretto), ognuno con la linea verso la sua riga');
 verifica(/\.apertura \{ padding: 20px 0 clamp\(24px, 3vw, 40px\); \}/.test(CSS), "niente spazio bianco grande fra l'apertura e la scena del fascicolo");
-verifica(VESTE.includes('--larghezza: 1344px;') && VESTE.includes('--riga-max: 30em;') && CSS.includes('.in-arrivo-elenco li, .articolo-passi li, .articolo-fonti li { max-width: var(--riga-max); }') && CSS.includes('main p, main dd { max-width: var(--riga-max); }'), 'la colonna a 1280 di contenuto; i paragrafi non oltre circa 68 caratteri per riga');
-verifica(CSS.includes('.cassetto-palco { margin-left: 0; margin-right: calc(-1 * ((100vw - min(100vw, var(--larghezza))) / 2 + var(--margine))); }') && CSS.includes('.casa-scena { position: relative; margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%); background: var(--c-fondo-tenue); }'), 'la scena del fascicolo e la casa grande usano tutta la larghezza dello schermo');
+verifica(VESTE.includes('--larghezza: 1344px;') && VESTE.includes('--riga-max: 30em;') && CSS.includes('.articolo-passi li, .articolo-fonti li { max-width: var(--riga-max); }') && CSS.includes('main p, main dd { max-width: var(--riga-max); }'), 'la colonna a 1280 di contenuto; i paragrafi non oltre circa 68 caratteri per riga');
+verifica(CSS.includes('.cassetto-palco { margin-left: 0; margin-right: calc(-1 * ((100vw - min(100vw, var(--larghezza))) / 2 + var(--margine))); }') && CSS.includes('.casa-scena { position: relative; margin-inline: calc(50% - 50vw); padding: 0 calc(50vw - 50%);'), 'la scena del fascicolo e la casa grande usano tutta la larghezza dello schermo');
 const corpoIndex = HTML.slice(HTML.indexOf('<body'));
 const pagine = [corpoIndex, ...Object.values(ARTICOLI).map((h) => h.slice(h.indexOf('<body')))];
 verifica(pagine.every((h) => !/€ \d/.test(h) && !/\d euro\b/.test(h)), 'gli importi non vanno a capo: fra «€» e la cifra (e fra la cifra ed «euro») uno spazio che non va a capo');
@@ -425,7 +418,7 @@ verifica(esiste('strumenti/video/gira-novita.mjs') && leggi('strumenti/video/gir
 // 11. Il settimo giro (28/10): «meno animazioni» col racconto, il portatile grigio, i contatori, via Mazzini, l'avvio pigro
 sezione('11. Il settimo giro');
 verifica(JS.includes("parte('quadri'") && JS.includes('var quadri = [0, 0.45, 1].map(') && JS.includes("sezione.setAttribute('data-quadri', '');") && CSS.includes('.cassetto[data-quadri] [data-quadro="2"] .cartella {') && CSS.includes('.cassetto[data-quadri] .cassetto-quadro + .cassetto-quadro {'), '«meno animazioni»: la scena del fascicolo in tre quadri fermi, ognuno col suo testo');
-verifica(!/\[data-quadri\][^{]*\{[^}]*(position: sticky|animation|transition)/.test(CSS), '«meno animazioni»: nei quadri niente si ferma e niente si muove');
+verifica(!/\[data-quadri\](?!\))[^{]*\{[^}]*(position: sticky|animation|transition)/.test(CSS), '«meno animazioni»: nei quadri niente si ferma e niente si muove');
 verifica(VESTE.includes('--c-alluminio: #C9CBCF;') && VESTE.includes('--c-alluminio-ombra: #A7AAB0;') && CSS.includes('.tastiera-piano { fill: var(--c-alluminio);') && CSS.includes('.tastiera-tasto { fill: var(--c-alluminio-tasto);') && CSS.includes('border: 7px solid var(--c-cornice-schermo);') && !/\.tastiera-[a-z]+ \{[^}]*var\(--c-(riga|fondo-tenue)\)/.test(CSS), 'il portatile è grigio alluminio, col bordo dello schermo scuro');
 const contaCartella = (k) => (scenaA.match(new RegExp(`data-in="${k}"`, 'g')) || []).length;
 const scrittoIn = (k) => (new RegExp(`data-cartella="${k}"[^]*?<span class="cartella-conta" data-documenti>([^<]+)</span>`).exec(scenaA) || [])[1];
@@ -482,10 +475,80 @@ verifica(typeof provaConsenso('dimorapp.com', '', []).ascolti.click === 'functio
 
 // 13. I piani (11/11): blocchi allineati fra i tre riquadri, le frasi sotto in un blocco solo
 sezione('13. I piani');
-verifica(CSS.includes(".piano { display: grid; grid-row: span 6; grid-template-rows: subgrid; gap: 12px; align-content: start; }") && CSS.includes("[data-periodo='mese'] .piano { grid-row: span 4; }") && (HTML.match(/<article class="piano"/g) || []).length === 3, "i blocchi dei tre piani stanno sulle stesse righe (subgrid), con l'annuale e col mensile");
+verifica(CSS.includes(".piano { display: grid; grid-row: span 6; grid-template-rows: subgrid; gap: 12px; align-content: start; }") && CSS.includes("[data-periodo='mese'] .piano { grid-row: span 4; }") && (HTML.match(/<article class="piano[ "]/g) || []).length === 3, "i blocchi dei tre piani stanno sulle stesse righe (subgrid), con l'annuale e col mensile");
 verifica(CSS.includes('.funzione { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; align-content: start; }'), 'anche nelle funzioni del fascicolo icona, titolo e frase stanno sulle stesse righe');
-verifica(HTML.includes('<div class="piani-note">\n      <p>Una lettura AI copre fino a 10 pagine. Ti servono più letture? Ci sono i pacchetti aggiuntivi.</p>\n      <p>Nessun addebito automatico: alla fine della prova scegli tu se abbonarti.</p>\n    </div>') && CSS.includes('justify-items: center; text-align: center; font-size: var(--text-minimo); color: var(--c-etichetta);'), 'sotto i piani le due frasi nuove, centrate, piccole e tenui');
+verifica(HTML.includes('<div class="piani-note">\n      <p>Nessun addebito automatico: alla fine della prova scegli tu se abbonarti.</p>\n    </div>') && CSS.includes('justify-items: center; text-align: center; font-size: var(--text-minimo);'), 'sotto i piani la frase sugli addebiti, centrata e piccola');
 verifica(Object.values(PAGINE).every((h) => !/possono ancora cambiare/.test(h)), 'nessuna pagina dice più che piani e prezzi possono ancora cambiare');
+
+// 14. L'ottavo giro (11/11): ritmo e animazioni. Un'animazione parte quando la sezione entra, dura meno di un secondo,
+// poi resta ferma; legata allo scorrimento resta una scena sola, il fascicolo, da 768 px.
+sezione("14. L'ottavo giro");
+verifica(!/data-parole/.test(HTML + JS + CSS) && !/\.parola\b/.test(CSS) && !JS.includes("className = 'parola'") && (HTML.match(/ data-entra>/g) || []).length >= 9, 'nessun titolo compare parola per parola: entrano interi (data-entra)');
+verifica(CSS.includes('.vivo [data-attesa] { opacity: 0; translate: 0 14px; }') && CSS.includes('.vivo [data-attesa][data-visto] { opacity: 1; translate: none; transition: opacity .45s ease, translate .55s cubic-bezier(.2, .7, .2, 1); transition-delay: calc(var(--k, 0) * 70ms); }') && !/data-attesa/.test(HTML) && JS.includes("if (v.isIntersecting || (r.height > 0 && r.top < vh)) return;") && JS.includes('entra(el, Math.min(k, 4));'), "le entrate: aspetta solo quello che sta sotto lo schermo (lo decide lo script, mai la pagina), entra una volta in meno di un secondo");
+// Le durate, lette dal foglio di stile: nessuna animazione d'entrata arriva a un secondo (ritardo più durata).
+const secondi = (s) => (s.endsWith('ms') ? parseFloat(s) / 1000 : parseFloat(s));
+const entrataCasa = 7.6 * 0.062 + 0.42, portaCasa = 7.6 * 0.062 + 0.2 + 0.3;
+const iMax = Math.max(...[...HTML.matchAll(/--i:([\d.]+)/g)].map((m) => +m[1]));
+verifica(iMax === 7.6 && entrataCasa < 1 && portaCasa < 1 && CSS.includes('animation-delay: calc(var(--i, 0) * 62ms), calc(var(--i, 0) * 62ms + .2s);'), `i disegni si tracciano in meno di un secondo (il più lungo: ${Math.max(entrataCasa, portaCasa).toFixed(2)} s)`);
+const scenaFoglio = [...cssSenzaCommenti.matchAll(/\.vivo \.scena\[data-gioca\]\[data-visto\][^{]*\{ animation(?:-delay)?: ([^;]+);/g)].map((m) => m[1]);
+verifica(scenaFoglio.length === 5 && CSS.includes('.vivo .scena[data-gioca][data-visto] .scadenza:nth-of-type(4) { animation-delay: .7s; }') && CSS.includes('animation: scadenza-esce .3s ease .5s both;') && 0.7 + 0.3 <= 1 && CSS.includes('.vivo [data-passi][data-visto] .passo:nth-child(3) .passo-num { animation-delay: .6s; }') && !/--foglio|--r1|--casa/.test(CSS + JS) && JS.includes("el.setAttribute('data-gioca', '');"), 'il foglio nella casa e i tre passi: una volta sola quando la scena entra, un secondo in tutto, niente segue lo scorrimento');
+const entrataApertura = [...cssSenzaCommenti.matchAll(/\n\.vivo \.(?:titolo-apertura|portatile-schermo|telefono|foto-carta img|dimorino-apertura)[^{]*\{[^}]*animation: [a-z-]+ ([\d.]+m?s) [^;]*?(?:\) |ease )([\d.]+m?s)?/g)].map((m) => secondi(m[1]) + (m[2] ? secondi(m[2]) : 0));
+verifica(entrataApertura.length >= 4 && entrataApertura.every((s) => s < 1) && !/@keyframes sale/.test(CSS) && !/\.titolo-apertura \.riga > span/.test(CSS), `l'apertura entra intera (il titolo non sale riga per riga) e in meno di un secondo (${entrataApertura.map((s) => s.toFixed(2)).join(', ')})`);
+verifica(!/--p-apertura/.test(CSS) && !/var apertura = null/.test(JS), "l'apertura non si muove più con lo scorrimento");
+// Il fascicolo: una schermata e mezza, i tre testi sempre pieni.
+verifica(CSS.includes('.vivo .cassetto[data-segue] .cassetto-testo { grid-area: 1 / 1; align-self: center; visibility: hidden; }') && CSS.includes('.vivo .cassetto[data-segue] .cassetto-testo[data-attivo] { visibility: visible; animation: stacco .22s cubic-bezier(.2, .7, .2, 1); }') && CSS.includes('@keyframes stacco { from { translate: 0 10px; } }') && !/testi\[j\]\.style\.opacity/.test(JS) && JS.includes("var f = p < 0.12 ? 0 : p < 0.58 ? 1 : 2;"), 'fascicolo: i tre testi sempre a opacità piena, uno alla volta, con uno stacco');
+verifica(JS.includes("var largo = window.matchMedia('(min-width: 48rem)');") && JS.includes('if (!largo.matches) { faiQuadri(); return; }') && CSS.includes('@media (max-width: 47.99rem) { .cassetto-palco { height: 600px; } }') && JS.includes("Array.prototype.forEach.call(sezione.querySelectorAll('.cassetto-quadro'), function (q) { entra(q); });"), 'sotto i 768 px nessuna scena legata allo scorrimento: i tre quadri fermi, con entrate semplici');
+const stickyStretti = [...cssSenzaCommenti.matchAll(/position: sticky/g)].length;
+verifica(stickyStretti === 4 && /@media \(min-width: 48rem\) \{\n  \.racconto\[data-pronto\] \.storia-locandina \{ display: none; \}/.test(CSS) && !/\n\.racconto\[data-pronto\]/.test(cssSenzaCommenti) && !/--entrata/.test(CSS + JS), 'sotto i 768 px niente resta fermo sullo schermo, tranne la testata: la finestra dei racconti c\'è solo da 768 px, e non entra più seguendo lo scorrimento', String(stickyStretti));
+// La fila dei nomi
+const fila = HTML.slice(HTML.indexOf('<!--TIPI-->'), HTML.indexOf('<!--/TIPI-->'));
+const nomiFila = [...fila.matchAll(/<li>([^<]+)<\/li>/g)].map((m) => entita(m[1]));
+verifica(JSON.stringify(nomiFila) === JSON.stringify(TIPI_IN_FILA) && TIPI_IN_FILA.length >= 20 && new Set(TIPI_IN_FILA).size === TIPI_IN_FILA.length && HTML.indexOf('<!--TIPI-->') > HTML.indexOf('data-numero') && fila.includes('aria-label="Alcuni dei documenti che Dimora riconosce"'), `la fila dei nomi sotto il numero: ${TIPI_IN_FILA.length} nomi, quelli di strumenti/storie.mjs (dal catalogo dell'app)`);
+verifica(CSS.includes('.vivo .tipi[data-gira] .tipi-fila { animation: scorre var(--durata, 120s) linear infinite; }') && CSS.includes('.vivo .tipi[data-gira]:hover .tipi-fila, .vivo .tipi[data-gira]:focus-within .tipi-fila, .vivo .tipi[data-gira][data-pausa] .tipi-fila { animation-play-state: paused; }') && /\n\.tipi-fila \{[^}]*flex-wrap: wrap;/.test(CSS) && JS.includes("c.setAttribute('aria-hidden', 'true');") && JS.includes('var VELOCITA_FILA = 36;'), 'la fila scorre piano e senza stacco, si ferma al passaggio del mouse; senza «vivo» è ferma e va a capo');
+// I testi spostati o tolti (punti 9, 11, 12)
+verifica(testo(apertura).includes('30 giorni gratis, senza carta.') && !testo(apertura).includes('20 letture') && !testo(apertura).includes('120'), "sotto il pulsante dell'apertura: «30 giorni gratis, senza carta.»; i 120 tipi fuori dalle spunte");
+const quante = (t) => testoPagina.split(t).length - 1;
+verifica(quante('Più di 120 tipi') === 2 && testo(numero).includes('Più di 120 tipi') && testo(HTML.slice(HTML.indexOf('id="domande"'))).includes('Più di 120 tipi di documenti della casa: bollette'), 'i 120 tipi si dicono due volte: nella sezione del numero e nella domanda «Quali documenti legge?»', String(quante('Più di 120 tipi')));
+verifica(quante('aliquote ufficiali del tuo Comune') === 0 && testo(fascicolo).includes('IMU, condominio, polizze, rinnovi: le tiene in ordine') && testo(fascicolo).includes("Spese e documenti dell'anno, pronti da consegnare.") && quante('riepilogo in CSV e PDF, originali in un file ZIP') === 1, "nelle funzioni l'IMU resta una parola dell'elenco e il commercialista una riga; il pacchetto per esteso solo in «Se affitti»");
+verifica(/<article class="piano piano-evidenza" data-piano="Dimora">\n        <h4 class="piano-nome">Dimora <span class="piano-inizio">Per iniziare<\/span><\/h4>/.test(HTML) && (HTML.match(/piano-evidenza/g) || []).length === 1 && CSS.includes('.piano-evidenza { border: 2px solid var(--c-principale); padding: 23px; }') && (HTML.match(/<span class="piano-lettura">un documento fino a 10 pagine è una lettura<\/span>/g) || []).length === 3, 'i prezzi: «Dimora» in evidenza (bordo verde, «Per iniziare»); in ogni piano «un documento fino a 10 pagine è una lettura»');
+// «Chi la usa»
+const chi = HTML.slice(HTML.indexOf('<!--CHI-LA-USA-->') + 17, HTML.indexOf('<!--/CHI-LA-USA-->'));
+verifica(HTML.indexOf('<!--CHI-LA-USA-->') > HTML.indexOf('id="storia"') && HTML.indexOf('<!--/CHI-LA-USA-->') < HTML.indexOf('class="telefono-sezione"') && Array.isArray(CHI_LA_USA.voci), '«Chi la usa» sta fra la storia del quaderno e i prezzi');
+if (CHI_LA_USA.voci.length === 0) verifica(chi.trim() === '' && !HTML.includes('id="chi-la-usa"') && !HTML.includes('voce-chi'), '«Chi la usa»: il file di dati è vuoto, nella pagina non c\'è niente e non resta spazio');
+else verifica(CHI_LA_USA.voci.every((x) => x.frase && x.nome && testo(chi).includes(sp(x.frase)) && testo(chi).includes(sp(x.nome))) && (chi.match(/class="voce-chi"/g) || []).length === CHI_LA_USA.voci.length, '«Chi la usa»: le frasi del file di dati, parola per parola, e nessun\'altra');
+verifica(!/finta|finto/i.test(Object.values(PAGINE).join('')) && JS.includes("if (!new URLSearchParams(location.search).has('prova') || host === 'dimorapp.com' || host === 'www.dimorapp.com') return;") && JS.includes('Prova di impaginazione: le frasi qui sotto sono finte.') && (JS.match(/Frase finta numero/g) || []).length === 3 && JS.includes('Nome finto') && ['voce-chi', 'voce-chi-nome', 'voce-chi-chi', 'voci-chi'].every((c) => JS.includes(`class="${c}"`) && CSS.includes(`.${c}`)), 'nessuna frase inventata nelle pagine: le frasi finte, dichiarate tali, le mostra solo lo script con ?prova=1, e mai su dimorapp.com');
+
+// 15. I colori e gli stacchi (aggiunta del 12/11): due sezioni verdi, i due toni di panna alternati, i contrasti, l'ambra.
+sezione('15. Colori e stacchi');
+const colore = (nome) => (new RegExp(`${nome}:\\s*(#[0-9A-Fa-f]{6})`).exec(VESTE) || [])[1];
+const luce = (h) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+const contrasto = (a, b) => { const x = luce(colore(a)), y = luce(colore(b)); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+verifica(CSS.includes('.sicurezza, .finale {\n  background: var(--c-principale); color: var(--c-fondo);\n  --c-testo: var(--c-fondo); --c-secondario: var(--c-fondo); --c-etichetta: var(--c-fondo);\n}') && CSS.includes(':is(.sicurezza, .finale) :focus-visible { outline-color: var(--c-fondo); }') && CSS.includes('.sicura-icona { color: var(--c-fondo); }') && CSS.includes('.sicurezza-nota a { color: var(--c-fondo);') && !/\.finale-riquadro \{[^}]*background/.test(CSS) && /<a class="btn btn-chiaro btn-grande"[^>]*data-posizione="chiusura"/.test(HTML) && CSS.includes('.btn-chiaro { background: var(--c-scheda); color: var(--c-principale);'), 'la sicurezza e la chiusura hanno il fondo verde del marchio, testi, icone e collegamenti nel panna della pagina; il pulsante della chiusura è chiaro col testo verde');
+verifica(contrasto('--c-fondo', '--c-principale') >= 4.5 && contrasto('--c-principale', '--c-scheda') >= 4.5, `sul verde il panna si legge (${contrasto('--c-fondo', '--c-principale').toFixed(2)} a 1), e il verde sul pulsante chiaro pure (${contrasto('--c-principale', '--c-scheda').toFixed(2)} a 1)`);
+// I due toni: l'ordine delle sezioni chiare, e due vicine mai uguali.
+const TENUI = ['cassetto', 'affitti', 'risposte', 'chi-la-usa', 'telefono-sezione', 'prezzi', 'piede'];
+verifica(CSS.includes(`.${TENUI.join(', .')} { background: var(--c-fondo-tenue); --c-contro: var(--c-fondo); }`) && CSS.includes('.chi-la-usa ~ .telefono-sezione, .chi-la-usa ~ .prezzi { background: var(--c-fondo); --c-contro: var(--c-fondo-tenue); }') && CSS.includes('body { --c-contro: var(--c-fondo-tenue); }'), 'i due toni di panna, dichiarati in un posto solo');
+const sezioni = [...HTML.matchAll(/<(?:section|footer) class="([^"]+)"/g)].map((m) => m[1].split(' '));
+const haChi = sezioni.some((c) => c.includes('chi-la-usa'));
+const tono = (c) => (c.includes('sicurezza') || c.includes('finale') ? 'verde' : c.some((x) => TENUI.includes(x)) ? (haChi && (c.includes('telefono-sezione') || c.includes('prezzi')) ? 'fondo' : 'tenue') : 'fondo');
+const toni = sezioni.map(tono);
+// Telefono e prezzi sono un blocco solo (il riquadro del telefono apre i prezzi): hanno lo stesso tono di proposito.
+const vicineUguali = toni.map((t, i) => (i > 0 && t === toni[i - 1] && !(sezioni[i].includes('prezzi') && sezioni[i - 1].includes('telefono-sezione')) ? sezioni[i].join('.') : null)).filter(Boolean);
+verifica(sezioni.length >= 12 && vicineUguali.length === 0, `due sezioni vicine non hanno mai lo stesso fondo (${toni.join(', ')})`, vicineUguali.join(' '));
+verifica(!/\n\.(lettera|sicurezza|casa-scena) \{[^}]*background: var\(--c-fondo-tenue\)/.test(CSS) && CSS.includes('background: var(--c-contro); overflow: hidden; }') && /\.interruttore \{[^}]*background: var\(--c-contro\);/.test(CSS), 'i riquadri neutri sul fondo usano il tono opposto a quello della loro sezione');
+const CARTE = ['funzione', 'piano', 'domanda', 'riquadro-telefono', 'commercialista', 'voce-chi'];
+verifica(VESTE.includes('--ombra-carta: 0 1px 2px rgb(74 52 16 / 0.10), 0 8px 18px -10px rgb(74 52 16 / 0.22);') && CARTE.every((c) => new RegExp(`\\.${c} \\{[^}]*background: var\\(--c-scheda\\);[^}]*border: 1px solid var\\(--c-riga\\);[^}]*box-shadow: var\\(--ombra-carta\\);`).test(CSS)), 'le carte hanno il fondo della scheda, il bordo e un\'ombra che si vede sui due toni', CARTE.filter((c) => !new RegExp(`\\.${c} \\{[^}]*box-shadow: var\\(--ombra-carta\\);`).test(CSS)).join(' '));
+// I contrasti: ogni colore di testo sui fondi dove sta, coi valori della veste.
+const PAIA = [['--c-testo', '--c-fondo'], ['--c-testo', '--c-fondo-tenue'], ['--c-testo', '--c-scheda'], ['--c-secondario', '--c-fondo'], ['--c-secondario', '--c-fondo-tenue'], ['--c-secondario', '--c-scheda'], ['--c-secondario', '--c-esito-fondo'], ['--c-etichetta', '--c-fondo'], ['--c-etichetta', '--c-fondo-tenue'], ['--c-etichetta', '--c-scheda'], ['--c-principale', '--c-fondo'], ['--c-principale', '--c-fondo-tenue'], ['--c-principale', '--c-scheda'], ['--c-stato-testo', '--c-stato-fondo'], ['--c-su-scuro', '--c-principale'], ['--c-fondo', '--c-principale']];
+const bassi = PAIA.map(([a, b]) => [a, b, contrasto(a, b)]).filter((x) => !(x[2] >= 4.5));
+verifica(bassi.length === 0, 'ogni colore di testo arriva almeno a 4,5 a 1 sui fondi dove sta', bassi.map((x) => `${x[0]} su ${x[1]}: ${x[2].toFixed(2)}`).join(' | '));
+const piccoliChiari = [...cssSenzaCommenti.matchAll(/\n([^{}\n]+)\{[^}]*font-size: var\(--text-(?:minimo|piccolo)\)[^}]*color: var\(--c-etichetta\)|\n([^{}\n]+)\{[^}]*color: var\(--c-etichetta\)[^}]*font-size: var\(--text-(?:minimo|piccolo)\)/g)].map((m) => (m[1] || m[2]).trim());
+verifica(piccoliChiari.length === 0, 'i testi piccoli non usano il colore più chiaro: sono scuriti verso il testo principale', piccoliChiari.join(' | '));
+// L'ambra: un compito solo.
+const ambra = [...cssSenzaCommenti.matchAll(/\n([^{}\n]+)\{[^}]*var\(--c-accento\)/g)].map((m) => m[1].trim());
+verifica(JSON.stringify(ambra) === JSON.stringify(['.apertura-motto .punto', '.riga-nuova', '.campi-vuoti b', '.cartellino', '.cartellino-punto']), "l'ambra segna solo la cosa da guardare: i punti del motto, la scadenza nuova, i campi che si compilano, i cartellini", ambra.join(' | '));
+verifica(!/--c-avviso-(fondo|testo)/.test(cssSenzaCommenti) && CSS.includes('.bollino { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--c-principale);') && CSS.includes('border-left: 3px solid var(--c-principale);'), "dove l'ambra era decorazione ora c'è il verde: il bollino della fotocamera, la riga del dato, le etichette dei piani");
+verifica(Object.values(PAGINE).every((h) => [...h.matchAll(/fill="#CE7F33"/g)].length >= 2 && !/stroke="#CE7F33"/.test(h)) && (HTML.match(/class="porta"[^>]*fill="#CE7F33"/g) || []).length === 3, "nell'HTML l'ambra è solo la porta: quella delle case a linea e quella del marchio");
 
 console.log(`\n${passati} controlli passati, ${falliti} falliti.`);
 process.exit(falliti ? 1 : 0);

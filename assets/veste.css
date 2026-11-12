@@ -100,6 +100,9 @@
   /* L'ombra della finestra del racconto e dei pannelli che galleggiano: lo stesso colore dell'ombra della scheda,
      più ampia e più morbida. */
   --ombra-finestra: 0 28px 56px -28px rgb(74 52 16 / 0.32), 0 1px 2px rgb(74 52 16 / 0.06);
+  /* L'ombra delle carte della landing (ottavo giro, 12/11): lo stesso colore dell'ombra della scheda, un poco più
+     decisa, perché una carta si stacchi su tutti e due i toni di panna (--c-fondo e --c-fondo-tenue). */
+  --ombra-carta: 0 1px 2px rgb(74 52 16 / 0.10), 0 8px 18px -10px rgb(74 52 16 / 0.22);
 }
 
 @media (min-width: 64rem) {

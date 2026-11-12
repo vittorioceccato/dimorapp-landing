@@ -91,6 +91,10 @@
     try { fn(); } catch (e) { if (window.console) console.warn('[landing] ' + nome, e); }
   }
   function limita(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+  var IO = 'IntersectionObserver' in window;
+  // Da 768 px in su: la scena del fascicolo segue lo scorrimento e la finestra dei racconti resta ferma. Sotto, niente
+  // si ferma sullo schermo (ottavo giro, 11/11).
+  var largo = window.matchMedia('(min-width: 48rem)');
   // Quello che serve più in basso si prepara quando il browser è libero: la prima schermata si disegna prima.
   // Settimo giro (28/10): la coda non parte all'apertura della pagina. Parte al primo gesto (scorrimento, tocco, tasto,
   // clic) e le scene solo quando la loro sezione si avvicina allo schermo (vicino): prima di allora lo script non fa
@@ -213,103 +217,80 @@
     scegli('anno');
   });
 
-  /* ---------- Le parole dei titoli, una alla volta, quando il titolo entra nello schermo ---------- */
-  dopo('parole', function () {
-    if (!vivo || !('IntersectionObserver' in window)) return;
-    var titoli = document.querySelectorAll('[data-parole]');
-    var osserva = new IntersectionObserver(function (voci) {
+  /* ---------- Le entrate: un blocco entra intero quando arriva sullo schermo, una volta sola (ottavo giro, 11/11) ----------
+     Niente segue più lo scorrimento (resta solo la scena del fascicolo): i titoli e i blocchi qui sotto aspettano sotto
+     lo schermo ed entrano con una dissolvenza breve. Quello che è già sullo schermo, o sopra, non si tocca: in nessun
+     momento un testo che si sta leggendo sbiadisce. Dove sta ogni blocco lo dice il browser (un osservatore, una volta):
+     nessuna misura letta dallo script, che costringerebbe a impaginare le sezioni ancora lontane. Finita l'entrata i
+     segni si tolgono. I blocchi dello stesso gruppo entrano uno dopo l'altro (--k). */
+  var ENTRA = '[data-entra], .sezione-sotto, .passi > .passo, .lettera-foto, .lettera-testo, .prova, .piano, .sicura, .riquadro-telefono, .finale-riquadro, .commercialista, .voce-chi, .cassetto-quadro, .racconto .finestra';
+  var entrate = null, classifica = null;
+  function entra(el, k) {
+    if (!classifica || el.hasAttribute('data-attesa')) return;
+    if (k) el.style.setProperty('--k', String(k));
+    classifica.observe(el);
+  }
+  dopo('entrate', function () {
+    if (!vivo || !IO) return;
+    entrate = new IntersectionObserver(function (voci) {
       voci.forEach(function (v) {
-        if (v.isIntersecting) { v.target.setAttribute('data-visto', ''); osserva.unobserve(v.target); }
+        if (!v.isIntersecting) return;
+        var el = v.target;
+        entrate.unobserve(el);
+        el.setAttribute('data-visto', '');
+        setTimeout(function () { el.removeAttribute('data-attesa'); el.removeAttribute('data-visto'); el.style.removeProperty('--k'); }, 1100);
       });
-    }, { rootMargin: '0px 0px -12% 0px' });
-    titoli.forEach(function (t) {
-      var parole = t.textContent.trim().split(/\s+/);
-      t.setAttribute('aria-label', t.textContent.trim());
-      t.textContent = '';
-      parole.forEach(function (p, i) {
-        var s = document.createElement('span');
-        s.className = 'parola';
-        s.setAttribute('aria-hidden', 'true');
-        s.style.setProperty('--k', String(i));
-        s.textContent = p;
-        t.appendChild(s);
-        if (i < parole.length - 1) t.appendChild(document.createTextNode(' '));
+    });
+    classifica = new IntersectionObserver(function (voci) {
+      var vh = window.innerHeight;
+      voci.forEach(function (v) {
+        classifica.unobserve(v.target);
+        var r = v.boundingClientRect;
+        // Sullo schermo, o sopra: resta com'è. Sotto (o in una sezione che il browser non ha ancora impaginato): aspetta.
+        if (v.isIntersecting || (r.height > 0 && r.top < vh)) return;
+        v.target.setAttribute('data-attesa', '');
+        entrate.observe(v.target);
       });
-      osserva.observe(t);
+    });
+    var turni = typeof Map === 'function' ? new Map() : null;
+    document.querySelectorAll(ENTRA).forEach(function (el) {
+      var k = 0;
+      if (turni) { k = turni.get(el.parentNode) || 0; turni.set(el.parentNode, k + 1); }
+      entra(el, Math.min(k, 4));
     });
   });
 
-  /* ---------- Il numero dei documenti: segue la corsa della casa grande (scena B) ----------
-     Senza script (e con «meno animazioni») il numero è già al suo valore. Chi usa un lettore di schermo sente il
-     valore finale, non il conto; lo spazio della cifra resta quello del valore finale. Finché la scena non è sullo
-     schermo la cifra resta «120»: chi legge il testo della pagina senza scorrere non trova mai «Più di 0». */
-  var contatore = null;
-  dopo('numero', function () {
-    if (!vivo) return;
-    var el = document.querySelector('[data-conta]');
-    if (!el) return;
-    var fine = +el.getAttribute('data-conta');
-    var tutto = el.closest('[data-numero]') || el;
-    var fermo = document.createElement('span');
-    fermo.className = 'nascosto';
-    fermo.textContent = tutto.textContent.replace(/\s+/g, ' ').trim();
-    tutto.insertBefore(fermo, tutto.firstChild);
-    Array.prototype.forEach.call(tutto.children, function (c) { if (c !== fermo) c.setAttribute('aria-hidden', 'true'); });
-    el.style.minWidth = el.getBoundingClientRect().width + 'px';
-    var scritto = String(fine);
-    contatore = function (p, inVista) {
-      var t = inVista ? String(Math.round(fine * p)) : String(fine);
-      if (t !== scritto) { el.textContent = t; scritto = t; }
-    };
-  });
-
-  /* ---------- I disegni delle sezioni: il tratto segue lo scorrimento ----------
-     Scendendo si disegnano, risalendo si cancellano (terzo giro di Vitto, 25/10). L'avanzamento viene dalla posizione
-     del disegno nello schermo: 0 quando entra dal basso, 1 quando il suo centro arriva a metà schermo. Ogni tratto ha il
-     suo turno (--i nello stile), il tocco ambra è l'ultimo. Lo script prende il disegno solo quando l'ha preparato
-     (data-segue): senza, è già tutto disegnato. */
-  var disegni = [];
-  var CORSA = 2.4;
+  /* ---------- I disegni delle sezioni: si tracciano una volta sola, quando entrano (ottavo giro, 11/11) ----------
+     Lo script li prepara (data-traccia: il tratto è nascosto) e, quando un terzo del disegno è sullo schermo, li fa
+     partire (data-visto): ogni tratto al suo turno (--i nello stile), il tocco ambra per ultimo, in meno di un secondo.
+     Poi restano disegnati. Senza script, o prima che li prenda, sono già tutti disegnati. */
   dopo('disegni', function () {
-    if (!vivo) return;
-    document.querySelectorAll('[data-disegno]').forEach(function (d) {
-      var tratti = Array.prototype.slice.call(d.querySelectorAll('svg > *')).map(function (el) {
-        var m = /--i:\s*([\d.]+)/.exec(el.getAttribute('style') || '');
-        return { el: el, i: m ? +m[1] : 0, porta: el.classList.contains('porta') };
-      });
-      var ultimo = tratti.reduce(function (x, t) { return Math.max(x, t.i); }, 0);
-      var prima = -1;
-      var scena = d.closest('[data-casa-scena]');
-      d.setAttribute('data-segue', '');
-      disegni.push(function (vh, scarto) {
-        var b = (scena || d).getBoundingClientRect();
-        if (b.bottom < -vh || b.top > vh * 2) return;
-        var r = { top: b.top + scarto, height: b.height };
-        var p;
-        if (scena) {
-          // La scena B: 0 un quarto di schermo prima che la scena si fermi, 1 alla fine della corsa da ferma.
-          var corsa = r.height - scena.firstElementChild.offsetHeight;
-          p = limita((64 + vh * 0.25 - r.top) / (corsa + vh * 0.25));
-          var conta = contatore, inVista = r.top < vh, pc = p;
-        } else {
-          // 0 quando il bordo alto è ancora a un ventesimo dal fondo dello schermo, 1 quando il centro arriva a metà.
-          p = limita((vh * 0.95 - r.top) / (vh * 0.45 + r.height * 0.5));
-        }
-        p = Math.round(p * 1000) / 1000;
-        if (p === prima) return;
-        prima = p;
-        return function () {
-        if (conta) conta(pc, inVista);
-        tratti.forEach(function (t) {
-          // Ogni tratto cresce lungo CORSA turni della corsa (quarto giro, 26/10: il tratto si vede
-          // crescere e calare); l'ultimo, il tocco ambra, si chiude solo a p = 1.
-          var x = limita((p * (ultimo + CORSA) - t.i) / CORSA);
-          t.el.style.strokeDashoffset = String(1 - x);
-          if (t.porta) t.el.style.fillOpacity = String(limita(x * 2 - 1));
-        });
-        };
-      });
+    if (!vivo || !IO) return;
+    var o = new IntersectionObserver(function (voci) {
+      voci.forEach(function (v) { if (v.isIntersecting) { o.unobserve(v.target); v.target.setAttribute('data-visto', ''); } });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('[data-disegno]').forEach(function (d) { d.setAttribute('data-traccia', ''); o.observe(d); });
+  });
+
+  /* ---------- La fila dei nomi dei documenti: scorre piano e senza stacco (ottavo giro, 11/11) ----------
+     Il numero è fermo a 120. Sotto, i nomi veri: lo script raddoppia l'elenco (la copia è nascosta ai lettori di schermo)
+     e l'animazione, nel foglio di stile, lo sposta di metà: quando la copia arriva al posto dell'originale si ricomincia,
+     e non si vede. La velocità è la stessa a ogni larghezza (36 px al secondo). Si ferma al passaggio del mouse e col
+     fuoco dentro (foglio di stile), e fuori dallo schermo. */
+  var VELOCITA_FILA = 36;
+  dopo('tipi', function () {
+    var box = document.querySelector('[data-tipi]');
+    var fila = box && box.querySelector('.tipi-fila');
+    if (!vivo || !fila || !IO) return;
+    Array.prototype.slice.call(fila.children).forEach(function (li) {
+      var c = li.cloneNode(true);
+      c.setAttribute('aria-hidden', 'true');
+      fila.appendChild(c);
     });
+    box.style.setProperty('--durata', Math.max(30, Math.round(fila.scrollWidth / 2 / VELOCITA_FILA)) + 's');
+    box.setAttribute('data-pausa', '');
+    box.setAttribute('data-gira', '');
+    new IntersectionObserver(function (voci) { box.toggleAttribute('data-pausa', !voci[0].isIntersecting || fermi); }).observe(box);
   });
 
   /* ---------- Un video alla volta ----------
@@ -366,10 +347,12 @@
     return v;
   }
 
-  /* ---------- I racconti: la finestra ferma e i video che cambiano con lo scorrimento ----------
-     Tre racconti (Come funziona, Se affitti, Seconda casa), ognuno con la sua finestra. La finestra si costruisce dalle
-     storie (data-storia): per ognuna un'immagine ferma e, se è una storia delle novità, il suo video. Il passo delle
-     bollette (data-immagine) ha solo la schermata. */
+  /* ---------- I racconti: la finestra ferma (da 768 px) o le immagini delle storie (sotto) ----------
+     Due racconti (Se affitti, Per ogni immobile). Da 768 px in su ognuno ha la sua finestra, che resta ferma accanto
+     alle storie: la finestra si costruisce dalle storie (data-storia), per ognuna un'immagine ferma e, se ce l'ha, il
+     suo video; la schermata cambia a scatto con la storia che passa a metà schermo. Sotto i 768 px (ottavo giro, 11/11)
+     niente si ferma: ogni storia tiene la sua immagine e il suo video ci gira sopra quando è sullo schermo. Si prepara
+     solo il modo che serve, e l'altro se la finestra del browser cambia misura. */
   var racconti = [];
   dopo('racconti', function () {
     if (!vivo) return;
@@ -384,66 +367,100 @@
         var griglia = sezione.querySelector('.racconto-griglia');
         var contenitore = sezione.querySelector('.racconto-schermo');
         if (!storie.length || !schermo) return;
-
-        var attiva = -1, inVista = false;
-        var slide = storie.map(function (s, i) {
+        // Di ogni storia: l'immagine ferma e, se c'è, il video (una storia delle novità, o un passo col suo minivideo).
+        var dati = storie.map(function (s) {
           var id = s.getAttribute('data-storia');
           var immagine = s.getAttribute('data-immagine');
           var videoPasso = s.getAttribute('data-video');
-          var d = document.createElement('div');
-          d.className = 'slide';
-          var img = document.createElement('img');
-          img.src = immagine || '/assets/novita/' + id + '.webp'; img.alt = '';
-          img.width = immagine && !videoPasso ? 1280 : 960; img.height = immagine && !videoPasso ? 800 : 600;
-          img.decoding = 'async'; img.loading = i < 1 ? 'eager' : 'lazy';
-          d.appendChild(img);
-          if (!immagine || videoPasso) {
-            var v = nuovoVideo();
-            v.className = 'schermo-video';
-            d.appendChild(v);
-            iscrivi({ video: v, mp4: videoPasso || '/assets/novita/' + id + '.mp4', peso: function () { return i === attiva && inVista ? 2 : 0; } });
+          return { storia: s, immagine: immagine || '/assets/novita/' + id + '.webp', grande: !!immagine && !videoPasso, mp4: !immagine || videoPasso ? (videoPasso || '/assets/novita/' + id + '.mp4') : null };
+        });
+        var fatta = false, fatte = false;
+
+        function finestraFerma() {
+          var attiva = -1, inVista = false;
+          var slide = dati.map(function (x, i) {
+            var d = document.createElement('div');
+            d.className = 'slide';
+            var img = document.createElement('img');
+            img.src = x.immagine; img.alt = '';
+            img.width = x.grande ? 1280 : 960; img.height = x.grande ? 800 : 600;
+            img.decoding = 'async'; img.loading = i < 1 ? 'eager' : 'lazy';
+            d.appendChild(img);
+            if (x.mp4) {
+              var v = nuovoVideo();
+              v.className = 'schermo-video';
+              d.appendChild(v);
+              iscrivi({ video: v, mp4: x.mp4, peso: function () { return i === attiva && inVista && largo.matches ? 2 : 0; } });
+            }
+            schermo.appendChild(d);
+            var seg = document.createElement('span');
+            if (avanzamento) avanzamento.appendChild(seg);
+            return { el: d, seg: seg, storia: x.storia };
+          });
+          sezione.setAttribute('data-pronto', '');
+          entra(finestra);
+
+          function scegli(i) {
+            if (i === attiva) return;
+            attiva = i;
+            slide.forEach(function (s, k) {
+              var on = k === i;
+              s.el.toggleAttribute('data-attiva', on);
+              s.seg.toggleAttribute('data-attiva', on);
+              s.storia.toggleAttribute('data-attiva', on);
+            });
+            aggiornaVideo();
           }
-          schermo.appendChild(d);
-          var seg = document.createElement('span');
-          if (avanzamento) avanzamento.appendChild(seg);
-          return { el: d, seg: seg, storia: s };
-        });
-        sezione.setAttribute('data-pronto', '');
+          if (IO) {
+            new IntersectionObserver(function (voci) { inVista = voci[0].isIntersecting; aggiornaVideo(); }).observe(griglia);
+          } else { inVista = true; }
+          scegli(0);
 
-        function scegli(i) {
-          if (i === attiva) return;
-          attiva = i;
-          slide.forEach(function (s, k) {
-            var on = k === i;
-            s.el.toggleAttribute('data-attiva', on);
-            s.seg.toggleAttribute('data-attiva', on);
-            s.storia.toggleAttribute('data-attiva', on);
+          racconti.push(function (vh) {
+            if (!largo.matches) return;
+            var g = griglia.getBoundingClientRect();
+            if (g.bottom < -vh || g.top > vh * 2) return;
+            // La linea di riferimento: al computer il centro dello schermo; al tablet il centro di quello che resta
+            // sotto la finestra ferma.
+            var linea = vh / 2;
+            var c = contenitore.getBoundingClientRect();
+            if (window.getComputedStyle(contenitore).order === '-1') linea = c.bottom + (vh - c.bottom) / 2;
+            var migliore = 0, distanza = Infinity;
+            storie.forEach(function (s, i) {
+              var r = s.getBoundingClientRect();
+              var d = r.top <= linea && r.bottom >= linea ? 0 : Math.min(Math.abs(r.top - linea), Math.abs(r.bottom - linea));
+              if (d < distanza) { distanza = d; migliore = i; }
+            });
+            return function () { scegli(migliore); };
           });
-          aggiornaVideo();
         }
-        if ('IntersectionObserver' in window) {
-          new IntersectionObserver(function (voci) { inVista = voci[0].isIntersecting; aggiornaVideo(); }).observe(griglia);
-        } else { inVista = true; }
-        if (slide.length === 1) scegli(0);
 
-        racconti.push(function (vh) {
-          var g = griglia.getBoundingClientRect();
-          if (g.bottom < -vh || g.top > vh * 2) return;
-          var entrata = limita((vh - g.top) / (vh * 0.55)).toFixed(3);
-          if (slide.length === 1) return function () { finestra.style.setProperty('--entrata', entrata); };
-          // La linea di riferimento: al computer il centro dello schermo; al telefono il centro di quello che resta
-          // sotto la finestra ferma.
-          var linea = vh / 2;
-          var c = contenitore.getBoundingClientRect();
-          if (window.getComputedStyle(contenitore).order === '-1') linea = c.bottom + (vh - c.bottom) / 2;
-          var migliore = 0, distanza = Infinity;
-          storie.forEach(function (s, i) {
-            var r = s.getBoundingClientRect();
-            var d = r.top <= linea && r.bottom >= linea ? 0 : Math.min(Math.abs(r.top - linea), Math.abs(r.bottom - linea));
-            if (d < distanza) { distanza = d; migliore = i; }
+        // Sotto i 768 px: il video di ogni storia sopra la sua immagine, e gira quello più sullo schermo.
+        function immaginiVive() {
+          if (!IO) return;
+          var quota = typeof Map === 'function' ? new Map() : null;
+          if (!quota) return;
+          var osserva = new IntersectionObserver(function (voci) {
+            voci.forEach(function (v) { quota.set(v.target, v.intersectionRatio); });
+            aggiornaVideo();
+          }, { threshold: [0, 0.3, 0.6, 0.8, 1] });
+          dati.forEach(function (x) {
+            var fig = x.storia.querySelector('.storia-locandina');
+            if (!x.mp4 || !fig) return;
+            var v = nuovoVideo();
+            fig.appendChild(v);
+            iscrivi({ video: v, mp4: x.mp4, peso: function () { var q = quota.get(fig) || 0; return !largo.matches && q >= 0.6 ? q : 0; } });
+            osserva.observe(fig);
           });
-          return function () { finestra.style.setProperty('--entrata', entrata); scegli(migliore); };
-        });
+        }
+
+        function prepara() {
+          if (largo.matches) { if (!fatta) { fatta = true; finestraFerma(); } }
+          else if (!fatte) { fatte = true; immaginiVive(); }
+          aggiornaVideo(); chiedi();
+        }
+        prepara();
+        if (largo.addEventListener) largo.addEventListener('change', function () { parte('racconto', prepara); });
       });
     });
   });
@@ -477,9 +494,12 @@
                  dalla visura: la scadenza è l'IMU), e si posano a fianco della cartella, legati da una linea sottile;
                  l'ultimo (la scadenza, col punto ambra) per ultimo.
      Le carte: la bolletta e la foto nella casa al mare, il rogito nel box, il resto in via Mazzini (sesto giro, 27/10).
-     I testi: il primo fino a 0,18, il secondo da 0,23 a 0,65, il terzo da 0,65. Si scrivono solo trasformazioni e
-     opacità: l'impaginazione non si muove. Risalendo, gli stessi conti all'indietro. p segue lo scorrimento con un
-     piccolo ritardo morbido (vedi il giro per fotogramma, in fondo).
+     I testi (ottavo giro, 11/11): sempre a opacità piena, uno alla volta; il primo fino a 0,12, il secondo fino a 0,58,
+     poi il terzo, e cambiano con uno stacco. Si muovono solo carte, cartelle e cartellini. Si scrivono solo
+     trasformazioni e opacità: l'impaginazione non si muove. Risalendo, gli stessi conti all'indietro. p segue lo
+     scorrimento con un piccolo ritardo morbido (vedi il giro per fotogramma, in fondo). La corsa è corta: la sezione è
+     alta una schermata e mezza, e la scena comincia un quarto di schermo prima di fermarsi.
+     Sotto i 768 px la scena non segue lo scorrimento: i tre quadri fermi qui sotto, che entrano uno alla volta.
      Con «meno animazioni» (settimo giro, 28/10) niente si ferma e niente si muove, ma il racconto resta: tre quadri
      fermi, uno sotto l'altro, ognuno col suo testo accanto (al computer) o sopra (al telefono). Li disegna la stessa
      funzione, a tre punti fermi della corsa. */
@@ -673,6 +693,8 @@
       return { p: p, dentro: i === 1, disegna: palcoCassetto(pl) };
     });
     sezione.setAttribute('data-quadri', '');
+    // Con «vivo» (al telefono) ogni quadro entra quando arriva, una volta.
+    Array.prototype.forEach.call(sezione.querySelectorAll('.cassetto-quadro'), function (q) { entra(q); });
     function disegna() {
       quadri.forEach(function (q) {
         for (var n = 0; n < 4; n++) { var w = q.disegna(q.p, q.dentro); w.fn(); if (!w.riposo) break; }
@@ -689,28 +711,40 @@
   }
 
   var cassetto = null;
-  parte('quadri', function () {
-    if (vivo) return;
+  function faiQuadri() {
     var sezione = document.querySelector('[data-cassetto]');
     var palco = sezione && sezione.querySelector('[data-palco]');
-    if (palco) quadriFermi(sezione, palco);
-  });
+    if (palco && !sezione.hasAttribute('data-quadri')) quadriFermi(sezione, palco);
+  }
+  parte('quadri', function () { if (!vivo) faiQuadri(); });
   vicino('[data-cassetto]', 'cassetto', function () {
     if (!vivo) return;
     var sezione = document.querySelector('[data-cassetto]');
-    if (!sezione) return;
+    if (!sezione || sezione.hasAttribute('data-quadri')) return;
+    if (!largo.matches) { faiQuadri(); return; }
     var fermo = sezione.querySelector('.cassetto-fermo');
     var palco = sezione.querySelector('[data-palco]');
     var testi = Array.prototype.slice.call(sezione.querySelectorAll('.cassetto-testo'));
     var disegna = palcoCassetto(palco);
-    var tra = function (p, a, b) { return limita((p - a) / (b - a)); };
-    var prima = -1, primaL = -1, primaA = -1;
+    var prima = -1, primaL = -1, primaA = -1, fase = 0;
+    testi.forEach(function (t, i) { t.toggleAttribute('data-attivo', i === 0); });
     sezione.setAttribute('data-segue', '');
     cassetto = function (vh, scarto) {
+      // La finestra del browser è scesa sotto i 768 px: la scena lascia il posto ai tre quadri, e non torna.
+      if (!largo.matches) {
+        cassetto = null;
+        return function () {
+          sezione.removeAttribute('data-segue');
+          testi.forEach(function (t) { t.removeAttribute('data-attivo'); });
+          faiQuadri();
+        };
+      }
       var r = sezione.getBoundingClientRect();
       if (r.bottom < -vh || r.top > vh * 2) return;
-      var corsa = r.height - fermo.offsetHeight;
-      var p = Math.round(limita((64 - r.top - scarto) / (corsa > 0 ? corsa : 1)) * 1000) / 1000;
+      // 0 un quarto di schermo prima che la sezione si fermi sotto la testata, 1 poco prima che riparta: lo stato
+      // finale resta un momento sullo schermo.
+      var corsa = r.height - fermo.offsetHeight, anticipo = vh * 0.25;
+      var p = Math.round(limita((64 + anticipo - r.top - scarto) / ((corsa > 0 ? corsa : 1) + anticipo - vh * 0.06)) * 1000) / 1000;
       var L = palco.clientWidth, A = palco.clientHeight;
       if (p === prima && L === primaL && A === primaA) return;
       prima = p; primaL = L; primaA = A;
@@ -718,63 +752,30 @@
       if (w.riposo) { prima = -1; return function () { w.fn(); chiedi(); }; }
       return function () {
         w.fn();
-        // I tre testi.
-        var o1 = 1 - tra(p, 0.18, 0.23), o2 = tra(p, 0.23, 0.28) * (1 - tra(p, 0.60, 0.65)), o3 = tra(p, 0.65, 0.70);
-        [o1, o2, o3].forEach(function (o, j) {
-          testi[j].style.opacity = String(o);
-          testi[j].style.transform = 'translateY(' + ((1 - o) * 14).toFixed(1) + 'px)';
-        });
+        // I tre testi: uno alla volta, sempre pieni. Cambia solo quale si vede.
+        var f = p < 0.12 ? 0 : p < 0.58 ? 1 : 2;
+        if (f !== fase) { fase = f; testi.forEach(function (t, i) { t.toggleAttribute('data-attivo', i === f); }); }
       };
     };
   });
 
-  /* ---------- Come funziona: il foglio scende nella casa e ne escono le scadenze ---------- */
-  var scena = null;
+  /* ---------- Come funziona: il foglio scende nella casa e ne escono le scadenze, una volta sola ----------
+     Ottavo giro (11/11): la scena non segue più lo scorrimento. Lo script la prepara (data-gioca) quando si avvicina e,
+     quando è per quattro decimi sullo schermo, la fa partire (data-visto): il foglio scende, la casa batte, le tre
+     scadenze escono, e i numeri dei tre passi si accendono uno dopo l'altro. Meno di un secondo, poi resta ferma. */
   vicino('[data-scena]', 'scena', function () {
-    if (!vivo) return;
+    if (!vivo || !IO) return;
     var el = document.querySelector('[data-scena]');
-    var passi = document.querySelectorAll('[data-passi] > li');
+    var passi = document.querySelector('[data-passi]');
     if (!el) return;
-    function morbido(x) { return x * x * (3 - 2 * x); }
-    scena = function (vh, scarto) {
-      var r = el.getBoundingClientRect();
-      var inizio = vh * 0.92, fine = vh * 0.42 - r.height / 2;
-      var p = limita((inizio - r.top - scarto) / (inizio - fine));
-      return function () {
-      el.style.setProperty('--foglio', morbido(limita(p / 0.42)).toFixed(3));
-      var c = (p - 0.36) / 0.2;
-      el.style.setProperty('--casa', (c > 0 && c < 1 ? Math.sin(Math.PI * c) : 0).toFixed(3));
-      el.style.setProperty('--r1', morbido(limita((p - 0.5) / 0.14)).toFixed(3));
-      el.style.setProperty('--r2', morbido(limita((p - 0.62) / 0.14)).toFixed(3));
-      el.style.setProperty('--r3', morbido(limita((p - 0.74) / 0.14)).toFixed(3));
-      var passo = p < 0.4 ? 0 : p < 0.7 ? 1 : 2;
-      passi.forEach(function (li, i) { li.toggleAttribute('data-attivo', i === passo); });
-      };
-    };
-  });
-
-  /* ---------- L'apertura: il computer, il telefono e la foto salgono appena, a velocità diverse ---------- */
-  var apertura = null;
-  parte('apertura', function () {
-    if (!vivo) return;
-    var sezione = document.querySelector('.apertura');
-    if (!sezione) return;
-    var prima = '';
-    var oggetti = [['.portatile', -16], ['.telefono', -40], ['.foto-carta', -28, 'rotate(-7deg) ']].map(function (x) {
-      return { el: sezione.querySelector(x[0]), su: x[1], prima: x[2] };
-    }).filter(function (o) { return o.el; });
-    apertura = function (y) {
-      var h = sezione.offsetHeight || 1;
-      var v = limita(y / h).toFixed(3);
-      if (v === prima) return;
-      prima = v;
-      // Le trasformazioni si scrivono sui tre oggetti, non una variabile sulla sezione: una variabile sulla sezione
-      // farebbe ricalcolare lo stile di tutto quello che c'è dentro, a ogni fotogramma.
-      return function () {
-        var q = +v;
-        oggetti.forEach(function (o) { o.el.style.transform = (o.prima || '') + 'translateY(' + (q * o.su).toFixed(1) + 'px)'; });
-      };
-    };
+    el.setAttribute('data-gioca', '');
+    var o = new IntersectionObserver(function (voci) {
+      if (!voci[0].isIntersecting) return;
+      o.disconnect();
+      el.setAttribute('data-visto', '');
+      if (passi) passi.setAttribute('data-visto', '');
+    }, { threshold: 0.4 });
+    o.observe(el);
   });
 
   /* ---------- L'articolo: il video parte quando è sullo schermo, muto e in loop ---------- */
@@ -786,45 +787,138 @@
     new IntersectionObserver(function (voci) { quota = voci[0].intersectionRatio; aggiornaVideo(); }, { threshold: [0, 0.35, 1] }).observe(v);
   });
 
-  /* ---------- L'apertura: la sequenza bolletta, foto, app riparte quando l'apertura torna sullo schermo ----------
-     Le animazioni stanno dietro data-sequenza="gira": tolto quando l'apertura esce dallo schermo e rimesso quando ci
-     torna, la sequenza riparte dall'inizio (quinto giro, 27/10). */
-  dopo('sequenza', function () {
+  /* ---------- L'apertura: il ciclo bolletta, scatto, campi, scadenza (ottavo giro, 11/11) ----------
+     Le animazioni stanno dietro data-sequenza="gira" (foglio di stile). Nella pagina il segno è vuoto: il ciclo non fa
+     parte del primo caricamento. Lo script lo accende dopo che la pagina è pronta (l'evento load, più un momento
+     libero): solo allora scarica la schermata «prima» (la lista senza la bolletta) e, quando è arrivata, fa partire il
+     ciclo. Lo spegne quando l'apertura esce dallo schermo o la scheda del browser va in secondo piano, e lo riaccende
+     al ritorno: riparte dal quadro fermo. */
+  // Il ciclo non fa parte del primo caricamento (misurato: dentro la misura di Lighthouse costa una decina di punti).
+  // A pagina pronta parte al primo movimento del mouse, tocco o tasto; se la persona guarda e basta, dopo sei secondi.
+  var ATTESA_CICLO = 6000; // millisecondi dopo «load»
+  parte('sequenza', function () {
     var seq = document.querySelector('[data-sequenza]');
-    if (!vivo || !seq || !('IntersectionObserver' in window)) return;
-    new IntersectionObserver(function (voci) {
-      var dentro = voci[0].isIntersecting;
-      if (!dentro) seq.setAttribute('data-sequenza', '');
-      else if (seq.getAttribute('data-sequenza') !== 'gira') seq.setAttribute('data-sequenza', 'gira');
-    }).observe(seq);
+    if (!vivo || !seq || !IO) return;
+    var prima = seq.querySelector('.schermo-prima');
+    var pronta = false, dentro = false;
+    function aggiorna() {
+      var gira = pronta && dentro && !fermi && !document.hidden;
+      if (gira !== (seq.getAttribute('data-sequenza') === 'gira')) seq.setAttribute('data-sequenza', gira ? 'gira' : '');
+    }
+    function prepara() {
+      var via = function () { pronta = true; aggiorna(); };
+      var src = prima && prima.getAttribute('data-src');
+      if (src && !prima.getAttribute('src')) {
+        prima.addEventListener('load', via, { once: true });
+        prima.setAttribute('src', src);
+      } else via();
+      new IntersectionObserver(function (voci) { dentro = voci[0].isIntersecting; aggiorna(); }, { threshold: 0.25 }).observe(seq);
+      document.addEventListener('visibilitychange', aggiorna);
+    }
+    var partito = false;
+    var GESTI = ['pointermove', 'pointerdown', 'touchstart', 'keydown', 'scroll'];
+    var via = function () {
+      if (partito) return;
+      partito = true;
+      GESTI.forEach(function (g) { window.removeEventListener(g, via); });
+      quando(function () { parte('sequenza', prepara); }, { timeout: 2000 });
+    };
+    var parti = function () {
+      GESTI.forEach(function (g) { window.addEventListener(g, via, { passive: true }); });
+      setTimeout(via, ATTESA_CICLO);
+    };
+    if (document.readyState === 'complete') parti();
+    else window.addEventListener('load', parti, { once: true });
   });
 
-  /* ---------- Le risposte: le righe entrano una dopo l'altra con lo scorrimento, e risalendo tornano indietro ---------- */
-  var risposte = [];
+  /* ---------- Le risposte: la prima è aperta, le altre si aprono al clic (ottavo giro, 11/11) ----------
+     Nella pagina sono un elenco di domande e risposte, tutte in chiaro: così restano senza script e con «meno
+     animazioni». Con «vivo» ogni domanda diventa un pulsante (clic, tocco, Invio e Spazio: lo stesso gesto), col suo
+     segno; la riga intera risponde al clic. Aprendo, la risposta si scrive in 0,7 secondi: il suo posto è già tutto
+     occupato (il resto del testo c'è, invisibile), quindi la pagina non si muove mentre scrive. */
+  var SCRITTURA = 700; // millisecondi
   dopo('risposte', function () {
-    if (!vivo) return;
-    document.querySelectorAll('.risposta').forEach(function (riga) {
-      var prima = -1;
-      riga.setAttribute('data-segue', '');
-      risposte.push(function (vh, scarto) {
-        var r = riga.getBoundingClientRect();
-        if (r.bottom < -vh || r.top > vh * 2) return;
-        // Entra fra il 95% e il 75% dello schermo.
-        var o = Math.round(limita((vh * 0.95 - r.top - scarto) / (vh * 0.2)) * 1000) / 1000;
-        if (o === prima) return;
-        prima = o;
-        return function () {
-          riga.style.opacity = String(o);
-          riga.style.transform = 'translateY(' + ((1 - o) * 28).toFixed(1) + 'px)';
-        };
+    var elenco = document.querySelector('.risposte-elenco');
+    if (!vivo || !elenco) return;
+    Array.prototype.forEach.call(elenco.querySelectorAll('.risposta'), function (riga, i) {
+      var dt = riga.querySelector('dt'), dd = riga.querySelector('dd');
+      if (!dt || !dd) return;
+      var testo = dd.textContent, giro = 0;
+      var b = document.createElement('button'), segno = document.createElement('span'), domanda = document.createElement('span');
+      b.type = 'button';
+      b.className = 'risposta-bottone';
+      segno.className = 'domanda-segno';
+      segno.setAttribute('aria-hidden', 'true');
+      domanda.textContent = dt.textContent;
+      b.appendChild(segno);
+      b.appendChild(domanda);
+      if (!dd.id) dd.id = 'risposta-' + (i + 1);
+      b.setAttribute('aria-controls', dd.id);
+      dt.textContent = '';
+      dt.appendChild(b);
+      function metti(aperta, scrivi) {
+        var mio = ++giro;
+        b.setAttribute('aria-expanded', String(aperta));
+        riga.toggleAttribute('data-aperta', aperta);
+        dd.hidden = !aperta;
+        dd.textContent = testo;
+        if (!aperta || !scrivi || fermi) return;
+        var inizio = performance.now();
+        var fatto = document.createElement('span'), resto = document.createElement('span');
+        resto.className = 'da-scrivere';
+        resto.textContent = testo;
+        dd.textContent = '';
+        dd.appendChild(fatto);
+        dd.appendChild(resto);
+        (function passo(t) {
+          if (mio !== giro) return;
+          var n = Math.min(testo.length, Math.ceil(testo.length * (t - inizio) / SCRITTURA));
+          fatto.textContent = testo.slice(0, n);
+          resto.textContent = testo.slice(n);
+          if (n < testo.length) requestAnimationFrame(passo);
+          else dd.textContent = testo;
+        })(inizio);
+      }
+      metti(i === 0, false);
+      riga.addEventListener('click', function (e) {
+        if (dd.contains(e.target)) return; // dentro la risposta si seleziona il testo
+        metti(!riga.hasAttribute('data-aperta'), true);
       });
     });
+    elenco.setAttribute('data-apri', '');
+  });
+
+  /* ---------- «Chi la usa»: la prova d'impaginazione (ottavo giro, 11/11) ----------
+     La sezione vera la scrive il generatore, e solo se strumenti/chi-la-usa.mjs ha frasi di persone vere. Qui, con
+     ?prova=1 e mai su dimorapp.com, lo script mette al suo posto (dopo la storia del quaderno) tre frasi FINTE,
+     dichiarate tali nella sezione e in ogni frase: servono solo a vedere l'impaginazione. Stesse classi del generatore. */
+  parte('chi la usa', function () {
+    var host = location.hostname;
+    if (!new URLSearchParams(location.search).has('prova') || host === 'dimorapp.com' || host === 'www.dimorapp.com') return;
+    var dopoDi = document.getElementById('storia');
+    if (!dopoDi || document.getElementById('chi-la-usa')) return;
+    var sezione = document.createElement('section');
+    sezione.className = 'sezione chi-la-usa';
+    sezione.id = 'chi-la-usa';
+    var FINTE = [
+      'Frase finta numero uno, solo per provare l\u2019impaginazione: qui andranno due o tre righe scritte da una persona vera.',
+      'Frase finta numero due, più corta.',
+      'Frase finta numero tre, la più lunga, per vedere come sta un testo che va a capo più volte nello stesso riquadro senza che gli altri due si deformino.',
+    ];
+    sezione.innerHTML = '<div class="contenitore"><div class="sezione-testa"><h2 class="titolo-sezione">Chi la usa</h2></div>' +
+      '<p class="chi-prova">Prova di impaginazione: le frasi qui sotto sono finte.</p><div class="voci-chi">' +
+      FINTE.map(function (f) {
+        return '<figure class="voce-chi"><blockquote><p>' + f + '</p></blockquote><figcaption><span class="voce-chi-nome">Nome finto</span> <span class="voce-chi-chi">frase di prova</span></figcaption></figure>';
+      }).join('') + '</div></div>';
+    dopoDi.insertAdjacentElement('afterend', sezione);
   });
 
   /* ---------- La testata: la riga sotto compare quando la pagina scorre ---------- */
   var testata = document.querySelector('[data-testata]');
 
-  /* Un solo giro per fotogramma, su scorrimento e ridimensionamento. In due tempi (quinto giro, 27/10): prima ogni
+  /* Dall'ottavo giro (11/11) lo scorrimento muove una scena sola, il fascicolo (da 768 px); dei racconti sceglie solo
+     quale schermata mostrare, a scatto.
+     Un solo giro per fotogramma, su scorrimento e ridimensionamento. In due tempi (quinto giro, 27/10): prima ogni
      parte legge le sue misure e restituisce cosa scrivere, poi si scrive tutto insieme. Letture e scritture alternate
      costringerebbero il browser a ricalcolare lo stile a ogni lettura, e sul telefono i fotogrammi salterebbero.
      Il ritardo morbido (sesto giro, 27/10): le scene non seguono lo scorrimento passo passo ma una posizione «lisciata»
@@ -851,12 +945,8 @@
     var sotto = y > 8;
     var scritture = [];
     var leggi = function (nome, fn) { parte(nome, function () { var w = fn(); if (w) scritture.push([nome, w]); }); };
-    if (apertura) leggi('apertura', function () { return apertura(lisciato); });
     if (cassetto) leggi('cassetto', function () { return cassetto(vh, scarto); });
-    if (scena) leggi('scena', function () { return scena(vh, scarto); });
     racconti.forEach(function (r) { leggi('racconto', function () { return r(vh); }); });
-    disegni.forEach(function (f) { leggi('disegni', function () { return f(vh, scarto); }); });
-    risposte.forEach(function (f) { leggi('risposte', function () { return f(vh, scarto); }); });
     if (testata) testata.toggleAttribute('data-sotto', sotto);
     scritture.forEach(function (w) { parte(w[0], w[1]); });
     // Finché la scena non ha raggiunto la pagina, un altro giro.
@@ -917,8 +1007,8 @@
     document.addEventListener('click', lascia, true);
     window.addEventListener('hashchange', lascia);
   });
-  // Le sezioni più in basso cambiano altezza quando il browser le impagina (content-visibility): i disegni che seguono
-  // lo scorrimento si rimettono al passo anche senza che la pagina scorra.
+  // Le sezioni più in basso cambiano altezza quando il browser le impagina (content-visibility): la scena che segue
+  // lo scorrimento si rimette al passo anche senza che la pagina scorra.
   if ('ResizeObserver' in window) new ResizeObserver(chiedi).observe(document.body);
   giro();
   // La coda parte al primo gesto; con un indirizzo che porta a una sezione (/#novita), subito.
@@ -931,7 +1021,8 @@
     ['scroll', 'wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(function (t) { window.addEventListener(t, primoGesto, { passive: true }); });
   }
 
-  /* Se il sistema passa a «meno animazioni» mentre la pagina è aperta: i video si fermano. */
+  /* Se il sistema passa a «meno animazioni» mentre la pagina è aperta: i video si fermano (e il foglio di stile ferma
+     il resto: il ciclo dell'apertura, la fila dei nomi, le entrate). */
   parte('meno animazioni', function () {
     var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     var ferma = function () { if (mq.matches) { fermi = true; document.querySelectorAll('video').forEach(function (v) { v.pause(); }); } };

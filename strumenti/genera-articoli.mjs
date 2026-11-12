@@ -3,9 +3,9 @@
 //     node strumenti/genera-articoli.mjs
 //
 // Dalla fonte unica strumenti/storie.mjs:
-//   · in index.html riempie i blocchi dei tre racconti (<!--RACCONTO-COME-->, <!--RACCONTO-AFFITTO-->,
-//     <!--RACCONTO-IMMOBILI-->), il blocco delle novità (<!--NOVITA-->), «In arrivo» (<!--IN-ARRIVO-->) e il
-//     piè di pagina delle novità (<!--PIEDE-NOVITA-->); il resto della pagina non lo tocca;
+//   · in index.html riempie i blocchi dei due racconti (<!--RACCONTO-AFFITTO-->, <!--RACCONTO-IMMOBILI-->), la fila
+//     dei nomi dei documenti (<!--TIPI-->), «Chi la usa» (<!--CHI-LA-USA-->, da strumenti/chi-la-usa.mjs: vuoto finché
+//     non ci sono frasi vere) e il piè di pagina delle novità (<!--PIEDE-NOVITA-->); il resto della pagina non lo tocca;
 //   · scrive novita.html (/novita, tutte le novità) e novita/<id>.html per ogni storia, con la testata e il piè di pagina presi da index.html così come sono
 //     (fra <!--TESTATA--> e <!--/TESTATA-->, <!--PIEDE--> e <!--/PIEDE-->): un posto solo da cambiare.
 // La landing resta statica: i file scritti si committano. Si rilancia quando cambia una storia.
@@ -14,7 +14,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STORIE as TUTTE, PARTI, NOVITA_LANDING, PAGINA_NOVITA, IN_ARRIVO, PASSI, DATI, RACCONTI, ORDINE_NOVITA, ORIGINE, ISCRIZIONE, indirizzoArticolo, INDIRIZZO_NOVITA } from './storie.mjs';
+import { STORIE as TUTTE, PARTI, NOVITA_LANDING, PAGINA_NOVITA, PASSI, DATI, RACCONTI, TIPI_IN_FILA, ORDINE_NOVITA, ORIGINE, ISCRIZIONE, indirizzoArticolo, INDIRIZZO_NOVITA } from './storie.mjs';
+import { CHI_LA_USA } from './chi-la-usa.mjs';
 
 // Le storie pubblicate (una storia con `pubblica: false` resta nella fonte, ma non ha né passo né articolo).
 const STORIE = TUTTE.filter((s) => s.pubblica !== false);
@@ -81,13 +82,28 @@ const racconto = (passi) => passi.map(passo).join('\n');
 // Le storie pubblicate nell'ordine delle novità (dalla più recente); una storia pubblicata fuori dall'ordine va in coda.
 const NOVITA = [...ORDINE_NOVITA.map(storia), ...STORIE.filter((x) => !ORDINE_NOVITA.includes(x.id))];
 
-// Il blocco delle novità: il titolo, la riga, la firma e il link a tutte le novità.
-const blocco = `    <div class="cresce">
-      <h2 class="titolo-sezione" data-parole>${esc(NOVITA_LANDING.titolo)}</h2>
-      <p class="sezione-sotto">${esc(NOVITA_LANDING.testo)}</p>
-      <p class="cresce-firma">${esc(NOVITA_LANDING.firma)}</p>
-      <a class="collegamento" href="${INDIRIZZO_NOVITA}">${esc(NOVITA_LANDING.tutte)}</a>
-    </div>`;
+// La fila dei nomi dei documenti: un elenco solo. Lo script lo raddoppia per farlo scorrere senza stacco; senza script
+// (e con «meno animazioni») è fermo e va a capo.
+const tipi = `        <ul class="tipi-fila" aria-label="Alcuni dei documenti che Dimora riconosce">
+${TIPI_IN_FILA.map((n) => `          <li>${esc(n)}</li>`).join('\n')}
+        </ul>`;
+
+// «Chi la usa»: la sezione si scrive solo se ci sono frasi vere. Vuota, fra i due commenti non resta niente.
+// Le stesse classi le usa assets/landing.js per la prova d'impaginazione (?prova=1): il controllo le confronta.
+const voce = (v) => `      <figure class="voce-chi">
+        <blockquote><p>${esc(v.frase)}</p></blockquote>
+        <figcaption><span class="voce-chi-nome">${esc(v.nome)}</span>${v.chi ? ` <span class="voce-chi-chi">${esc(v.chi)}</span>` : ''}</figcaption>
+      </figure>`;
+const chiLaUsa = CHI_LA_USA.voci.length === 0 ? '' : `<section class="sezione chi-la-usa" id="chi-la-usa">
+  <div class="contenitore">
+    <div class="sezione-testa">
+      <h2 class="titolo-sezione" data-entra>${esc(CHI_LA_USA.titolo)}</h2>
+    </div>
+    <div class="voci-chi">
+${CHI_LA_USA.voci.map(voce).join('\n')}
+    </div>
+  </div>
+</section>`;
 
 // Una carta (in /novita e nelle pagine degli articoli, «le altre novità»).
 const carta = (s, livello = 3) => `      <article class="carta">
@@ -99,13 +115,6 @@ const carta = (s, livello = 3) => `      <article class="carta">
           <span class="carta-leggi" aria-hidden="true">${esc(PARTI.leggi)}</span>
         </div>
       </article>`;
-
-const inArrivo = `    <div class="in-arrivo">
-      <h3 class="titolo-blocco">${esc(IN_ARRIVO.titolo)}</h3>
-      <ul class="in-arrivo-elenco">
-${IN_ARRIVO.voci.map((v) => `        <li><span class="in-arrivo-titolo">${esc(v.titolo)}</span> <span class="in-arrivo-testo">${esc(v.testo)}</span></li>`).join('\n')}
-      </ul>
-    </div>`;
 
 // Il consenso (2/11/2026), in cima alla testata di ogni pagina: prima lo stato di partenza, tutto negato, poi iubenda.
 // iubenda è async: costa lo stesso, ma se il suo sito è giù la pagina non resta ferma ad aspettarlo.
@@ -120,11 +129,10 @@ const CONSENSO = `<script>
 const piedeNovita = [...NOVITA.map((x) => `      <a href="${indirizzoArticolo(x.id)}">${esc(x.titolo)}</a>`), `      <a href="${INDIRIZZO_NOVITA}">Tutte le novità</a>`].join('\n');
 
 let indice = fs.readFileSync(percorso('index.html'), 'utf8');
-indice = sostituisci(indice, 'RACCONTO-COME', racconto(RACCONTI.COME));
 indice = sostituisci(indice, 'RACCONTO-AFFITTO', racconto(RACCONTI.AFFITTO));
 indice = sostituisci(indice, 'RACCONTO-IMMOBILI', racconto(RACCONTI.IMMOBILI));
-indice = sostituisci(indice, 'NOVITA', blocco);
-indice = sostituisci(indice, 'IN-ARRIVO', inArrivo);
+indice = sostituisci(indice, 'TIPI', tipi);
+indice = sostituisci(indice, 'CHI-LA-USA', chiLaUsa).replace('<!--CHI-LA-USA-->\n\n<!--/CHI-LA-USA-->', '<!--CHI-LA-USA-->\n<!--/CHI-LA-USA-->');
 indice = sostituisci(indice, 'PIEDE-NOVITA', piedeNovita);
 indice = sostituisci(indice, 'CONSENSO', CONSENSO);
 fs.writeFileSync(percorso('index.html'), indice);
@@ -363,4 +371,4 @@ ${STORIE.map((s) => `  <url>
 `;
 fs.writeFileSync(percorso('sitemap.xml'), mappa);
 
-console.log(`Scritti: index.html (racconti ${RACCONTI.COME.length}+${RACCONTI.AFFITTO.length}+${RACCONTI.IMMOBILI.length}), novita.html (${NOVITA.length} novità), ${STORIE.length} articoli, sitemap.xml`);
+console.log(`Scritti: index.html (racconti ${RACCONTI.AFFITTO.length}+${RACCONTI.IMMOBILI.length}, ${TIPI_IN_FILA.length} nomi nella fila, ${CHI_LA_USA.voci.length} frasi in «Chi la usa»), novita.html (${NOVITA.length} novità), ${STORIE.length} articoli, sitemap.xml`);

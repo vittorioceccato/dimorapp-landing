@@ -187,13 +187,9 @@ export const PARTI = {
   azione: 'Prova Dimora gratis',
 };
 
-// Il blocco delle novità nella landing (terzo giro di Vitto, 25/10): corto, senza la fila. Le novità si leggono una
-// per una nelle pagine degli articoli e nella pagina che le elenca tutte (/novita).
+// Le parole delle novità. Dall'ottavo giro (11/11) la landing non ha più il blocco delle novità: restano le pagine
+// degli articoli e la pagina che le elenca tutte (/novita), raggiungibili dal piè di pagina.
 export const NOVITA_LANDING = {
-  titolo: 'Dimora cresce con te.',
-  testo: "Ogni settimana aggiungiamo qualcosa che ti toglie un pensiero sulle tue case. Le novità le trovi nell'app, raccontate una per una.",
-  firma: 'Il team di Dimora',
-  tutte: 'Leggi tutte le novità',
   etichetta: 'Nuovo · ottobre 2026', // solo nelle pagine degli articoli e in /novita
 };
 
@@ -205,20 +201,22 @@ export const PAGINA_NOVITA = {
   altre: 'Le altre novità',
 };
 
-// «In arrivo» (quarto giro, 26/10): tre righe, in quest'ordine. Senza date e senza pulsanti.
-export const IN_ARRIVO = {
-  titolo: 'In arrivo',
-  voci: [
-    { titolo: "I canoni e le spese, abbinati dall'estratto conto.", testo: "Carichi l'estratto conto del mese: Dimora riconosce i canoni arrivati e le spese già pagate, e tu confermi con un tocco." },
-    { titolo: "L'adeguamento ISTAT del canone, automatico.", testo: "Ogni anno Dimora calcola l'aggiornamento del tuo affitto con l'indice ufficiale e te lo ricorda." },
-    { titolo: 'Quando cambiano le regole, te lo diciamo noi.', testo: 'Dimora tiene d\'occhio le novità per chi possiede immobili e ti dice che cosa cambia per ognuna delle tue case.' },
-  ],
-};
-
 // Quanti tipi di documenti la lettura riconosce: la decina sotto il numero vero. Il numero vero (25/10/2026, app a
 // 880d50e): 124 righe del catalogo su 136 in `lib/sottotipi-documento.ts` (RIGHE_CATALOGO; le 12 con `lettura: 'dopo'`
 // la lettura non le riconosce ancora). Lo stesso numero in tutta la pagina e negli articoli.
 export const TIPI_DOCUMENTI = 120;
+
+// La fila dei nomi sotto il numero (ottavo giro, 11/11): nomi veri, scritti come nel catalogo dell'app
+// (`lib/sottotipi-documento.ts`, RIGHE_CATALOGO, campo `nome`; app a 4d18db1), scelti fra le righe che la lettura
+// riconosce già (nessuna con `lettura: 'dopo'`). Un nome che nel catalogo cambia o sparisce si toglie da qui.
+export const TIPI_IN_FILA = [
+  'Rogito di compravendita', 'Visura catastale', 'F24 pagato', 'Bolletta della luce', 'Bilancio preventivo e riparto',
+  'Polizza casa', "Contratto d'affitto", 'Bolletta del gas', 'Contratto di mutuo', 'Attestato energetico (APE)',
+  'Avviso di rata condominiale', 'Modello RLI', 'Fattura lavori o manutenzione', 'Certificazione degli interessi del mutuo',
+  'TARI (rifiuti)', 'Planimetria o mappa catastale', 'Ricevuta del canone', 'Preventivo lavori', 'Piano di ammortamento',
+  "Verbale dell'assemblea", "Bolletta dell'acqua", 'Fattura del notaio', 'Deposito cauzionale', 'Tabelle millesimali',
+  'Dichiarazione dei redditi', 'Successione', "Comodato d'uso", 'Canone RAI',
+];
 
 // I passi dei racconti che non sono storie delle novità: una schermata ferma (o un disegno), nessun articolo.
 export const PASSI = {
@@ -269,10 +267,9 @@ export const DATI = {
   },
 };
 
-// I tre racconti della pagina, ognuno con la sua finestra. Un passo è una storia delle novità ({ storia }, col suo
+// I due racconti della pagina (ottavo giro, 11/11: «Come funziona» non ha più il suo), ognuno con la sua finestra. Un passo è una storia delle novità ({ storia }, col suo
 // video e il suo articolo; `testo` lo cambia dentro la sezione) o un passo fermo ({ passo }).
 export const RACCONTI = {
-  COME: [{ storia: 'carichi-al-resto' }],
   AFFITTO: [
     { passo: 'contratto' },
     { passo: 'affitto-chiaro' },
